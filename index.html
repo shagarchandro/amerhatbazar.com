@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🥭 আমের হাট বাজার</title>
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -27,18 +27,32 @@
   --radius: 14px;
   --radius-sm: 8px;
 }
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
 html{scroll-behavior:smooth}
-body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+body{font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
 a{text-decoration:none;color:inherit}
 img{max-width:100%;height:auto}
-button{cursor:pointer;font-family:'Hind Siliguri',sans-serif}
-input,select,textarea{font-family:'Hind Siliguri',sans-serif}
+button,input,select,textarea,td,th,label,span,div,p,h1,h2,h3,h4,h5,li{font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif!important}
+/* Restore Font Awesome icons - must come AFTER the override above */
+i.fas,i.far,i.fab,i.fal,i.fad,i.fa,[class*=" fa-"],[class^="fa-"]{font-family:'Font Awesome 6 Free','Font Awesome 6 Brands' !important;font-style:normal!important}
 
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:#f1f1f1}
 ::-webkit-scrollbar-thumb{background:var(--green-mid);border-radius:3px}
+/* ===== GLOBAL BENGALI FONT FORCE ===== */
+:lang(bn),
+[lang="bn"] *,
+.modal *,
+.admin-main *,
+#cart-sidebar *,
+.product-card *{font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif!important}
+/* CRITICAL: Restore Font Awesome — must be last */
+.modal i,.admin-main i,#cart-sidebar i,.product-card i,
+i.fas,i.far,i.fab,i.fal,
+.fas,span.fas,button .fas,a .fas,div .fas,
+[class*="fa-"]{font-family:'Font Awesome 6 Free' !important;font-weight:900!important;font-style:normal!important}
+i.fab,[class*="fa-brands"]{font-family:'Font Awesome 6 Brands' !important;font-weight:400!important}
 
 /* ===== NAVBAR ===== */
 #navbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--green-dark);box-shadow:0 2px 20px rgba(0,0,0,0.2);transition:all .3s}
@@ -201,7 +215,7 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .payment-tag{background:rgba(255,255,255,.08);padding:4px 10px;border-radius:4px;font-size:.78rem;color:rgba(255,255,255,.5)}
 
 /* ===== MODALS ===== */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center;padding:20px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:4000;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
 .modal{background:#fff;border-radius:var(--radius);width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .3s ease}
 @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -421,9 +435,43 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .img-upload-area:hover{border-color:var(--green-mid);background:var(--green-pale)}
 .img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 
-/* ===== CUSTOMER PROFILE ===== */
+/* ===== FAQ ===== */
+.faq-item{border:1.5px solid #e0d8c8;border-radius:10px;margin-bottom:10px;overflow:hidden;transition:all .2s}
+.faq-item.open{border-color:#2d6a4f;box-shadow:0 2px 12px rgba(45,106,79,.1)}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;cursor:pointer;background:#fff;gap:12px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
+.faq-q:hover{background:#f9f5e7}
+.faq-q-text{font-weight:600;font-size:.9rem;color:#1b4332;line-height:1.4;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
+.faq-icon{width:24px;height:24px;border-radius:50%;background:#d8f3dc;color:#2d6a4f;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;transition:transform .25s}
+.faq-item.open .faq-icon{transform:rotate(45deg);background:#2d6a4f;color:#fff}
+.faq-a{display:none;padding:0 16px 14px;font-size:.86rem;color:#444;line-height:1.75;background:#fff;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;border-top:1px solid #f0ebe0}
+.faq-item.open .faq-a{display:block}
+.faq-category{font-size:.75rem;font-weight:700;color:#2d6a4f;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 8px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
+.faq-category:first-child{margin-top:0}
+.track-input-row{display:flex;gap:10px;margin-bottom:20px}
+.track-input-row input{flex:1;padding:11px 15px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:.95rem;outline:none;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;transition:border .2s}
+.track-input-row input:focus{border-color:var(--green-mid)}
+.track-input-row button{background:var(--green-mid);color:#fff;border:none;padding:11px 20px;border-radius:var(--radius-sm);font-size:.95rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
+.track-input-row button:hover{background:var(--green-dark)}
+.track-result{background:#fff;border-radius:var(--radius);border:1.5px solid var(--border);overflow:hidden}
+.track-order-header{background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.track-steps{display:flex;align-items:center;padding:20px;gap:0;overflow-x:auto}
+.track-step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:70px;position:relative}
+.track-step:not(:last-child)::after{content:'';position:absolute;top:18px;left:50%;width:100%;height:3px;background:var(--border);z-index:0}
+.track-step.done:not(:last-child)::after{background:var(--green-mid)}
+.track-step-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.95rem;background:var(--border);color:#aaa;position:relative;z-index:1;border:3px solid #fff;box-shadow:0 0 0 2px var(--border);transition:all .3s}
+.track-step.done .track-step-icon{background:var(--green-mid);color:#fff;box-shadow:0 0 0 2px var(--green-mid)}
+.track-step.active .track-step-icon{background:var(--yellow);color:var(--green-dark);box-shadow:0 0 0 2px var(--yellow);animation:pulse 1.5s infinite}
+.track-step.cancelled .track-step-icon{background:#e74c3c;color:#fff;box-shadow:0 0 0 2px #e74c3c}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.track-step-label{font-size:.7rem;color:var(--text-muted);margin-top:6px;text-align:center;font-weight:500;line-height:1.3}
+.track-step.done .track-step-label,.track-step.active .track-step-label{color:var(--green-dark);font-weight:700}
+.track-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.track-info-box{padding:14px 18px;border-top:1px solid var(--border)}
+.track-info-box:nth-child(odd){border-right:1px solid var(--border)}
+.track-info-box label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:3px}
+.track-info-box span{font-size:.88rem;font-weight:600;color:var(--text)}
 .profile-tabs{display:flex;border-bottom:2px solid var(--border);background:#fff}
-.profile-tab-btn{flex:1;padding:13px 8px;text-align:center;background:none;border:none;font-size:.88rem;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
+.profile-tab-btn{flex:1;padding:13px 8px;text-align:center;background:none;border:none;font-size:.88rem;font-weight:600;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
 .profile-tab-btn.active{color:var(--green-mid);border-bottom-color:var(--green-mid)}
 .profile-tab-btn:hover{background:var(--bg);color:var(--green-mid)}
 .profile-content{padding:20px}
@@ -436,7 +484,7 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .order-card-footer{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);padding-top:10px}
 .edit-profile-form .form-group{margin-bottom:14px}
 .edit-profile-form label{display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px}
-.edit-profile-form input{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none;transition:border .2s;font-family:'Hind Siliguri',sans-serif}
+.edit-profile-form input{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none;transition:border .2s;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
 .edit-profile-form input:focus{border-color:var(--green-mid)}
 #custom-alert-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
 #custom-alert-overlay.open{display:flex}
@@ -448,7 +496,7 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .custom-alert-box h3{text-align:center;font-size:1.15rem;font-weight:700;color:var(--text);padding:0 25px;margin-bottom:8px}
 .custom-alert-box p{text-align:center;font-size:.88rem;color:var(--text-muted);padding:0 25px 20px;line-height:1.6}
 .alert-btns{display:flex;border-top:1px solid var(--border);overflow:hidden;border-radius:0 0 20px 20px}
-.alert-btns button{flex:1;padding:15px;border:none;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
+.alert-btns button{flex:1;padding:15px;border:none;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif}
 .alert-btn-cancel{background:#f5f5f5;color:var(--text-muted)}
 .alert-btn-cancel:hover{background:#ebebeb}
 .alert-btn-confirm{color:#fff}
@@ -633,10 +681,10 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
     <div class="contact-grid">
       <div class="contact-info">
         <h3>সরাসরি যোগাযোগ</h3>
-        <div class="contact-item"><div class="contact-icon"><i class="fas fa-phone"></i></div><div><strong>ফোন</strong><br><span style="color:var(--text-muted)">+৮৮০ ১৭১১-১২৩৪৫৬</span></div></div>
+        <div class="contact-item"><div class="contact-icon"><i class="fas fa-phone"></i></div><div><strong>ফোন</strong><br><span style="color:var(--text-muted)">+৮৮০ ১৩০৫-১৪৪৩৫৬</span></div></div>
         <div class="contact-item"><div class="contact-icon"><i class="fas fa-envelope"></i></div><div><strong>ইমেইল</strong><br><span style="color:var(--text-muted)">info@amerhatabazar.com</span></div></div>
         <div class="contact-item"><div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div><div><strong>ঠিকানা</strong><br><span style="color:var(--text-muted)">রাজশাহী, বাংলাদেশ</span></div></div>
-        <div class="contact-item"><div class="contact-icon"><i class="fab fa-whatsapp"></i></div><div><strong>WhatsApp</strong><br><span style="color:var(--text-muted)">+৮৮০ ১৭১১-১২৩৪৫৬</span></div></div>
+        <div class="contact-item"><div class="contact-icon"><i class="fab fa-whatsapp"></i></div><div><strong>WhatsApp</strong><br><span style="color:var(--text-muted)">+৮৮০ ১৩০৫-১৪৪৩৫৬</span></div></div>
       </div>
       <div class="contact-form">
         <h3>বার্তা পাঠান</h3>
@@ -674,9 +722,9 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
     <div>
       <h4>সাহায্য</h4>
       <ul class="footer-links">
-        <li><a href="#">📦 অর্ডার ট্র্যাক করুন</a></li>
-        <li><a href="#">↩️ রিটার্ন পলিসি</a></li>
-        <li><a href="#">❓ প্রশ্নোত্তর</a></li>
+        <li><a href="#" onclick="openTrackOrder();return false">📦 অর্ডার ট্র্যাক করুন</a></li>
+        <li><a href="#" onclick="openReturnPolicy();return false">↩️ রিটার্ন পলিসি</a></li>
+        <li><a href="#" onclick="openFAQ();return false">❓ প্রশ্নোত্তর</a></li>
         <li><a href="#" onclick="openAdminLogin()">⚙️ অ্যাডমিন</a></li>
       </ul>
     </div>
@@ -699,6 +747,158 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
     <p style="font-size:.78rem;color:rgba(255,255,255,.3)">Designed with ❤️ in Bangladesh</p>
   </div>
 </footer>
+
+<!-- FAQ MODAL -->
+<div class="modal-overlay" id="faq-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header" style="background:linear-gradient(135deg,#1b4332,#2d6a4f);border-radius:14px 14px 0 0;padding:18px 24px">
+      <h3 style="color:#fff;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif"><i class="fas fa-question-circle" style="margin-right:8px"></i>প্রশ্নোত্তর (FAQ)</h3>
+      <button class="modal-close" style="color:#fff" onclick="closeModal('faq-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:0;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">
+      <div style="background:#d8f3dc;padding:14px 22px;border-bottom:1px solid #e0d8c8;display:flex;align-items:center;gap:12px">
+        <span style="font-size:1.8rem">🥭</span>
+        <div style="font-size:.88rem;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">আমাদের সবচেয়ে বেশি জিজ্ঞাসিত প্রশ্নের উত্তর নিচে দেওয়া হলো। আরও সাহায্যের জন্য আমাদের সাথে যোগাযোগ করুন।</div>
+      </div>
+      <div style="max-height:68vh;overflow-y:auto;padding:18px 22px" id="faq-list"></div>
+      <div style="padding:14px 22px;border-top:1px solid #e0d8c8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div style="font-size:.82rem;color:#888;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">আরও প্রশ্ন থাকলে: <strong>+880 1305-144356</strong></div>
+        <button onclick="closeModal('faq-modal')" style="background:#2d6a4f;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">বন্ধ করুন</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RETURN POLICY MODAL -->
+<div class="modal-overlay" id="return-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header" style="background:linear-gradient(135deg,#1b4332,#2d6a4f);border-radius:14px 14px 0 0;padding:18px 24px">
+      <h3 style="color:#fff;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif"><i class="fas fa-undo" style="margin-right:8px"></i>রিটার্ন পলিসি</h3>
+      <button class="modal-close" style="color:#fff" onclick="closeModal('return-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:0;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">
+
+      <!-- Top strip -->
+      <div style="background:#d8f3dc;padding:16px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid #e0d8c8">
+        <span style="font-size:2.2rem">🥭</span>
+        <div>
+          <div style="font-weight:700;color:#1b4332;font-size:.98rem;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">আমের হাট বাজার — রিটার্ন ও রিফান্ড নীতি</div>
+          <div style="font-size:.8rem;color:#555;margin-top:3px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">সর্বশেষ আপডেট: জানুয়ারি ২০২৪</div>
+        </div>
+      </div>
+
+      <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;max-height:65vh;overflow-y:auto">
+
+        <!-- Warning -->
+        <div style="background:#fff3cd;border:1.5px solid #ffc107;border-radius:8px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+          <span style="font-size:1.4rem;flex-shrink:0">⚠️</span>
+          <div>
+            <div style="font-weight:700;color:#856404;font-size:.9rem;margin-bottom:5px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">গুরুত্বপূর্ণ বিজ্ঞপ্তি</div>
+            <div style="font-size:.84rem;color:#856404;line-height:1.7;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">আম একটি পচনশীল পণ্য। ডেলিভারির পর <strong>২৪ ঘণ্টার মধ্যে</strong> অভিযোগ জানাতে হবে। এরপর কোনো রিটার্ন গ্রহণযোগ্য হবে না।</div>
+          </div>
+        </div>
+
+        <!-- Two columns -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <!-- Returnable -->
+          <div style="background:#d4edda;border:1.5px solid #28a745;border-radius:8px;padding:14px">
+            <div style="font-weight:700;color:#155724;font-size:.88rem;margin-bottom:10px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">✅ রিটার্নযোগ্য</div>
+            <ul style="padding-left:16px;display:flex;flex-direction:column;gap:6px">
+              <li style="font-size:.82rem;color:#155724;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">অর্ডারের সাথে পণ্য মিলছে না</li>
+              <li style="font-size:.82rem;color:#155724;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">পচা বা ক্ষতিগ্রস্ত পণ্য</li>
+              <li style="font-size:.82rem;color:#155724;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">কম পরিমাণ পণ্য পাওয়া</li>
+              <li style="font-size:.82rem;color:#155724;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">প্যাকেজিং সম্পূর্ণ ক্ষতিগ্রস্ত</li>
+            </ul>
+          </div>
+          <!-- Not returnable -->
+          <div style="background:#f8d7da;border:1.5px solid #dc3545;border-radius:8px;padding:14px">
+            <div style="font-weight:700;color:#721c24;font-size:.88rem;margin-bottom:10px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">❌ রিটার্ন হবে না</div>
+            <ul style="padding-left:16px;display:flex;flex-direction:column;gap:6px">
+              <li style="font-size:.82rem;color:#721c24;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">২৪ ঘণ্টার পরে অভিযোগ</li>
+              <li style="font-size:.82rem;color:#721c24;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">স্বাভাবিক রং পরিবর্তন</li>
+              <li style="font-size:.82rem;color:#721c24;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">গ্রাহকের অব্যবস্থাপনায় ক্ষতি</li>
+              <li style="font-size:.82rem;color:#721c24;line-height:1.6;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">আংশিক ব্যবহারকৃত পণ্য</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Refund Process -->
+        <div style="background:#f9f5e7;border-radius:8px;padding:16px">
+          <div style="font-weight:700;color:#1b4332;font-size:.9rem;margin-bottom:14px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">💰 রিফান্ড প্রক্রিয়া</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:#2d6a4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">১</div>
+              <div><div style="font-weight:600;font-size:.86rem;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">ছবি তুলুন</div><div style="font-size:.8rem;color:#666;margin-top:2px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">ক্ষতিগ্রস্ত বা ভুল পণ্যের ছবি তুলুন</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:#2d6a4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">২</div>
+              <div><div style="font-weight:600;font-size:.86rem;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">যোগাযোগ করুন</div><div style="font-size:.8rem;color:#666;margin-top:2px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">WhatsApp বা ফোনে জানান (+880 1305-144356)</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:#2d6a4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">৩</div>
+              <div><div style="font-weight:600;font-size:.86rem;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">যাচাই</div><div style="font-size:.8rem;color:#666;margin-top:2px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">আমাদের টিম ২-৪ ঘণ্টার মধ্যে যাচাই করবে</div></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:#2d6a4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">৪</div>
+              <div><div style="font-weight:600;font-size:.86rem;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">রিফান্ড</div><div style="font-size:.8rem;color:#666;margin-top:2px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">অনুমোদিত হলে ৩-৫ কার্যদিবসের মধ্যে রিফান্ড</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Refund Methods -->
+        <div style="background:#fff;border:1.5px solid #e0d8c8;border-radius:8px;padding:14px">
+          <div style="font-weight:700;color:#1b4332;font-size:.9rem;margin-bottom:12px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">📱 রিফান্ড পদ্ধতি</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:#f9f5e7;border-radius:6px;padding:10px;display:flex;gap:8px;align-items:center">
+              <span style="font-size:1.2rem">💵</span>
+              <div><div style="font-size:.82rem;font-weight:700;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">ক্যাশ অন ডেলিভারি</div><div style="font-size:.72rem;color:#666;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">পরবর্তী অর্ডারে ছাড়</div></div>
+            </div>
+            <div style="background:#f9f5e7;border-radius:6px;padding:10px;display:flex;gap:8px;align-items:center">
+              <span style="font-size:1.2rem">📱</span>
+              <div><div style="font-size:.82rem;font-weight:700;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">বিকাশ / নগদ</div><div style="font-size:.72rem;color:#666;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">মূল নম্বরে ফেরত</div></div>
+            </div>
+            <div style="background:#f9f5e7;border-radius:6px;padding:10px;display:flex;gap:8px;align-items:center">
+              <span style="font-size:1.2rem">🏦</span>
+              <div><div style="font-size:.82rem;font-weight:700;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">ব্যাংক ট্রান্সফার</div><div style="font-size:.72rem;color:#666;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">একাউন্টে ট্রান্সফার</div></div>
+            </div>
+            <div style="background:#f9f5e7;border-radius:6px;padding:10px;display:flex;gap:8px;align-items:center">
+              <span style="font-size:1.2rem">🎁</span>
+              <div><div style="font-size:.82rem;font-weight:700;color:#1b4332;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">স্টোর ক্রেডিট</div><div style="font-size:.72rem;color:#666;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">পরবর্তী কেনাকাটায়</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div style="background:linear-gradient(135deg,#1b4332,#2d6a4f);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#fff;margin-bottom:4px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">📞 সাহায্যের জন্য যোগাযোগ করুন</div>
+            <div style="font-size:.8rem;color:rgba(255,255,255,.75);font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">শনি–বৃহস্পতি: সকাল ৯টা – রাত ৯টা</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <a href="tel:+8801305144356" style="background:#f4a40a;color:#1b4332;padding:8px 14px;border-radius:6px;font-size:.84rem;font-weight:700;text-decoration:none;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">📞 ফোন</a>
+            <a href="https://wa.me/8801305144356" target="_blank" style="background:#25d366;color:#fff;padding:8px 14px;border-radius:6px;font-size:.84rem;font-weight:700;text-decoration:none;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">💬 WhatsApp</a>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="padding:14px 22px;border-top:1px solid #e0d8c8;text-align:right">
+        <button onclick="closeModal('return-modal')" style="background:#2d6a4f;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:.92rem;font-weight:600;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">বন্ধ করুন</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRACK ORDER MODAL -->
+<div class="modal-overlay" id="track-modal">
+  <div class="modal modal-md">
+    <div class="modal-header" style="background:linear-gradient(135deg,#1b4332,#2d6a4f);border-radius:var(--radius) var(--radius) 0 0">
+      <h3 style="color:#fff"><i class="fas fa-map-marker-alt"></i> অর্ডার ট্র্যাক করুন</h3>
+      <button class="modal-close" style="color:#fff" onclick="closeModal('track-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="track-body"></div>
+  </div>
+</div>
 
 <!-- CART OVERLAY -->
 <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
@@ -1023,7 +1223,12 @@ function changeQty(pid,delta){
   pid=Number(pid);
   let cart=getMyCart();
   const item=cart.find(i=>Number(i.id)===pid);
-  if(item){item.qty=Math.max(1,item.qty+delta);}
+  if(item){
+    const prod=getProducts().find(p=>Number(p.id)===pid);
+    const maxQty=prod?prod.stock:99;
+    item.qty=Math.max(1,Math.min(maxQty,item.qty+delta));
+    if(delta>0&&item.qty>=maxQty) showToast('সর্বোচ্চ স্টক যোগ হয়েছে','warning');
+  }
   saveMyCart(cart);renderCart();updateCartCount();
 }
 function updateCartCount(){
@@ -1031,7 +1236,7 @@ function updateCartCount(){
   const total=cart.reduce((s,i)=>s+(i.qty||1),0);
   document.getElementById('cart-count').textContent=total;
 }
-function calcCartTotals(cart){
+function calcCartTotals(cart,district){
   if(!Array.isArray(cart)) cart=[];
   const delivery=getDelivery();
   const subtotal=cart.reduce((s,i)=>s+(Number(i.price||0)*(Number(i.qty)||1)),0);
@@ -1041,9 +1246,13 @@ function calcCartTotals(cart){
     else discount=Number(appliedCoupon.value)||0;
   }
   const afterDiscount=Math.max(0,subtotal-discount);
-  const delCharge=afterDiscount>=delivery.freeLimit?0:delivery.outside;
+  // District-based delivery charge
+  const insideDistricts=['ঢাকা','Dhaka'];
+  const isInside=district&&insideDistricts.some(d=>district.toLowerCase().includes(d.toLowerCase()));
+  const baseCharge=isInside?delivery.inside:delivery.outside;
+  const delCharge=afterDiscount>=delivery.freeLimit?0:baseCharge;
   const total=afterDiscount+delCharge;
-  return{subtotal,discount,delCharge,total,freeLimit:delivery.freeLimit};
+  return{subtotal,discount,delCharge,total,freeLimit:delivery.freeLimit,isInside};
 }
 function renderCart(){
   const list=document.getElementById('cart-items-list');
@@ -1056,20 +1265,28 @@ function renderCart(){
     return;
   }
   if(footer) footer.style.display='block';
-  list.innerHTML=cart.map(i=>'<div class="cart-item">'+
-    '<div class="cart-item-img">'+(i.image?'<img src="'+i.image+'" alt="'+i.name+'">':"🥭")+'</div>'+
-    '<div class="cart-item-info">'+
-      '<div class="cart-item-name">'+i.name+'</div>'+
-      '<div class="cart-item-price">৳'+i.price+'/কেজি</div>'+
-      '<div class="qty-controls">'+
-        '<button class="qty-btn" onclick="changeQty('+i.id+',-1)">−</button>'+
-        '<span class="qty-num">'+(i.qty||1)+'</span>'+
-        '<button class="qty-btn" onclick="changeQty('+i.id+',1)">+</button>'+
-        '<span style="font-size:.82rem;color:var(--text-muted);margin-left:4px">= ৳'+(i.price*(i.qty||1))+'</span>'+
+  list.innerHTML=cart.map(i=>{
+    const prod=getProducts().find(p=>Number(p.id)===Number(i.id));
+    const stockLeft=prod?prod.stock:99;
+    const lowStock=stockLeft>0&&stockLeft<=5;
+    const outOfStock=stockLeft<=0;
+    return '<div class="cart-item">'+
+      '<div class="cart-item-img">'+(i.image?'<img src="'+i.image+'" alt="'+i.name+'">':"🥭")+'</div>'+
+      '<div class="cart-item-info">'+
+        '<div class="cart-item-name">'+i.name+'</div>'+
+        '<div class="cart-item-price">৳'+i.price+'/কেজি</div>'+
+        (outOfStock?'<div style="font-size:.75rem;color:#e74c3c;font-weight:600">❌ স্টক শেষ</div>':
+         lowStock?'<div style="font-size:.75rem;color:#f4a40a;font-weight:600">⚠️ মাত্র '+stockLeft+' কেজি বাকি</div>':'')+
+        '<div class="qty-controls">'+
+          '<button class="qty-btn" onclick="changeQty('+i.id+',-1)">−</button>'+
+          '<span class="qty-num">'+(i.qty||1)+'</span>'+
+          '<button class="qty-btn" onclick="changeQty('+i.id+',1)"'+(outOfStock||i.qty>=stockLeft?' disabled style="opacity:.4;cursor:not-allowed"':'')+'>+</button>'+
+          '<span style="font-size:.82rem;color:var(--text-muted);margin-left:4px">= ৳'+(i.price*(i.qty||1))+'</span>'+
+        '</div>'+
       '</div>'+
-    '</div>'+
-    '<button class="cart-remove" onclick="removeFromCart('+i.id+')"><i class="fas fa-trash"></i></button>'+
-  '</div>').join('');
+      '<button class="cart-remove" onclick="removeFromCart('+i.id+')"><i class="fas fa-trash"></i></button>'+
+    '</div>';
+  }).join('');
   const t=calcCartTotals(cart);
   const totalsEl=document.getElementById('cart-totals');
   if(totalsEl) totalsEl.innerHTML=
@@ -1168,13 +1385,13 @@ function startCheckout(){
 function renderCheckoutForm(){
   const u=getCurrentUser();
   const cart=getMyCart();
-  const t=calcCartTotals(cart);
+  const t=calcCartTotals(cart,'ঢাকা'); // default Dhaka, updates on district change
   document.getElementById('checkout-body').innerHTML=`
-    <div style="margin-bottom:20px">
-      <h4 style="color:var(--green-dark);margin-bottom:12px;font-size:1rem">📦 অর্ডার সারসংক্ষেপ</h4>
-      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px;margin-bottom:15px;font-size:.85rem">
-        ${cart.map(i=>`<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span>${i.name} × ${i.qty}</span><span>৳${i.price*(i.qty||1)}</span></div>`).join('')}
-        <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:8px">
+    <div style="margin-bottom:16px">
+      <h4 style="color:var(--green-dark);margin-bottom:10px;font-size:1rem">📦 অর্ডার সারসংক্ষেপ</h4>
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px;font-size:.85rem">
+        ${cart.map(i=>`<div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>${i.name} × ${i.qty}</span><span>৳${i.price*(i.qty||1)}</span></div>`).join('')}
+        <div id="co-summary-totals" style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">
           ${t.discount>0?`<div style="display:flex;justify-content:space-between;color:#e74c3c;margin-bottom:3px"><span>ছাড়</span><span>−৳${t.discount}</span></div>`:''}
           <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>ডেলিভারি</span><span>${t.delCharge===0?'ফ্রি':'৳'+t.delCharge}</span></div>
           <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;color:var(--orange)"><span>মোট</span><span>৳${t.total}</span></div>
@@ -1184,11 +1401,12 @@ function renderCheckoutForm(){
     <div class="form-group"><label>পূর্ণ নাম *</label><input class="form-control" id="co-name" value="${u.name}" placeholder="আপনার নাম"></div>
     <div class="form-row">
       <div class="form-group"><label>ফোন নম্বর *</label><input class="form-control" id="co-phone" value="${u.phone||''}" placeholder="০১XXXXXXXXX"></div>
-      <div class="form-group"><label>জেলা *</label><select class="form-control" id="co-district">
-        <option>ঢাকা</option><option>রাজশাহী</option><option>চট্টগ্রাম</option><option>খুলনা</option><option>সিলেট</option><option>বরিশাল</option><option>রংপুর</option><option>ময়মনসিংহ</option>
+      <div class="form-group"><label>জেলা *</label><select class="form-control" id="co-district" onchange="updateCheckoutDelivery()">
+        <option>ঢাকা</option><option>রাজশাহী</option><option>চট্টগ্রাম</option><option>খুলনা</option><option>সিলেট</option><option>বরিশাল</option><option>রংপুর</option><option>ময়মনসিংহ</option><option>কুমিল্লা</option><option>নারায়ণগঞ্জ</option><option>গাজীপুর</option><option>টাঙ্গাইল</option><option>ফরিদপুর</option><option>যশোর</option><option>বগুড়া</option><option>দিনাজপুর</option>
       </select></div>
     </div>
     <div class="form-group"><label>সম্পূর্ণ ঠিকানা *</label><textarea class="form-control" id="co-address" rows="2" placeholder="গ্রাম/রোড, থানা, জেলা"></textarea></div>
+    <div id="co-delivery-preview" style="background:var(--green-pale);border-radius:6px;padding:8px 12px;font-size:.85rem;color:var(--green-dark);margin-bottom:10px"></div>
     <div class="form-group">
       <label style="margin-bottom:10px;display:block">পেমেন্ট পদ্ধতি *</label>
       <div class="payment-options">
@@ -1242,7 +1460,7 @@ function placeOrder(isBuyNow){
     items=getMyCart();
     if(!items.length){showToast('কার্ট খালি','warning');return;}
   }
-  const t=calcCartTotals(items);
+  const t=calcCartTotals(items, district);
   const payNum=document.getElementById('pay-number')?.value||'';
   const order={
     id:'AMB-'+Date.now(),
@@ -1254,6 +1472,17 @@ function placeOrder(isBuyNow){
     status:'pending',createdAt:Date.now()
   };
   const orders=getOrders();orders.push(order);saveOrders(orders);
+  // ── Deduct stock for each ordered item ──
+  const products=getProducts();
+  let stockChanged=false;
+  items.forEach(item=>{
+    const prod=products.find(p=>Number(p.id)===Number(item.id));
+    if(prod){
+      prod.stock=Math.max(0,prod.stock-(Number(item.qty)||1));
+      stockChanged=true;
+    }
+  });
+  if(stockChanged){saveProducts(products);renderProducts();}
   if(appliedCoupon){
     const coupons=getCoupons();
     const c=coupons.find(x=>x.id===appliedCoupon.id);
@@ -1279,27 +1508,27 @@ function showOrderSuccess(order){
   <div style="background:#fff;border-radius:16px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUp .3s ease;overflow:hidden">
     <div style="background:linear-gradient(135deg,#1b4332,#2d6a4f);padding:20px;text-align:center">
       <div style="font-size:3.5rem">🎉</div>
-      <h3 style="color:#fff;font-size:1.15rem;font-weight:700;margin:8px 0 4px;font-family:Hind Siliguri,sans-serif">অর্ডার সফল হয়েছে!</h3>
-      <p style="color:rgba(255,255,255,.7);font-size:.82rem;font-family:Hind Siliguri,sans-serif">আপনার অর্ডার গ্রহণ করা হয়েছে</p>
+      <h3 style="color:#fff;font-size:1.15rem;font-weight:700;margin:8px 0 4px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">অর্ডার সফল হয়েছে!</h3>
+      <p style="color:rgba(255,255,255,.7);font-size:.82rem;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">আপনার অর্ডার গ্রহণ করা হয়েছে</p>
     </div>
     <div style="padding:20px 24px">
       <div style="text-align:center;margin-bottom:14px">
-        <p style="color:#666;font-size:.82rem;margin-bottom:5px;font-family:Hind Siliguri,sans-serif">অর্ডার আইডি</p>
+        <p style="color:#666;font-size:.82rem;margin-bottom:5px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">অর্ডার আইডি</p>
         <div style="display:inline-block;background:#d8f3dc;color:#2d6a4f;font-weight:700;padding:6px 18px;border-radius:20px;font-size:.9rem;letter-spacing:.5px">${order.id}</div>
       </div>
       <div style="background:#f9f5e7;border-radius:8px;padding:12px;margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;font-family:Hind Siliguri,sans-serif">
+        <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">
           <span style="color:#666">পেমেন্ট পদ্ধতি</span>
           <span style="font-weight:600">${order.payment==='cod'?'💵 ক্যাশ অন ডেলিভারি':order.payment==='bkash'?'📱 বিকাশ':order.payment==='nagad'?'📱 নগদ':'🏦 ব্যাংক'}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:.9rem;font-family:Hind Siliguri,sans-serif;border-top:1px solid #e0d8c8;padding-top:7px;margin-top:5px">
+        <div style="display:flex;justify-content:space-between;font-size:.9rem;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;border-top:1px solid #e0d8c8;padding-top:7px;margin-top:5px">
           <span style="color:#666">সর্বমোট</span>
           <span style="font-weight:700;color:#e76f00;font-size:1rem">৳${order.total}</span>
         </div>
       </div>
-      <p style="color:#888;font-size:.8rem;text-align:center;margin-bottom:14px;font-family:Hind Siliguri,sans-serif">শীঘ্রই আপনার সাথে যোগাযোগ করা হবে</p>
-      <button onclick="generateInvoice('${order.id}')" style="background:#e76f00;color:#fff;border:none;padding:11px;border-radius:8px;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:8px;width:100%;font-family:Hind Siliguri,sans-serif"><i class="fas fa-file-pdf"></i> Invoice PDF ডাউনলোড</button>
-      <button onclick="document.getElementById('order-success-modal').remove()" style="background:#f0f0f0;color:#333;border:none;padding:11px;border-radius:8px;font-size:.92rem;cursor:pointer;width:100%;font-family:Hind Siliguri,sans-serif">বন্ধ করুন</button>
+      <p style="color:#888;font-size:.8rem;text-align:center;margin-bottom:14px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">শীঘ্রই আপনার সাথে যোগাযোগ করা হবে</p>
+      <button onclick="generateInvoice('${order.id}')" style="background:#e76f00;color:#fff;border:none;padding:11px;border-radius:8px;font-size:.92rem;font-weight:700;cursor:pointer;margin-bottom:8px;width:100%;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif"><i class="fas fa-file-pdf"></i> Invoice PDF ডাউনলোড</button>
+      <button onclick="document.getElementById('order-success-modal').remove()" style="background:#f0f0f0;color:#333;border:none;padding:11px;border-radius:8px;font-size:.92rem;cursor:pointer;width:100%;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">বন্ধ করুন</button>
     </div>
   </div>`;
   sm.addEventListener('click',function(e){if(e.target===sm) sm.remove();});
@@ -1324,7 +1553,7 @@ function buyNow(pid){
 }
 function renderBuyNowModal(p,u){
   const fp=getDiscountedPrice(p);
-  const t=calcCartTotals([{price:fp,qty:buyNowQty}]);
+  const t=calcCartTotals([{price:fp,qty:buyNowQty}],'ঢাকা');
   document.getElementById('buynow-body').innerHTML=`
     <div style="background:linear-gradient(135deg,var(--green-pale),#b7e4c7);border-radius:0;padding:15px 20px;display:flex;gap:14px;align-items:center">
       <div style="width:65px;height:65px;border-radius:10px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:2.2rem;box-shadow:var(--shadow)">
@@ -1357,8 +1586,8 @@ function renderBuyNowModal(p,u){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
         <div class="form-group"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">ফোন *</label><input class="form-control" id="bn-phone" value="${u.phone||''}"></div>
         <div class="form-group"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">জেলা</label>
-          <select class="form-control" id="bn-district">
-            ${['ঢাকা','রাজশাহী','চট্টগ্রাম','খুলনা','সিলেট','বরিশাল','রংপুর','ময়মনসিংহ'].map(d=>`<option>${d}</option>`).join('')}
+          <select class="form-control" id="bn-district" onchange="changeBuyNowQty(0)">
+            ${['ঢাকা','রাজশাহী','চট্টগ্রাম','খুলনা','সিলেট','বরিশাল','রংপুর','ময়মনসিংহ','কুমিল্লা','নারায়ণগঞ্জ','গাজীপুর','টাঙ্গাইল','ফরিদপুর','যশোর','বগুড়া','দিনাজপুর'].map(d=>`<option>${d}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -1384,11 +1613,36 @@ function renderBuyNowModal(p,u){
 function changeBuyNowQty(delta){
   if(!buyNowProduct) return;
   buyNowQty=Math.max(1,Math.min(buyNowProduct.stock||99,buyNowQty+delta));
-  document.getElementById('bn-qty-display').textContent=buyNowQty;
-  const t=calcCartTotals([{price:buyNowProduct.price,qty:buyNowQty}]);
-  document.getElementById('bn-total-preview').textContent='৳'+(buyNowProduct.price*buyNowQty);
-  document.getElementById('bn-del-preview').textContent=t.delCharge===0?'ফ্রি':'৳'+t.delCharge;
-  document.getElementById('bn-grand-total').textContent='৳'+t.total;
+  const district=document.getElementById('bn-district')?.value||'';
+  const t=calcCartTotals([{price:buyNowProduct.price,qty:buyNowQty}],district);
+  const qd=document.getElementById('bn-qty-display');
+  const tp=document.getElementById('bn-total-preview');
+  const dp=document.getElementById('bn-del-preview');
+  const gt=document.getElementById('bn-grand-total');
+  if(qd) qd.textContent=buyNowQty;
+  if(tp) tp.textContent='৳'+(buyNowProduct.price*buyNowQty);
+  if(dp) dp.textContent=(t.delCharge===0?'ফ্রি ডেলিভারি 🎉':(t.isInside?'ঢাকার ভেতরে':'ঢাকার বাইরে')+' — ৳'+t.delCharge);
+  if(gt) gt.textContent='৳'+t.total;
+}
+
+function updateCheckoutDelivery(){
+  const district=document.getElementById('co-district')?.value||'';
+  const cart=getMyCart();
+  const t=calcCartTotals(cart,district);
+  const prev=document.getElementById('co-delivery-preview');
+  if(prev){
+    const d=getDelivery();
+    prev.innerHTML='🚚 <strong>'+(t.isInside?'ঢাকার ভেতরে':'ঢাকার বাইরে')+'</strong> ডেলিভারি চার্জ: <strong style="color:var(--orange)">'+(t.delCharge===0?'ফ্রি 🎉':'৳'+t.delCharge)+'</strong>'+(t.delCharge===0?'':' &nbsp;|&nbsp; ফ্রি ডেলিভারি পেতে ৳'+d.freeLimit+' এর উপরে অর্ডার করুন');
+  }
+  // Update summary totals in checkout
+  const sumEl=document.getElementById('co-summary-totals');
+  if(sumEl){
+    sumEl.innerHTML=
+      '<div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:3px"><span>সাবটোটাল</span><span>৳'+t.subtotal+'</span></div>'+
+      (t.discount>0?'<div style="display:flex;justify-content:space-between;font-size:.85rem;color:#e74c3c;margin-bottom:3px"><span>ছাড়</span><span>−৳'+t.discount+'</span></div>':'')+
+      '<div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:5px"><span>ডেলিভারি</span><span>'+(t.delCharge===0?'ফ্রি':'৳'+t.delCharge)+'</span></div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:1rem;font-weight:700;color:var(--orange);border-top:1px solid var(--border);padding-top:7px"><span>মোট</span><span>৳'+t.total+'</span></div>';
+  }
 }
 
 // ============================================================
@@ -1573,147 +1827,419 @@ function generateInvoice(orderId){
   if(!window.jspdf){showToast('PDF লাইব্রেরি লোড হয়নি','error');return;}
   const {jsPDF}=window.jspdf;
 
-  // ── Helper: transliterate Bengali → Latin so jsPDF default font doesn't break ──
-  const bnMap={'ক':'k','খ':'kh','গ':'g','ঘ':'gh','ঙ':'ng','চ':'ch','ছ':'chh','জ':'j','ঝ':'jh','ট':'t','ঠ':'th','ড':'d','ঢ':'dh','ণ':'n','ত':'t','থ':'th','দ':'d','ধ':'dh','ন':'n','প':'p','ফ':'ph','ব':'b','ভ':'bh','ম':'m','য':'y','র':'r','ল':'l','শ':'sh','ষ':'sh','স':'s','হ':'h','ড়':'r','ঢ়':'rh','য়':'y','ৎ':'t','ং':'ng','ঃ':'h','ঁ':'n','া':'a','ি':'i','ী':'i','ু':'u','ূ':'u','ে':'e','ৈ':'oi','ো':'o','ৌ':'ou','ৃ':'ri','অ':'o','আ':'a','ই':'i','ঈ':'i','উ':'u','ঊ':'u','এ':'e','ঐ':'oi','ও':'o','ঔ':'ou','ঋ':'ri','০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9','৳':'Tk '};
-  function safe(str){
-    if(!str) return '-';
-    return String(str).split('').map(c=>bnMap[c]!==undefined?bnMap[c]:(/[\u0980-\u09FF]/.test(c)?'':c)).join('').replace(/\s+/g,' ').trim()||'-';
+  // ── Bengali text → image helper (renders Bengali via canvas then embeds in PDF) ──
+  function bengaliImg(text,fontSize,color,maxWidthPx){
+    const canvas=document.createElement('canvas');
+    const scale=3; // hi-dpi
+    const fSize=fontSize*scale;
+    const ctx=canvas.getContext('2d');
+    ctx.font=`${fSize}px "Hind Siliguri","Noto Sans Bengali",sans-serif`;
+    const mw=maxWidthPx?maxWidthPx*scale:2000;
+    // Measure & wrap
+    const words=text.split(' ');
+    const lines=[];let line='';
+    for(const w of words){
+      const test=line?line+' '+w:w;
+      if(ctx.measureText(test).width>mw&&line){lines.push(line);line=w;}
+      else line=test;
+    }
+    if(line) lines.push(line);
+    const lh=fSize*1.4;
+    canvas.width=mw;
+    canvas.height=lh*lines.length+fSize*0.4;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.font=`${fSize}px "Hind Siliguri","Noto Sans Bengali",sans-serif`;
+    ctx.fillStyle=color||'#1a1a1a';
+    ctx.textBaseline='top';
+    lines.forEach((l,i)=>ctx.fillText(l,0,i*lh+fSize*0.1));
+    return{dataUrl:canvas.toDataURL('image/png'),w:canvas.width/scale,h:canvas.height/scale,lines:lines.length};
   }
-  function safeNum(n){return String(n||0);}
+  // Place Bengali text as image in PDF
+  function bText(text,x,y,fontSize,color,maxWidthMm){
+    if(!text||!text.trim()) return 0;
+    const pxPerMm=3.78*3;
+    const maxPx=maxWidthMm?maxWidthMm*pxPerMm:undefined;
+    const img=bengaliImg(String(text),fontSize||9,color||'#1a1a1a',maxPx);
+    const scaleF=0.33;
+    const wMm=img.w*scaleF;
+    const hMm=img.h*scaleF;
+    doc.addImage(img.dataUrl,'PNG',x,y-hMm*0.75,wMm,hMm);
+    return hMm;
+  }
+
+  // Latin-safe numbers
+  const num=n=>String(Number(n)||0);
+  // Strip Bengali chars for fields that must be Latin
+  const latinOnly=s=>String(s||'').replace(/[\u0980-\u09FF]/g,'').trim()||'-';
 
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,M=15;
+  const W=210, ML=14, MR=14, usable=W-ML-MR;
+
   const d=new Date(order.createdAt);
   const dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   const timeStr=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  const payMap={'cod':'Cash on Delivery','bkash':'bKash Mobile Banking','nagad':'Nagad Mobile Banking','bank':'Bank Transfer'};
+  const payMap={'cod':'Cash on Delivery','bkash':'bKash','nagad':'Nagad','bank':'Bank Transfer'};
   const statusMap={'pending':'Pending','processing':'Processing','shipped':'Shipped','delivered':'Delivered','cancelled':'Cancelled'};
-  const colW=(W-2*M-5)/2, col2=M+colW+5;
 
-  // ── HEADER ──
-  doc.setFillColor(27,67,50);doc.rect(0,0,W,40,'F');
-  doc.setFillColor(244,164,10);doc.circle(M+9,20,9,'F');
-  doc.setTextColor(27,67,50);doc.setFontSize(12);doc.setFont('helvetica','bold');
-  doc.text('AHB',M+4,24);
-  doc.setTextColor(244,164,10);doc.setFontSize(20);doc.setFont('helvetica','bold');
-  doc.text('Amer Hat Bazar',M+22,17);
-  doc.setTextColor(200,235,210);doc.setFontSize(8);doc.setFont('helvetica','normal');
-  doc.text('amerhatabazar.com  |  +880 1711-123456  |  info@amerhatabazar.com',M+22,24);
-  doc.text('Rajshahi, Bangladesh  -  Fresh Mangoes, Delivered to Your Door',M+22,30);
-  doc.setFillColor(244,164,10);doc.roundedRect(W-44,9,30,11,2,2,'F');
-  doc.setTextColor(27,67,50);doc.setFontSize(10);doc.setFont('helvetica','bold');
-  doc.text('INVOICE',W-29,17,{align:'center'});
+  // ─── HEADER ────────────────────────────────────────────────
+  doc.setFillColor(27,67,50); doc.rect(0,0,W,36,'F');
+  doc.setFillColor(244,164,10); doc.circle(ML+8,18,8,'F');
+  doc.setTextColor(27,67,50); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('AHB',ML+4.5,21.5);
+  doc.setTextColor(244,164,10); doc.setFont('helvetica','bold'); doc.setFontSize(17);
+  doc.text('Amer Hat Bazar',ML+20,14);
+  doc.setTextColor(190,230,205); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.text('amerhatabazar.com  |  +880 1305-144356  |  info@amerhatabazar.com',ML+20,21);
+  doc.text('Rajshahi, Bangladesh  -  Fresh Mangoes, Delivered to Your Door',ML+20,27);
+  doc.setFillColor(244,164,10); doc.roundedRect(W-38,8,28,10,2,2,'F');
+  doc.setTextColor(27,67,50); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('INVOICE',W-24,15,{align:'center'});
 
-  // ── META BAR ──
-  let y=48;
-  doc.setFillColor(245,242,235);doc.roundedRect(M,y-4,W-2*M,13,2,2,'F');
-  const metaItems=[['Invoice No:',order.id,M+3],['Date:',dateStr,M+90],['Time:',timeStr,M+128],['Status:',statusMap[order.status]||order.status,M+155]];
-  metaItems.forEach(([label,val,x])=>{
-    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.setTextColor(27,67,50);doc.text(label,x,y+4);
-    doc.setFont('helvetica','normal');doc.setTextColor(40,40,40);
-    doc.text(String(val).slice(0,20),x+(label.length*1.9),y+4);
-  });
+  // ─── META ROW ──────────────────────────────────────────────
+  let y=42;
+  doc.setFillColor(245,242,234); doc.roundedRect(ML,y,usable,11,2,2,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(27,67,50);
+  doc.text('Invoice No:',ML+3,y+7);
+  doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
+  doc.text(String(order.id),ML+24,y+7);
+  doc.setFont('helvetica','bold'); doc.setTextColor(27,67,50);
+  doc.text('Date:',ML+90,y+7);
+  doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
+  doc.text(dateStr,ML+100,y+7);
+  doc.setFont('helvetica','bold'); doc.setTextColor(27,67,50);
+  doc.text('Status:',ML+138,y+7);
+  doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
+  doc.text(statusMap[order.status]||order.status,ML+152,y+7);
 
-  // ── CUSTOMER BOX ──
-  y+=18;
-  doc.setFillColor(27,67,50);doc.roundedRect(M,y,colW,7,1.5,1.5,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
-  doc.text('  CUSTOMER INFORMATION',M+2,y+4.8);
+  // ─── CUSTOMER BOX ──────────────────────────────────────────
+  y+=16;
+  const boxW=(usable-4)/2;
+  const box2X=ML+boxW+4;
+
+  doc.setFillColor(27,67,50); doc.roundedRect(ML,y,boxW,7,1.5,1.5,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text('CUSTOMER INFORMATION',ML+3,y+5);
   y+=8;
-  doc.setFillColor(250,248,242);doc.rect(M,y,colW,34,'F');
-  doc.setDrawColor(220,215,205);doc.rect(M,y,colW,34,'S');
-  [
-    ['Name', safe(order.userName)],
-    ['Phone', safe(order.userPhone)],
-    ['Email', (order.userEmail||'-').replace(/[\u0980-\u09FF]/g,'')],
-    ['District', safe(order.district)]
-  ].forEach(([lbl,val],i)=>{
-    doc.setFont('helvetica','bold');doc.setTextColor(90,90,90);doc.setFontSize(8);
-    doc.text(lbl+':',M+3,y+6+i*7.5);
-    doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
-    doc.text(String(val).slice(0,34),M+20,y+6+i*7.5);
+  doc.setFillColor(250,248,242); doc.rect(ML,y,boxW,36,'F');
+  doc.setDrawColor(215,210,200); doc.rect(ML,y,boxW,36,'S');
+  // Labels (Latin)
+  const custLabels=['Name','Phone','Email','District'];
+  const custVals=[order.userName, order.userPhone, latinOnly(order.userEmail), order.district||'-'];
+  custLabels.forEach((lbl,i)=>{
+    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7.5);
+    doc.text(lbl+':',ML+3,y+7+i*8);
+    // Value — use bText for Bengali content
+    bText(custVals[i],ML+18,y+7+i*8,7.5,'#1a1a1a',boxW-20);
   });
 
-  // ── DELIVERY BOX ──
-  doc.setFillColor(27,67,50);doc.roundedRect(col2,y-8,colW,7,1.5,1.5,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(8);doc.setFont('helvetica','bold');
-  doc.text('  DELIVERY & PAYMENT',col2+2,y-3.2);
-  doc.setFillColor(250,248,242);doc.rect(col2,y,colW,34,'F');
-  doc.setDrawColor(220,215,205);doc.rect(col2,y,colW,34,'S');
-  doc.setFont('helvetica','bold');doc.setTextColor(90,90,90);doc.setFontSize(8);
-  doc.text('Address:',col2+3,y+6);
-  doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
-  const addrSafe=safe(order.address);
-  const addrLines=doc.splitTextToSize(addrSafe,colW-26);
-  doc.text(addrLines.slice(0,2),col2+20,y+6);
-  doc.setFont('helvetica','bold');doc.setTextColor(90,90,90);
-  doc.text('Payment:',col2+3,y+21);
-  doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
-  doc.text(payMap[order.payment]||order.payment||'-',col2+20,y+21);
+  // ─── DELIVERY BOX ──────────────────────────────────────────
+  doc.setFillColor(27,67,50); doc.roundedRect(box2X,y-8,boxW,7,1.5,1.5,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text('DELIVERY & PAYMENT',box2X+3,y-3);
+  doc.setFillColor(250,248,242); doc.rect(box2X,y,boxW,36,'F');
+  doc.setDrawColor(215,210,200); doc.rect(box2X,y,boxW,36,'S');
+  doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7.5);
+  doc.text('Address:',box2X+3,y+7);
+  bText(order.address||'-',box2X+19,y+7,7,'#1a1a1a',boxW-22);
+  doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
+  doc.text('Payment:',box2X+3,y+21);
+  doc.setFont('helvetica','normal'); doc.setTextColor(25,25,25);
+  doc.text(payMap[order.payment]||order.payment||'-',box2X+19,y+21);
   if(order.coupon){
-    doc.setFont('helvetica','bold');doc.setTextColor(90,90,90);
-    doc.text('Coupon:',col2+3,y+29);
-    doc.setFont('helvetica','normal');doc.setTextColor(180,40,40);
-    doc.text(String(order.coupon),col2+20,y+29);
+    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
+    doc.text('Coupon:',box2X+3,y+29);
+    doc.setFont('helvetica','normal'); doc.setTextColor(180,40,40);
+    doc.text(String(order.coupon),box2X+19,y+29);
   }
 
-  // ── ITEMS TABLE ──
-  y+=40;
-  const rows=order.items.map((it,idx)=>[
-    idx+1,
-    safe(it.name),
-    safe(it.origin),
-    'Tk '+safeNum(it.price),
-    safeNum(it.qty||1)+' kg',
-    'Tk '+safeNum(it.price*(it.qty||1))
+  // ─── ITEMS TABLE ───────────────────────────────────────────
+  y+=41;
+  // Build table rows — Bengali product names as Latin using transliteration backup
+  const bnMap2={'ক':'k','খ':'kh','গ':'g','ঘ':'gh','চ':'ch','ছ':'chh','জ':'j','ট':'t','ড':'d','ত':'t','দ':'d','ন':'n','প':'p','ব':'b','ম':'m','য':'y','র':'r','ল':'l','শ':'sh','স':'s','হ':'h','া':'a','ি':'i','ু':'u','ে':'e','ো':'o','০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9','৳':'Tk '};
+  const safeText=s=>String(s||'-').split('').map(c=>bnMap2[c]!==undefined?bnMap2[c]:(/[\u0980-\u09FF]/.test(c)?'':c)).join('').replace(/\s+/g,' ').trim()||'-';
+
+  const rows=(order.items||[]).map((it,i)=>[
+    i+1, safeText(it.name), safeText(it.origin),
+    'Tk '+num(it.price), num(it.qty||1)+' kg',
+    'Tk '+num((it.price||0)*(it.qty||1))
   ]);
   doc.autoTable({
     head:[['#','Product Name','Origin','Unit Price','Qty','Amount']],
-    body:rows,startY:y,margin:{left:M,right:M},
-    headStyles:{fillColor:[27,67,50],textColor:255,fontStyle:'bold',fontSize:8.5,cellPadding:3.5},
-    bodyStyles:{fontSize:8.5,textColor:[35,35,35],cellPadding:3},
+    body:rows, startY:y,
+    margin:{left:ML,right:MR}, tableWidth:usable,
+    styles:{font:'helvetica',overflow:'linebreak'},
+    headStyles:{fillColor:[27,67,50],textColor:255,fontStyle:'bold',fontSize:8,cellPadding:3},
+    bodyStyles:{fontSize:8,textColor:[30,30,30],cellPadding:2.5},
     alternateRowStyles:{fillColor:[250,248,242]},
-    columnStyles:{
-      0:{cellWidth:8,halign:'center'},
-      1:{cellWidth:60},
-      2:{cellWidth:28},
-      3:{cellWidth:26,halign:'right'},
-      4:{cellWidth:18,halign:'center'},
-      5:{cellWidth:30,halign:'right'}
-    }
+    columnStyles:{0:{cellWidth:8,halign:'center'},1:{cellWidth:62},2:{cellWidth:28},3:{cellWidth:26,halign:'right'},4:{cellWidth:18,halign:'center'},5:{cellWidth:40,halign:'right'}}
+    // 8+62+28+26+18+40=182 ✓
   });
 
-  // ── TOTALS ──
+  // ─── TOTALS ────────────────────────────────────────────────
   y=doc.lastAutoTable.finalY+5;
-  const tR=W-M,tL=tR-78,rH=7;
-  const trow=(label,value,bgArr,valColor)=>{
-    doc.setFillColor(...bgArr);doc.rect(tL,y,78,rH,'F');
-    doc.setDrawColor(220,215,205);doc.rect(tL,y,78,rH,'S');
-    doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.setTextColor(70,70,70);
-    doc.text(label,tL+3,y+5);
-    doc.setFont('helvetica','bold');doc.setTextColor(...(valColor||[30,30,30]));
-    doc.text(value,tR-3,y+5,{align:'right'});
+  const tR=W-MR, tL=tR-80, rH=7;
+  const trow=(lbl,val,bg,vc)=>{
+    doc.setFillColor(...bg); doc.rect(tL,y,80,rH,'F');
+    doc.setDrawColor(215,210,200); doc.rect(tL,y,80,rH,'S');
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(70,70,70);
+    doc.text(lbl,tL+3,y+5);
+    doc.setFont('helvetica','bold'); doc.setTextColor(...(vc||[25,25,25]));
+    doc.text(val,tR-3,y+5,{align:'right'});
     y+=rH;
   };
-  trow('Subtotal:','Tk '+safeNum(order.subtotal),[248,246,240]);
-  if(order.discount>0) trow('Coupon Discount ('+String(order.coupon||'')+'):', '- Tk '+safeNum(order.discount),[255,245,245],[180,40,40]);
-  trow('Delivery Charge:',order.delivery===0?'FREE':'Tk '+safeNum(order.delivery),[248,246,240]);
-  doc.setFillColor(27,67,50);doc.roundedRect(tL,y,78,11,1.5,1.5,'F');
-  doc.setTextColor(255,255,255);doc.setFontSize(9);doc.setFont('helvetica','bold');
-  doc.text('GRAND TOTAL:',tL+3,y+7.5);
-  doc.setTextColor(244,164,10);doc.setFontSize(11);
-  doc.text('Tk '+safeNum(order.total),tR-3,y+7.5,{align:'right'});
+  trow('Subtotal:','Tk '+num(order.subtotal),[248,246,240]);
+  if((order.discount||0)>0) trow('Coupon Discount ('+String(order.coupon||'')+'):','- Tk '+num(order.discount),[255,245,245],[180,40,40]);
+  trow('Delivery Charge:',Number(order.delivery)===0?'FREE':'Tk '+num(order.delivery),[248,246,240]);
+  doc.setFillColor(27,67,50); doc.roundedRect(tL,y,80,12,2,2,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('GRAND TOTAL:',tL+4,y+8);
+  doc.setTextColor(244,164,10); doc.setFontSize(11);
+  doc.text('Tk '+num(order.total),tR-3,y+8,{align:'right'});
 
-  // ── FOOTER ──
+  // ─── FOOTER ────────────────────────────────────────────────
   const pH=doc.internal.pageSize.height;
-  doc.setFillColor(27,67,50);doc.rect(0,pH-20,W,20,'F');
-  doc.setTextColor(244,164,10);doc.setFontSize(9);doc.setFont('helvetica','bold');
-  doc.text('Thank you for shopping with Amer Hat Bazar!',W/2,pH-12,{align:'center'});
-  doc.setTextColor(180,220,190);doc.setFontSize(7.5);doc.setFont('helvetica','normal');
-  doc.text('+880 1711-123456  |  info@amerhatabazar.com  |  amerhatabazar.com',W/2,pH-5,{align:'center'});
+  doc.setFillColor(27,67,50); doc.rect(0,pH-18,W,18,'F');
+  doc.setTextColor(244,164,10); doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+  doc.text('Thank you for shopping with Amer Hat Bazar!',W/2,pH-10,{align:'center'});
+  doc.setTextColor(170,215,185); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  doc.text('+880 1305-144356  |  info@amerhatabazar.com  |  amerhatabazar.com',W/2,pH-4,{align:'center'});
 
-  doc.save('Invoice_'+order.id+'.pdf');
-  showToast('Invoice PDF ডাউনলোড হচ্ছে... 📄','success');
+  // ─── DOWNLOAD ──────────────────────────────────────────────
+  try{
+    const blob=doc.output('blob');
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='Invoice_'+order.id+'.pdf'; a.target='_blank';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
+    showToast('Invoice PDF ডাউনলোড হচ্ছে... 📄','success');
+  }catch(e1){
+    try{
+      const uri=doc.output('datauristring');
+      const w=window.open('','_blank');
+      if(w){w.document.write('<iframe src="'+uri+'" style="width:100%;height:100vh;border:none"></iframe>');w.document.title='Invoice '+order.id;}
+      else showToast('Popup blocked — allow popups for PDF','warning');
+    }catch(e2){showToast('PDF তৈরিতে সমস্যা হয়েছে','error');}
+  }
+}
+
+
+function openReturnPolicy(){openModal('return-modal');}
+
+function openFAQ(){
+  const faqs=[
+    {cat:'🛒 অর্ডার সংক্রান্ত',items:[
+      {q:'কিভাবে অর্ডার করবো?',a:'আমাদের পণ্য পাতায় পছন্দের আম বেছে নিন, পরিমাণ ঠিক করুন এবং "কিনুন" বা "কার্টে যোগ করুন" বাটনে ক্লিক করুন। এরপর আপনার তথ্য দিয়ে অর্ডার নিশ্চিত করুন।'},
+      {q:'অর্ডার করার পর কি পরিবর্তন করা যাবে?',a:'অর্ডার দেওয়ার ২ ঘণ্টার মধ্যে আমাদের হটলাইনে (+880 1305-144356) যোগাযোগ করলে অর্ডার পরিবর্তন বা বাতিল করা সম্ভব। এরপর অর্ডার প্রক্রিয়া শুরু হয়ে গেলে পরিবর্তন করা সম্ভব নয়।'},
+      {q:'ন্যূনতম অর্ডার পরিমাণ কত?',a:'ন্যূনতম অর্ডার পরিমাণ ১ কেজি। তবে বেশি পরিমাণে অর্ডার করলে ডেলিভারি চার্জ মাফ হওয়ার সুযোগ থাকে।'},
+      {q:'অর্ডার ট্র্যাক করবো কিভাবে?',a:'ফুটারে "অর্ডার ট্র্যাক করুন" লিংকে ক্লিক করুন অথবা আপনার প্রোফাইলে "আমার অর্ডার" সেকশন থেকে অর্ডারের বর্তমান অবস্থা দেখতে পাবেন।'},
+    ]},
+    {cat:'🚚 ডেলিভারি সংক্রান্ত',items:[
+      {q:'ডেলিভারি কতদিনে পাবো?',a:'সাধারণত ঢাকার ভেতরে ২৪-৪৮ ঘণ্টা এবং ঢাকার বাইরে ৪৮-৭২ ঘণ্টার মধ্যে ডেলিভারি দেওয়া হয়। মৌসুমে চাহিদা বেশি থাকলে সামান্য বিলম্ব হতে পারে।'},
+      {q:'ডেলিভারি চার্জ কত?',a:'ঢাকার ভেতরে ৳৬০ এবং ঢাকার বাইরে ৳১২০ ডেলিভারি চার্জ। নির্দিষ্ট পরিমাণের উপরে অর্ডার করলে ফ্রি ডেলিভারি পাওয়া যায়।'},
+      {q:'কোন কোন এলাকায় ডেলিভারি দেওয়া হয়?',a:'সারা বাংলাদেশে ডেলিভারি দেওয়া হয়। প্রত্যন্ত অঞ্চলে কুরিয়ার সার্ভিসের মাধ্যমে পাঠানো হয়।'},
+      {q:'আম কি তাজা থাকবে?',a:'আমরা বিশেষ প্যাকেজিং ব্যবহার করি যাতে আম তাজা থাকে। সরাসরি বাগান থেকে সংগ্রহ করে ২৪ ঘণ্টার মধ্যে পাঠানো হয়।'},
+    ]},
+    {cat:'💳 পেমেন্ট সংক্রান্ত',items:[
+      {q:'কোন কোন পেমেন্ট পদ্ধতি গ্রহণযোগ্য?',a:'আমরা ক্যাশ অন ডেলিভারি, বিকাশ, নগদ এবং ব্যাংক ট্রান্সফার গ্রহণ করি। অর্ডার করার সময় পছন্দের পদ্ধতি বেছে নিন।'},
+      {q:'ক্যাশ অন ডেলিভারি কি পাওয়া যায়?',a:'হ্যাঁ, সারা বাংলাদেশে ক্যাশ অন ডেলিভারি সুবিধা পাওয়া যায়। পণ্য হাতে পেয়ে পেমেন্ট করুন।'},
+      {q:'কুপন কোড কোথায় পাবো?',a:'আমাদের ফেসবুক পেজ, ইনস্টাগ্রাম এবং নিউজলেটারে নিয়মিত কুপন কোড দেওয়া হয়। প্রথমবার অর্ডারে বিশেষ ছাড় পেতে আমাদের সাথে যোগাযোগ করুন।'},
+    ]},
+    {cat:'🥭 পণ্য সংক্রান্ত',items:[
+      {q:'আম কি সম্পূর্ণ প্রাকৃতিক?',a:'হ্যাঁ, আমাদের সব আম ১০০% প্রাকৃতিক। কোনো কৃত্রিম রঙ, রাসায়নিক পাকানো বা কেমিক্যাল ব্যবহার করা হয় না।'},
+      {q:'কোন জাতের আম পাওয়া যায়?',a:'ফজলি, হিমসাগর, ল্যাংড়া, আম্রপালি, গোপালভোগ, মিষ্টি সুন্দরী সহ আরও অনেক জাতের আম আমাদের কাছে পাওয়া যায়। পণ্য পাতায় সব জাত দেখতে পাবেন।'},
+      {q:'পণ্যের মান নিশ্চিত করা হয় কিভাবে?',a:'প্রতিটি আম বিশেষজ্ঞ দল দ্বারা বাছাই করা হয়। পচা, আঘাতপ্রাপ্ত বা মানসম্পন্ন নয় এমন আম পাঠানো হয় না।'},
+      {q:'কাঁচা আম কি পাওয়া যায়?',a:'হ্যাঁ, চাহিদা অনুযায়ী কাঁচা আমও সরবরাহ করা হয়। অর্ডারের সময় নোটে উল্লেখ করুন বা আমাদের সাথে যোগাযোগ করুন।'},
+    ]},
+    {cat:'🔄 রিটার্ন ও রিফান্ড',items:[
+      {q:'পণ্য সমস্যা হলে কি করবো?',a:'ডেলিভারির ২৪ ঘণ্টার মধ্যে ছবি সহ আমাদের WhatsApp (+880 1305-144356) এ জানান। আমরা দ্রুত সমাধান করবো।'},
+      {q:'রিফান্ড কতদিনে পাবো?',a:'অনুমোদনের পর ৩-৫ কার্যদিবসের মধ্যে বিকাশ/নগদ বা ব্যাংকে রিফান্ড করা হয়।'},
+    ]},
+  ];
+  const html=faqs.map(cat=>`
+    <div class="faq-category">${cat.cat}</div>
+    ${cat.items.map((f,i)=>{
+      const id='faq_'+Math.random().toString(36).slice(2);
+      return `<div class="faq-item" id="${id}">
+        <div class="faq-q" onclick="toggleFAQ('${id}')">
+          <span class="faq-q-text">${f.q}</span>
+          <div class="faq-icon"><i class="fas fa-plus"></i></div>
+        </div>
+        <div class="faq-a">${f.a}</div>
+      </div>`;
+    }).join('')}`).join('');
+  document.getElementById('faq-list').innerHTML=html;
+  openModal('faq-modal');
+}
+function toggleFAQ(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const isOpen=el.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-item.open').forEach(x=>x.classList.remove('open'));
+  if(!isOpen) el.classList.add('open');
+}
+
+// ============================================================
+// ORDER TRACKING
+// ============================================================
+function openTrackOrder(){
+  const u=getCurrentUser();
+  const body=document.getElementById('track-body');
+  body.innerHTML=`
+    <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">অর্ডার আইডি দিন অথবা আপনার ফোন নম্বর দিয়ে অর্ডার খুঁজুন।</p>
+    <div class="track-input-row">
+      <input id="track-input" placeholder="অর্ডার আইডি বা ফোন নম্বর লিখুন..." onkeydown="if(event.key==='Enter')trackOrder()">
+      <button onclick="trackOrder()"><i class="fas fa-search"></i> খুঁজুন</button>
+    </div>
+    <div id="track-result-area"></div>
+    ${u?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:10px">অথবা আপনার সাম্প্রতিক অর্ডার:</p>
+      <div id="track-my-orders">${renderMyRecentOrders(u)}</div>
+    </div>`:''}`;
+  openModal('track-modal');
+  setTimeout(()=>document.getElementById('track-input')?.focus(),200);
+}
+
+function renderMyRecentOrders(u){
+  const orders=getOrders().filter(o=>o.userEmail===u.email).slice().reverse().slice(0,3);
+  if(!orders.length) return '<p style="font-size:.82rem;color:#aaa">কোনো অর্ডার নেই</p>';
+  const statusColor={'pending':'#f4a40a','processing':'#74c0fc','shipped':'#2d6a4f','delivered':'#40c057','cancelled':'#e74c3c'};
+  const statusLbl={'pending':'অপেক্ষারত','processing':'প্রক্রিয়াধীন','shipped':'শিপড','delivered':'ডেলিভারড','cancelled':'বাতিল'};
+  return orders.map(o=>`
+    <div onclick="showTrackResult('${o.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;border:1.5px solid var(--border);transition:all .2s" onmouseover="this.style.borderColor='var(--green-mid)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--green-dark)">${o.id}</div>
+        <div style="font-size:.75rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('en-GB')} • ৳${o.total}</div>
+      </div>
+      <span style="background:${statusColor[o.status]||'#aaa'}22;color:${statusColor[o.status]||'#aaa'};padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:700">${statusLbl[o.status]||o.status}</span>
+    </div>`).join('');
+}
+
+function trackOrder(){
+  const q=(document.getElementById('track-input')?.value||'').trim();
+  if(!q){
+    document.getElementById('track-result-area').innerHTML='<p style="color:#e74c3c;font-size:.85rem">অর্ডার আইডি বা ফোন নম্বর লিখুন</p>';
+    return;
+  }
+  const orders=getOrders();
+  // Match by order ID or phone
+  const found=orders.filter(o=>
+    o.id.toLowerCase()===q.toLowerCase()||
+    o.id.toLowerCase().includes(q.toLowerCase())||
+    (o.userPhone&&o.userPhone.replace(/\D/g,'').includes(q.replace(/\D/g,'')))
+  );
+  const area=document.getElementById('track-result-area');
+  if(!found.length){
+    area.innerHTML=`<div style="text-align:center;padding:24px;background:var(--bg);border-radius:var(--radius-sm)">
+      <div style="font-size:2.5rem;margin-bottom:10px">🔍</div>
+      <p style="color:#e74c3c;font-weight:600;margin-bottom:4px">অর্ডার পাওয়া যায়নি</p>
+      <p style="color:var(--text-muted);font-size:.82rem">সঠিক অর্ডার আইডি বা নিবন্ধিত ফোন নম্বর দিন</p>
+    </div>`;
+    return;
+  }
+  if(found.length===1){
+    showTrackResult(found[0].id);
+  } else {
+    // Multiple orders found by phone
+    const statusColor={'pending':'#f4a40a','processing':'#74c0fc','shipped':'#2d6a4f','delivered':'#40c057','cancelled':'#e74c3c'};
+    const statusLbl={'pending':'অপেক্ষারত','processing':'প্রক্রিয়াধীন','shipped':'শিপড','delivered':'ডেলিভারড','cancelled':'বাতিল'};
+    area.innerHTML='<p style="font-size:.85rem;color:var(--text-muted);margin-bottom:10px">'+found.length+'টি অর্ডার পাওয়া গেছে — একটি বেছে নিন:</p>'+
+      found.slice().reverse().map(o=>`
+        <div onclick="showTrackResult('${o.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;border:1.5px solid var(--border)" onmouseover="this.style.borderColor='var(--green-mid)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div><div style="font-weight:700;font-size:.85rem;color:var(--green-dark)">${o.id}</div>
+          <div style="font-size:.75rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('en-GB')} • ৳${o.total}</div></div>
+          <span style="color:${statusColor[o.status]||'#888'};font-size:.8rem;font-weight:700">${statusLbl[o.status]||o.status}</span>
+        </div>`).join('');
+  }
+}
+
+function showTrackResult(orderId){
+  const o=getOrders().find(x=>x.id===orderId);
+  if(!o) return;
+  const steps=[
+    {key:'pending',icon:'🛒',label:'অর্ডার\nগ্রহণ'},
+    {key:'processing',icon:'⚙️',label:'প্রক্রিয়া\nকরণ'},
+    {key:'shipped',icon:'🚚',label:'শিপমেন্ট'},
+    {key:'delivered',icon:'✅',label:'ডেলিভারি\nসম্পন্ন'}
+  ];
+  const order_steps=['pending','processing','shipped','delivered'];
+  const currentIdx=order_steps.indexOf(o.status);
+  const isCancelled=o.status==='cancelled';
+  const statusColor={'pending':'#f4a40a','processing':'#74c0fc','shipped':'#2d6a4f','delivered':'#40c057','cancelled':'#e74c3c'};
+  const statusLbl={'pending':'অপেক্ষারত','processing':'প্রক্রিয়াধীন','shipped':'শিপড','delivered':'ডেলিভারড','cancelled':'বাতিল'};
+  const payLbl={'cod':'ক্যাশ অন ডেলিভারি','bkash':'বিকাশ','nagad':'নগদ','bank':'ব্যাংক ট্রান্সফার'};
+
+  document.getElementById('track-result-area').innerHTML=`
+    <div class="track-result">
+      <div class="track-order-header">
+        <div>
+          <div style="color:rgba(255,255,255,.65);font-size:.72rem;margin-bottom:2px">অর্ডার আইডি</div>
+          <div style="color:var(--yellow);font-weight:700;font-size:.95rem">${o.id}</div>
+          <div style="color:rgba(255,255,255,.55);font-size:.75rem;margin-top:2px">${new Date(o.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="background:${statusColor[o.status]||'#aaa'}33;color:${o.status==='delivered'?'#adffc8':o.status==='cancelled'?'#ffaaaa':'#fff'};padding:5px 14px;border-radius:20px;font-size:.85rem;font-weight:700;border:1.5px solid ${statusColor[o.status]||'#aaa'}55">${statusLbl[o.status]||o.status}</div>
+          <div style="color:var(--yellow);font-size:1rem;font-weight:700;margin-top:6px">৳${o.total}</div>
+        </div>
+      </div>
+
+      ${isCancelled?`
+        <div style="padding:20px;text-align:center;background:#fff5f5">
+          <div style="font-size:2.5rem;margin-bottom:8px">❌</div>
+          <p style="color:#e74c3c;font-weight:700;font-size:1rem">অর্ডার বাতিল হয়েছে</p>
+          <p style="color:var(--text-muted);font-size:.82rem;margin-top:4px">এই অর্ডারটি বাতিল করা হয়েছে।</p>
+        </div>
+      `:`
+        <div class="track-steps">
+          ${steps.map((s,i)=>{
+            let cls='track-step';
+            if(currentIdx>i) cls+=' done';
+            else if(currentIdx===i) cls+=' active';
+            return `<div class="${cls}">
+              <div class="track-step-icon">${currentIdx>i?'✓':s.icon}</div>
+              <div class="track-step-label">${s.label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="padding:12px 18px;background:${currentIdx>=0?'#f0faf4':'#f9f5e7'};border-top:1px solid var(--border);display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">${steps[Math.max(0,currentIdx)]?.icon||'📦'}</span>
+          <div>
+            <div style="font-size:.85rem;font-weight:700;color:var(--green-dark)">${
+              currentIdx===0?'আপনার অর্ডার গ্রহণ করা হয়েছে এবং প্রক্রিয়া শুরু হবে শীঘ্রই':
+              currentIdx===1?'আপনার অর্ডার প্যাক করা হচ্ছে':
+              currentIdx===2?'আপনার পণ্য পথে আছে, শীঘ্রই পৌঁছাবে':
+              currentIdx===3?'আপনার অর্ডার সফলভাবে ডেলিভারি হয়েছে! 🎉':'অর্ডার প্রক্রিয়াধীন'
+            }</div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">সর্বশেষ আপডেট: ${new Date(o.createdAt).toLocaleString('en-GB')}</div>
+          </div>
+        </div>
+      `}
+
+      <div class="track-info-grid">
+        <div class="track-info-box"><label>গ্রাহকের নাম</label><span>${o.userName}</span></div>
+        <div class="track-info-box"><label>ফোন</label><span>${o.userPhone}</span></div>
+        <div class="track-info-box"><label>জেলা</label><span>${o.district||'—'}</span></div>
+        <div class="track-info-box"><label>পেমেন্ট</label><span>${payLbl[o.payment]||o.payment}</span></div>
+        <div class="track-info-box" style="grid-column:1/-1"><label>ডেলিভারি ঠিকানা</label><span>${o.address}</span></div>
+      </div>
+
+      <div style="padding:14px 18px;border-top:1px solid var(--border);background:#fafafa">
+        <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px">অর্ডার আইটেম</div>
+        ${o.items.map(it=>`<div style="display:flex;justify-content:space-between;font-size:.85rem;padding:4px 0;border-bottom:1px solid #f0f0f0">
+          <span>🥭 ${it.name} × ${it.qty||1} কেজি</span>
+          <span style="font-weight:600;color:var(--orange)">৳${it.price*(it.qty||1)}</span>
+        </div>`).join('')}
+        <div style="display:flex;justify-content:space-between;font-size:.9rem;font-weight:700;padding-top:8px;margin-top:4px;color:var(--green-dark)">
+          <span>সর্বমোট</span><span style="color:var(--orange)">৳${o.total}</span>
+        </div>
+      </div>
+
+      <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="generateInvoice('${o.id}')" style="background:var(--orange);color:#fff;border:none;padding:8px 16px;border-radius:var(--radius-sm);font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif"><i class="fas fa-file-pdf"></i> Invoice</button>
+        <button onclick="document.getElementById('track-input').value='';document.getElementById('track-result-area').innerHTML=''" style="background:#f0f0f0;color:var(--text);border:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:.82rem;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">← ফিরে যান</button>
+      </div>
+    </div>`;
 }
 
 // ============================================================
@@ -1723,6 +2249,7 @@ function openModal(id){
   const el=document.getElementById(id);
   if(!el) return;
   el.style.display='flex';
+  el.style.zIndex='4000';
   el.classList.add('open');
 }
 function closeModal(id){
