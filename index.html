@@ -495,7 +495,7 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .profile-content{padding:20px}
 .profile-avatar{width:75px;height:75px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;font-weight:700;flex-shrink:0;overflow:hidden;border:3px solid rgba(255,255,255,.3);cursor:pointer;position:relative}
 .profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.profile-avatar-wrap{position:relative;flex-shrink:0;cursor:pointer}
+.profile-avatar-wrap{position:relative;flex-shrink:0;cursor:pointer;display:inline-block}
 .profile-avatar-edit{position:absolute;bottom:0;right:0;width:22px;height:22px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--green-dark);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .avatar-upload-input{display:none}
 .order-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:12px;transition:all .2s}
@@ -1780,6 +1780,7 @@ function renderProfileModal(u,tab){
         <div class="profile-avatar-edit"><i class="fas fa-camera"></i></div>
         <input type="file" id="avatar-upload" class="avatar-upload-input" accept="image/*" onchange="uploadAvatar(this)">
       </div>
+      ${u.avatar?`<button onclick="removeAvatar();event.stopPropagation()" title="ছবি মুছুন" style="position:absolute;top:0;right:0;width:22px;height:22px;background:#e74c3c;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#fff;cursor:pointer;z-index:2;border:none"><i class="fas fa-times"></i></button>`:''}
       <div style="flex:1">
         <div style="color:#fff;font-size:1.1rem;font-weight:700">${u.name}</div>
         <div style="color:rgba(255,255,255,.7);font-size:.82rem">${u.email}</div>
@@ -1901,13 +1902,25 @@ function uploadAvatar(input){
 function removeAvatar(){
   const u=getCurrentUser();
   if(!u) return;
-  const users=getUsers().map(x=>x.id===u.id?{...x,avatar:''}:x);
-  saveUsers(users);
-  const updated={...u,avatar:''};
-  setCurrentUser(updated);
-  updateNavAuth();
-  showToast('প্রোফাইল ছবি মুছে ফেলা হয়েছে','success');
-  renderProfileModal(updated,'edit');
+  showCustomAlert(
+    'প্রোফাইল ছবি মুছুন',
+    'আপনার প্রোফাইল ছবি স্থায়ীভাবে মুছে ফেলা হবে।',
+    'হ্যাঁ, মুছুন',
+    'danger',
+    ()=>{
+      const users=getUsers().map(x=>x.id===u.id?{...x,avatar:''}:x);
+      saveUsers(users);
+      const updated={...u,avatar:''};
+      setCurrentUser(updated);
+      updateNavAuth();
+      showToast('প্রোফাইল ছবি মুছে ফেলা হয়েছে','success');
+      // Re-render current tab
+      const activeTab=document.querySelector('.profile-tab-btn.active');
+      const tab=activeTab?.textContent?.includes('সম্পাদনা')?'edit':
+                activeTab?.textContent?.includes('পাসওয়ার্ড')?'pw':'orders';
+      renderProfileModal(updated,tab);
+    }
+  );
 }
 function saveProfileEdit(){
   const u=getCurrentUser();
