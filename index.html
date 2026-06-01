@@ -435,6 +435,24 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .img-upload-area:hover{border-color:var(--green-mid);background:var(--green-pale)}
 .img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 
+/* ===== WISHLIST & SHARE ===== */
+.product-actions-row{display:flex;gap:6px;padding:0 14px 10px;justify-content:space-between;align-items:center}
+.btn-action-sm{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;transition:all .2s;flex-shrink:0}
+.btn-action-sm:hover{transform:scale(1.12)}
+.btn-wishlist{color:#ccc}
+.btn-wishlist.wishlisted{color:#e74c3c;border-color:#fcc;background:#fff5f5}
+.btn-wishlist:hover{color:#e74c3c;border-color:#fcc}
+.btn-share-wa{color:#25d366;border-color:#c3f0d0}
+.btn-share-wa:hover{background:#25d366;color:#fff;border-color:#25d366}
+.btn-share-link{color:#2980b9;border-color:#c5e0f5}
+.btn-share-link:hover{background:#2980b9;color:#fff}
+.wishlist-btn-nav{position:relative;background:rgba(255,255,255,.12);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer}
+.wishlist-btn-nav:hover{background:var(--yellow);color:var(--green-dark)}
+.wishlist-count{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;width:18px;height:18px;border-radius:50%;font-size:.65rem;display:flex;align-items:center;justify-content:center;font-weight:700}
+.payment-icon-pill{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);padding:5px 10px;border-radius:8px;font-size:.75rem;color:rgba(255,255,255,.8)}
+.payment-icon-pill img{height:18px;width:auto;object-fit:contain}
+.footer-payment-icons{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+
 /* ===== FAQ ===== */
 .faq-item{border:1.5px solid #e0d8c8;border-radius:10px;margin-bottom:10px;overflow:hidden;transition:all .2s}
 .faq-item.open{border-color:#2d6a4f;box-shadow:0 2px 12px rgba(45,106,79,.1)}
@@ -553,6 +571,7 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
     </div>
     <div class="nav-right">
       <button class="cart-btn" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cart-count">0</span></button>
+      <button class="wishlist-btn-nav" onclick="openWishlistModal()" title="উইশলিস্ট"><i class="fas fa-heart"></i><span class="wishlist-count" id="wishlist-count" style="display:none">0</span></button>
       <div id="nav-guest" style="display:flex;gap:8px">
         <button class="btn-login" onclick="openModal('login-modal')">লগইন</button>
         <button class="btn-register" onclick="openModal('login-modal')">রেজিস্ট্রেশন</button>
@@ -734,11 +753,13 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
     </div>
     <div>
       <h4>পেমেন্ট মেথড</h4>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:5px">
-        <span class="payment-tag">💵 ক্যাশ অন ডেলিভারি</span>
-        <span class="payment-tag">📱 বিকাশ</span>
-        <span class="payment-tag">📱 নগদ</span>
-        <span class="payment-tag">🏦 ব্যাংক</span>
+      <div class="footer-payment-icons">
+        <div class="payment-icon-pill">💵 COD</div>
+        <div class="payment-icon-pill" style="background:#e2136e22;color:#ffaacc">📱 বিকাশ</div>
+        <div class="payment-icon-pill" style="background:#f7941d22;color:#ffc580">📱 নগদ</div>
+        <div class="payment-icon-pill" style="background:#8b1fa922;color:#d4a0f0">📲 রকেট</div>
+        <div class="payment-icon-pill" style="background:#00a65122;color:#80d4a8">📱 উপায়</div>
+        <div class="payment-icon-pill">🏦 ব্যাংক</div>
       </div>
       <div style="margin-top:20px">
         <h4 style="margin-bottom:8px">কাজের সময়</h4>
@@ -751,6 +772,17 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
     <p style="font-size:.78rem;color:rgba(255,255,255,.3)">Designed with ❤️ in Bangladesh</p>
   </div>
 </footer>
+
+<!-- WISHLIST MODAL -->
+<div class="modal-overlay" id="wishlist-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header" style="background:linear-gradient(135deg,#c0392b,#e74c3c);border-radius:14px 14px 0 0;padding:18px 24px">
+      <h3 style="color:#fff;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif"><i class="fas fa-heart" style="margin-right:8px"></i>আমার উইশলিস্ট</h3>
+      <button class="modal-close" style="color:#fff" onclick="closeModal('wishlist-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="max-height:70vh;overflow-y:auto;padding:20px" id="wishlist-body"></div>
+  </div>
+</div>
 
 <!-- FAQ MODAL -->
 <div class="modal-overlay" id="faq-modal">
@@ -1157,6 +1189,20 @@ function renderProducts(){
         <button class="btn-cart" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus"></i> কার্টে যোগ</button>
         <button class="btn-buy" onclick="buyNow(${p.id})"><i class="fas fa-bolt"></i> কিনুন</button>
       </div>`:`<div class="out-of-stock">স্টক নেই</div>`}
+      <div class="product-actions-row">
+        <div style="display:flex;gap:6px">
+          <button class="btn-action-sm btn-wishlist ${isWishlisted(p.id)?'wishlisted':''}" onclick="toggleWishlist(${p.id},this)" title="উইশলিস্টে যোগ করুন">
+            <i class="fa${isWishlisted(p.id)?'s':'r'} fa-heart"></i>
+          </button>
+          <button class="btn-action-sm btn-share-wa" onclick="shareWhatsApp(${p.id})" title="WhatsApp এ শেয়ার করুন">
+            <i class="fab fa-whatsapp"></i>
+          </button>
+          <button class="btn-action-sm btn-share-link" onclick="shareLink(${p.id})" title="লিংক কপি করুন">
+            <i class="fas fa-share-alt"></i>
+          </button>
+        </div>
+        <div style="font-size:.75rem;color:var(--text-muted)">⭐ ${p.quality==='premium'?'4.8':p.quality==='standard'?'4.5':'4.2'}</div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1436,33 +1482,59 @@ function renderCheckoutForm(){
     <div id="co-delivery-preview" style="background:var(--green-pale);border-radius:6px;padding:8px 12px;font-size:.85rem;color:var(--green-dark);margin-bottom:10px"></div>
     <div class="form-group">
       <label style="margin-bottom:10px;display:block">পেমেন্ট পদ্ধতি *</label>
-      <div class="payment-options">
-        <div class="pay-option selected" id="pay-cod" onclick="selectPayment('cod')"><div class="pay-option-icon">💵</div><div class="pay-option-name">ক্যাশ অন ডেলিভারি</div></div>
-        <div class="pay-option" id="pay-bkash" onclick="selectPayment('bkash')"><div class="pay-option-icon">📱</div><div class="pay-option-name">বিকাশ</div></div>
-        <div class="pay-option" id="pay-nagad" onclick="selectPayment('nagad')"><div class="pay-option-icon">📱</div><div class="pay-option-name">নগদ</div></div>
-        <div class="pay-option" id="pay-bank" onclick="selectPayment('bank')"><div class="pay-option-icon">🏦</div><div class="pay-option-name">ব্যাংক ট্রান্সফার</div></div>
-      </div>
+      <div class="payment-options" style="grid-template-columns:repeat(3,1fr)" id="co-payment-options"></div>
       <div id="payment-detail" style="margin-top:10px"></div>
     </div>
     <div id="co-error" class="error-msg"></div>
     <button class="btn-primary" style="width:100%;padding:13px;margin-top:10px;font-size:1rem" onclick="placeOrder(false)">
       <i class="fas fa-check-circle"></i> অর্ডার নিশ্চিত করুন
     </button>`;
+  setTimeout(()=>{
+    const po=document.getElementById('co-payment-options');
+    if(po) po.innerHTML=getPaymentOptionsHTML();
+    selectPayment('cod');
+    updateCheckoutDelivery();
+  },0);
 }
 let selectedPayment='cod';
+// Payment method info config
+const PAYMENT_METHODS={
+  cod:{icon:'💵',name:'ক্যাশ অন ডেলিভারি',needsTxn:false,color:'#2d6a4f'},
+  bkash:{icon:'<img src="https://i.ibb.co/k9mWxR4/bkash.png" onerror="this.outerHTML=\'📱\'" style="width:22px;height:22px;object-fit:contain">',name:'বিকাশ',needsTxn:true,color:'#e2136e',number:'01305-144356',hint:'বিকাশ নম্বরে পেমেন্ট করুন: 01305-144356'},
+  nagad:{icon:'<img src="https://i.ibb.co/6WtHZzb/nagad.png" onerror="this.outerHTML=\'📱\'" style="width:22px;height:22px;object-fit:contain">',name:'নগদ',needsTxn:true,color:'#f7941d',number:'01305-144356',hint:'নগদ নম্বরে পেমেন্ট করুন: 01305-144356'},
+  rocket:{icon:'📲',name:'রকেট',needsTxn:true,color:'#8b1fa9',number:'01305-144356',hint:'রকেট নম্বরে পেমেন্ট করুন: 01305-144356'},
+  upay:{icon:'📱',name:'উপায়',needsTxn:true,color:'#00a651',number:'01305-144356',hint:'উপায় নম্বরে পেমেন্ট করুন: 01305-144356'},
+  bank:{icon:'🏦',name:'ব্যাংক ট্রান্সফার',needsTxn:true,color:'#1b4332',hint:'ব্যাংক: Dutch-Bangla Bank | A/C: 1234567890 | Routing: 090261539'},
+};
+
 function selectPayment(method){
   selectedPayment=method;
-  ['cod','bkash','nagad','bank'].forEach(m=>{
-    const el=document.getElementById('pay-'+m);
-    if(el) el.classList.toggle('selected',m===method);
+  document.querySelectorAll('.pay-option').forEach(el=>{
+    el.classList.toggle('selected',el.dataset.method===method);
   });
   const detail=document.getElementById('payment-detail');
-  if(detail){
-    if(method==='bkash') detail.innerHTML='<input class="form-control" id="pay-number" placeholder="বিকাশ নম্বর: 01XXXXXXXXX">';
-    else if(method==='nagad') detail.innerHTML='<input class="form-control" id="pay-number" placeholder="নগদ নম্বর: 01XXXXXXXXX">';
-    else if(method==='bank') detail.innerHTML='<input class="form-control" id="pay-number" placeholder="ট্রান্সফার রেফারেন্স নম্বর">';
-    else detail.innerHTML='';
-  }
+  if(!detail) return;
+  const pm=PAYMENT_METHODS[method];
+  if(!pm) return;
+  if(!pm.needsTxn){detail.innerHTML='';return;}
+  detail.innerHTML=`
+    <div style="background:#f9f5e7;border-radius:8px;padding:12px;border:1px solid #e0d8c8">
+      <div style="font-size:.82rem;color:#666;margin-bottom:8px;line-height:1.6">
+        <i class="fas fa-info-circle" style="color:${pm.color}"></i> ${pm.hint}
+      </div>
+      <input class="form-control" id="pay-number" placeholder="পেমেন্ট নম্বর (যেটা থেকে পাঠিয়েছেন)">
+      <input class="form-control" id="pay-txnid" placeholder="ট্রানজেকশন আইডি / রেফারেন্স নম্বর *" style="margin-top:8px;border-color:${pm.color}40">
+      <div style="font-size:.75rem;color:#e74c3c;margin-top:4px">* ট্রানজেকশন আইডি ছাড়া অর্ডার নিশ্চিত হবে না</div>
+    </div>`;
+}
+
+function getPaymentOptionsHTML(){
+  return Object.entries(PAYMENT_METHODS).map(([key,pm])=>
+    `<div class="pay-option" data-method="${key}" onclick="selectPayment('${key}')" style="${key===selectedPayment?'border-color:var(--green-mid);background:var(--green-pale)':''}">
+      <div class="pay-option-icon">${pm.icon}</div>
+      <div class="pay-option-name">${pm.name}</div>
+    </div>`
+  ).join('');
 }
 function placeOrder(isBuyNow){
   const nameEl=document.getElementById(isBuyNow?'bn-name':'co-name');
@@ -1480,6 +1552,15 @@ function placeOrder(isBuyNow){
   }
   const u=getCurrentUser();
   if(!u){showToast('লগইন করুন','warning');return;}
+  // Validate transaction ID for non-COD
+  const pm=PAYMENT_METHODS[selectedPayment];
+  if(pm&&pm.needsTxn){
+    const txn=(document.getElementById('pay-txnid')?.value||'').trim();
+    if(!txn){
+      if(errEl){errEl.textContent='ট্রানজেকশন আইডি / রেফারেন্স নম্বর দিন';errEl.scrollIntoView({behavior:'smooth',block:'center'});}
+      showToast('ট্রানজেকশন আইডি দিন','error');return;
+    }
+  }
   let items;
   if(isBuyNow&&buyNowProduct){
     items=[{...buyNowProduct,qty:buyNowQty||1}];
@@ -1489,13 +1570,14 @@ function placeOrder(isBuyNow){
   }
   const t=calcCartTotals(items, district);
   const payNum=document.getElementById('pay-number')?.value||'';
+  const payTxn=document.getElementById('pay-txnid')?.value||'';
   const order={
     id:'AMB-'+Date.now(),
     userId:u.id,userName:name,userPhone:phone,userEmail:u.email||'',
     address,district,items,
     subtotal:t.subtotal,discount:t.discount,delivery:t.delCharge,total:t.total,
     coupon:appliedCoupon?.code||null,
-    payment:selectedPayment,paymentRef:payNum,
+    payment:selectedPayment,paymentRef:payNum,paymentTxn:payTxn,
     status:'pending',createdAt:Date.now()
   };
   const orders=getOrders();orders.push(order);saveOrders(orders);
@@ -1620,13 +1702,8 @@ function renderBuyNowModal(p,u){
       </div>
       <div class="form-group" style="margin-bottom:14px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">ঠিকানা *</label><textarea class="form-control" id="bn-address" rows="2" placeholder="সম্পূর্ণ ঠিকানা লিখুন"></textarea></div>
       <div class="form-group" style="margin-bottom:14px">
-        <label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:8px">পেমেন্ট পদ্ধতি</label>
-        <div class="payment-options">
-          <div class="pay-option selected" id="pay-cod" onclick="selectPayment('cod')"><div class="pay-option-icon">💵</div><div class="pay-option-name">ক্যাশ অন ডেলিভারি</div></div>
-          <div class="pay-option" id="pay-bkash" onclick="selectPayment('bkash')"><div class="pay-option-icon">📱</div><div class="pay-option-name">বিকাশ</div></div>
-          <div class="pay-option" id="pay-nagad" onclick="selectPayment('nagad')"><div class="pay-option-icon">📱</div><div class="pay-option-name">নগদ</div></div>
-          <div class="pay-option" id="pay-bank" onclick="selectPayment('bank')"><div class="pay-option-icon">🏦</div><div class="pay-option-name">ব্যাংক</div></div>
-        </div>
+        <label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:8px">পেমেন্ট পদ্ধতি *</label>
+        <div class="payment-options" style="grid-template-columns:repeat(3,1fr)" id="bn-payment-options"></div>
         <div id="payment-detail" style="margin-top:10px"></div>
       </div>
       <div id="bn-grand" style="background:var(--green-dark);color:#fff;border-radius:var(--radius-sm);padding:10px 15px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -1636,6 +1713,11 @@ function renderBuyNowModal(p,u){
       <div id="bn-error" class="error-msg"></div>
       <button class="btn-primary" style="width:100%;padding:13px;font-size:1rem" onclick="placeOrder(true)"><i class="fas fa-bolt"></i> এখনই অর্ডার করুন</button>
     </div>`;
+  setTimeout(()=>{
+    const po=document.getElementById('bn-payment-options');
+    if(po) po.innerHTML=getPaymentOptionsHTML();
+    selectPayment('cod');
+  },0);
 }
 function changeBuyNowQty(delta){
   if(!buyNowProduct) return;
@@ -2002,8 +2084,8 @@ function generateInvoice(orderId){
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
   doc.text('CUSTOMER INFORMATION',ML+3,y+5);
   y+=8;
-  doc.setFillColor(250,248,242); doc.rect(ML,y,boxW,36,'F');
-  doc.setDrawColor(215,210,200); doc.rect(ML,y,boxW,36,'S');
+  doc.setFillColor(250,248,242); doc.rect(ML,y,boxW,44,'F');
+  doc.setDrawColor(215,210,200); doc.rect(ML,y,boxW,44,'S');
   // Labels (Latin)
   const custLabels=['Name','Phone','Email','District'];
   const custVals=[order.userName, order.userPhone, latinOnly(order.userEmail), order.district||'-'];
@@ -2018,24 +2100,38 @@ function generateInvoice(orderId){
   doc.setFillColor(27,67,50); doc.roundedRect(box2X,y-8,boxW,7,1.5,1.5,'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
   doc.text('DELIVERY & PAYMENT',box2X+3,y-3);
-  doc.setFillColor(250,248,242); doc.rect(box2X,y,boxW,36,'F');
-  doc.setDrawColor(215,210,200); doc.rect(box2X,y,boxW,36,'S');
+  doc.setFillColor(250,248,242); doc.rect(box2X,y,boxW,44,'F');
+  doc.setDrawColor(215,210,200); doc.rect(box2X,y,boxW,44,'S');
   doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7.5);
   doc.text('Address:',box2X+3,y+7);
   bText(order.address||'-',box2X+19,y+7,7,'#1a1a1a',boxW-22);
   doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-  doc.text('Payment:',box2X+3,y+21);
+  doc.text('Payment:',box2X+3,y+20);
   doc.setFont('helvetica','normal'); doc.setTextColor(25,25,25);
-  doc.text(payMap[order.payment]||order.payment||'-',box2X+19,y+21);
+  doc.text(payMap[order.payment]||order.payment||'-',box2X+19,y+20);
+  if(order.paymentRef){
+    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
+    doc.text('Pay No:',box2X+3,y+27);
+    doc.setFont('helvetica','normal'); doc.setTextColor(25,25,25);
+    doc.text(String(order.paymentRef).slice(0,22),box2X+19,y+27);
+  }
+  if(order.paymentTxn){
+    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
+    doc.text('Txn ID:',box2X+3,y+34);
+    doc.setFillColor(216,243,220);
+    doc.roundedRect(box2X+18,y+30,boxW-21,6,1,1,'F');
+    doc.setFont('helvetica','bold'); doc.setTextColor(27,67,50);
+    doc.text(String(order.paymentTxn).slice(0,24),box2X+20,y+34);
+  }
   if(order.coupon){
     doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text('Coupon:',box2X+3,y+29);
+    doc.text('Coupon:',box2X+3,y+41);
     doc.setFont('helvetica','normal'); doc.setTextColor(180,40,40);
-    doc.text(String(order.coupon),box2X+19,y+29);
+    doc.text(String(order.coupon),box2X+19,y+41);
   }
 
   // ─── ITEMS TABLE ───────────────────────────────────────────
-  y+=41;
+  y+=49;
   // Build table rows — Bengali product names as Latin using transliteration backup
   const bnMap2={'ক':'k','খ':'kh','গ':'g','ঘ':'gh','চ':'ch','ছ':'chh','জ':'j','ট':'t','ড':'d','ত':'t','দ':'d','ন':'n','প':'p','ব':'b','ম':'m','য':'y','র':'r','ল':'l','শ':'sh','স':'s','হ':'h','া':'a','ি':'i','ু':'u','ে':'e','ো':'o','০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9','৳':'Tk '};
   const safeText=s=>String(s||'-').split('').map(c=>bnMap2[c]!==undefined?bnMap2[c]:(/[\u0980-\u09FF]/.test(c)?'':c)).join('').replace(/\s+/g,' ').trim()||'-';
@@ -2322,6 +2418,106 @@ function showTrackResult(orderId){
         <button onclick="document.getElementById('track-input').value='';document.getElementById('track-result-area').innerHTML=''" style="background:#f0f0f0;color:var(--text);border:none;padding:8px 14px;border-radius:var(--radius-sm);font-size:.82rem;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif">← ফিরে যান</button>
       </div>
     </div>`;
+}
+
+// ============================================================
+// WISHLIST — works without login, saves to localStorage
+// ============================================================
+function getWishlist(){
+  try{const d=JSON.parse(localStorage.getItem('amb_wishlist')||'[]');return Array.isArray(d)?d:[];}catch{return [];}
+}
+function saveWishlist(w){localStorage.setItem('amb_wishlist',JSON.stringify(w));}
+function isWishlisted(pid){return getWishlist().includes(Number(pid));}
+function updateWishlistCount(){
+  const c=getWishlist().length;
+  const el=document.getElementById('wishlist-count');
+  if(el){el.textContent=c;el.style.display=c>0?'flex':'none';}
+}
+function toggleWishlist(pid,btn){
+  pid=Number(pid);
+  let w=getWishlist();
+  const idx=w.indexOf(pid);
+  const wasIn=idx>-1;
+  if(wasIn) w.splice(idx,1);
+  else w.push(pid);
+  saveWishlist(w);
+  // Update button UI
+  if(btn){
+    btn.classList.toggle('wishlisted',!wasIn);
+    const icon=btn.querySelector('i');
+    if(icon){icon.className=!wasIn?'fas fa-heart':'far fa-heart';}
+  }
+  updateWishlistCount();
+  showToast(wasIn?'উইশলিস্ট থেকে সরানো হয়েছে':'❤️ উইশলিস্টে যোগ হয়েছে!',wasIn?'warning':'success');
+}
+function openWishlistModal(){
+  const w=getWishlist();
+  const prods=getProducts().filter(p=>w.includes(Number(p.id)));
+  const body=document.getElementById('wishlist-body');
+  if(!prods.length){
+    body.innerHTML=`<div style="text-align:center;padding:40px 20px">
+      <div style="font-size:3.5rem;margin-bottom:15px">🤍</div>
+      <p style="color:var(--text-muted);font-size:1rem">উইশলিস্ট খালি আছে</p>
+      <p style="font-size:.85rem;color:#aaa;margin-top:8px">পণ্যের ❤️ বাটনে ক্লিক করে যোগ করুন</p>
+      <button onclick="closeModal('wishlist-modal');scrollToProducts()" class="btn-primary" style="margin-top:16px">পণ্য দেখুন 🥭</button>
+    </div>`;
+  } else {
+    body.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">'+
+      prods.map(p=>{
+        const fp=getDiscountedPrice(p);
+        return `<div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor='var(--green-mid)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="height:120px;overflow:hidden;background:var(--green-pale);display:flex;align-items:center;justify-content:center">
+            ${p.image?`<img src="${p.image}" style="width:100%;height:100%;object-fit:cover">`:'<span style="font-size:3rem">🥭</span>'}
+          </div>
+          <div style="padding:12px">
+            <div style="font-weight:700;font-size:.9rem;color:var(--green-dark);margin-bottom:3px">${p.name}</div>
+            <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:6px">📍 ${p.origin}</div>
+            <div style="color:var(--orange);font-weight:700;font-size:.95rem;margin-bottom:10px">৳${fp}/কেজি${p.discount>0?` <span style="color:#e74c3c;font-size:.72rem">(${p.discount}% ছাড়)</span>`:''}</div>
+            <div style="display:flex;gap:6px">
+              ${p.stock>0?`<button onclick="addToCart(${p.id});closeModal('wishlist-modal')" style="flex:1;background:var(--green-pale);color:var(--green-dark);border:none;padding:7px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-cart-plus"></i> কার্ট</button>
+              <button onclick="buyNow(${p.id});closeModal('wishlist-modal')" style="flex:1;background:var(--yellow);color:var(--green-dark);border:none;padding:7px;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-bolt"></i> কিনুন</button>`
+              :'<div style="font-size:.78rem;color:#e74c3c;font-weight:600;text-align:center;width:100%">❌ স্টক শেষ</div>'}
+              <button onclick="toggleWishlist(${p.id},null);openWishlistModal()" style="width:32px;height:32px;flex-shrink:0;background:#fff5f5;border:1.5px solid #fcc;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e74c3c;font-size:.8rem" title="সরান"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')+'</div>'+
+      `<div style="margin-top:16px;text-align:center">
+        <button onclick="addAllWishlistToCart()" style="background:var(--green-mid);color:#fff;border:none;padding:11px 24px;border-radius:var(--radius-sm);font-size:.92rem;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-cart-plus"></i> সব কার্টে যোগ করুন</button>
+      </div>`;
+  }
+  openModal('wishlist-modal');
+}
+function addAllWishlistToCart(){
+  const u=getCurrentUser();
+  if(!u){showToast('কার্টে যোগ করতে লগইন করুন','warning');openModal('login-modal');return;}
+  const w=getWishlist();
+  const prods=getProducts().filter(p=>w.includes(Number(p.id))&&p.stock>0);
+  prods.forEach(p=>addToCart(p.id));
+  if(prods.length) showToast(`${prods.length}টি পণ্য কার্টে যোগ হয়েছে 🛒`,'success');
+}
+// ============================================================
+// SHARE
+// ============================================================
+function shareWhatsApp(pid){
+  const p=getProducts().find(x=>Number(x.id)===pid);
+  if(!p) return;
+  const fp=getDiscountedPrice(p);
+  const msg=`🥭 *${p.name}* - ৳${fp}/কেজি\n📍 ${p.origin} | ${p.quality}\n\nআমের হাট বাজার থেকে সরাসরি অর্ডার করুন!\n👉 ${window.location.href.split('#')[0]}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+}
+function shareLink(pid){
+  const p=getProducts().find(x=>Number(x.id)===pid);
+  if(!p) return;
+  const fp=getDiscountedPrice(p);
+  const text=`🥭 ${p.name} - ৳${fp}/কেজি | আমের হাট বাজার`;
+  if(navigator.share){
+    navigator.share({title:text,url:window.location.href}).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(window.location.href).then(()=>showToast('লিংক কপি হয়েছে! 🔗','success'));
+  } else {
+    showToast('লিংক: '+window.location.href,'success');
+  }
 }
 
 // ============================================================
@@ -2695,20 +2891,28 @@ function renderAdminOrders(){
       </div>
       <div class="table-wrapper">
         <table class="admin-table" id="orders-table">
-          <thead><tr><th>অর্ডার ID</th><th>তারিখ</th><th>কাস্টমার</th><th>মোট</th><th>পেমেন্ট</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+          <thead><tr><th>অর্ডার ID</th><th>তারিখ</th><th>কাস্টমার</th><th>মোট</th><th>পেমেন্ট</th><th>ট্রানজেকশন</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
           <tbody id="orders-tbody">${renderOrdersRows(orders)}</tbody>
         </table>
       </div>
     </div>`;
 }
 function renderOrdersRows(orders){
-  if(!orders.length) return '<tr><td colspan="7" class="no-data">কোনো অর্ডার নেই</td></tr>';
+  if(!orders.length) return '<tr><td colspan="8" class="no-data">কোনো অর্ডার নেই</td></tr>';
+  const pmName={cod:'💵 COD',bkash:'📱 বিকাশ',nagad:'📱 নগদ',rocket:'📲 রকেট',upay:'📱 উপায়',bank:'🏦 ব্যাংক'};
   return orders.map(o=>`<tr>
     <td><strong style="font-size:.82rem">${o.id}</strong></td>
     <td style="font-size:.8rem">${new Date(o.createdAt).toLocaleDateString('bn-BD')}<br>${new Date(o.createdAt).toLocaleTimeString()}</td>
     <td><strong>${o.userName}</strong><br><span style="font-size:.75rem;color:var(--text-muted)">${o.userPhone}</span></td>
     <td><strong style="color:var(--orange)">৳${o.total}</strong></td>
-    <td style="font-size:.8rem">${o.payment==='cod'?'💵 COD':o.payment==='bkash'?'📱 bKash':o.payment==='nagad'?'📱 Nagad':'🏦 Bank'}</td>
+    <td style="font-size:.8rem">${pmName[o.payment]||o.payment}
+      ${o.paymentRef?`<br><span style="font-size:.72rem;color:var(--text-muted)">${o.paymentRef}</span>`:''}
+    </td>
+    <td style="font-size:.82rem">
+      ${o.paymentTxn
+        ?`<span style="background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:6px;font-weight:600;font-size:.78rem">${o.paymentTxn}</span>`
+        :`<span style="color:#bbb;font-size:.75rem">N/A</span>`}
+    </td>
     <td>
       <select class="status-select" onchange="updateOrderStatus('${o.id}',this.value)">
         ${['pending','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${statusLabel(s)}</option>`).join('')}
@@ -2771,7 +2975,8 @@ function viewOrderDetail(id){
       <div class="detail-box">
         <h4>💳 পেমেন্ট তথ্য</h4>
         <div class="detail-row"><span>পেমেন্ট পদ্ধতি</span><span>${payLabel[o.payment]||o.payment}</span></div>
-        ${o.paymentRef?`<div class="detail-row"><span>রেফারেন্স</span><span style="font-size:.82rem">${o.paymentRef}</span></div>`:''}
+        ${o.paymentRef?`<div class="detail-row"><span>পেমেন্ট নম্বর</span><span style="font-size:.82rem;font-weight:600">${o.paymentRef}</span></div>`:''}
+        ${o.paymentTxn?`<div class="detail-row"><span>ট্রানজেকশন আইডি</span><span style="font-size:.82rem;font-weight:700;color:var(--green-dark);background:var(--green-pale);padding:2px 8px;border-radius:6px">${o.paymentTxn}</span></div>`:''}
         ${o.coupon?`<div class="detail-row"><span>কুপন ব্যবহার</span><span style="background:#fff3cd;padding:2px 8px;border-radius:10px;font-size:.8rem;font-weight:600">${o.coupon}</span></div>`:''}
         <div class="detail-row"><span>সাবটোটাল</span><span>৳${o.subtotal}</span></div>
         ${o.discount>0?`<div class="detail-row"><span>কুপন ছাড়</span><span style="color:#e74c3c">−৳${o.discount}</span></div>`:''}
@@ -3124,6 +3329,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initData();
   updateNavAuth();
   updateCartCount();
+  updateWishlistCount();
   renderProducts();
   document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter') doLogin();});
   document.getElementById('admin-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter') doAdminLogin();});
