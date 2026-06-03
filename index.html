@@ -450,6 +450,30 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .img-upload-area:hover{border-color:var(--green-mid);background:var(--green-pale)}
 .img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 
+/* ===== RATING & REVIEWS ===== */
+.star-row{display:flex;gap:2px;align-items:center}
+.star{font-size:1rem;cursor:pointer;transition:transform .15s;color:#ddd;line-height:1}
+.star.filled{color:#f4a40a}
+.star:hover{transform:scale(1.25)}
+.rating-summary{display:flex;align-items:center;gap:6px;margin-top:4px}
+.rating-avg{font-size:1.1rem;font-weight:700;color:#f4a40a}
+.rating-count{font-size:.75rem;color:var(--text-muted)}
+.review-card{background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;border:1px solid var(--border)}
+.review-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:6px}
+.reviewer-info{display:flex;align-items:center;gap:8px}
+.reviewer-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff;font-weight:700;flex-shrink:0;overflow:hidden}
+.reviewer-name{font-size:.85rem;font-weight:700;color:var(--green-dark)}
+.review-date{font-size:.72rem;color:var(--text-muted)}
+.review-text{font-size:.85rem;color:var(--text);line-height:1.65}
+.review-stars-sm{font-size:.7rem;color:#f4a40a;margin-top:2px}
+.input-star-row{display:flex;gap:4px;margin:8px 0}
+.input-star{font-size:1.6rem;cursor:pointer;color:#ddd;transition:all .2s;line-height:1}
+.input-star.selected,.input-star:hover~.input-star{color:#ddd}
+.input-star.selected,.input-star.hovered{color:#f4a40a}
+.review-count-badge{background:var(--yellow-light);color:#856404;font-size:.7rem;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:4px}
+.btn-review-open{background:none;border:1.5px dashed var(--green-light);color:var(--green-mid);padding:5px 12px;border-radius:20px;font-size:.78rem;cursor:pointer;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
+.btn-review-open:hover{background:var(--green-pale);border-style:solid}
+
 /* ===== WISHLIST & SHARE ===== */
 .product-actions-row{display:flex;gap:6px;padding:0 14px 10px;justify-content:space-between;align-items:center}
 .btn-action-sm{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;transition:all .2s;flex-shrink:0}
@@ -788,6 +812,17 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
   </div>
 </footer>
 
+<!-- REVIEW MODAL -->
+<div class="modal-overlay" id="review-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header" style="background:linear-gradient(135deg,#1b4332,#2d6a4f);border-radius:14px 14px 0 0">
+      <h3 style="color:#fff" id="review-modal-title"><i class="fas fa-star" style="color:var(--yellow);margin-right:8px"></i>রিভিউ ও মন্তব্য</h3>
+      <button class="modal-close" style="color:#fff" onclick="closeModal('review-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="review-modal-body" style="padding:0;max-height:80vh;overflow-y:auto"></div>
+  </div>
+</div>
+
 <!-- WISHLIST MODAL -->
 <div class="modal-overlay" id="wishlist-modal">
   <div class="modal modal-lg">
@@ -1080,8 +1115,10 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
       <button class="admin-nav-item" onclick="showAdminTab('orders')"><i class="fas fa-shopping-bag"></i>অর্ডার ব্যবস্থাপনা</button>
       <button class="admin-nav-item" onclick="showAdminTab('customers')"><i class="fas fa-users"></i>কাস্টমার তালিকা</button>
       <button class="admin-nav-item" onclick="showAdminTab('coupons')"><i class="fas fa-ticket-alt"></i>কুপন ব্যবস্থাপনা</button>
+      <button class="admin-nav-item" onclick="showAdminTab('reviews')"><i class="fas fa-star"></i>রিভিউ ব্যবস্থাপনা</button>
       <button class="admin-nav-item" onclick="showAdminTab('delivery')"><i class="fas fa-truck"></i>ডেলিভারি সেটিংস</button>
       <button class="admin-nav-item" onclick="showAdminTab('password')"><i class="fas fa-key"></i>পাসওয়ার্ড পরিবর্তন</button>
+      <button class="admin-nav-item" onclick="showAdminTab('customize')"><i class="fas fa-paint-brush"></i>সাইট কাস্টমাইজ</button>
     </nav>
     <button class="admin-nav-item" style="border-top:1px solid rgba(255,255,255,.1);color:#ff8a80" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i>লগআউট</button>
   </div>
@@ -1199,6 +1236,12 @@ function renderProducts(){
           <span class="price-final">৳${fp}/কেজি</span>
         </div>
         <div style="font-size:.78rem;color:${p.stock>0?'var(--green-mid)':'#e74c3c'};margin-top:2px">${p.stock>0?`✅ স্টক আছে (${p.stock} কেজি)`:'❌ স্টক শেষ'}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px;cursor:pointer" onclick="openReviewModal(${p.id})" title="রিভিউ দেখুন ও লিখুন">
+          <div style="display:flex;align-items:center;gap:5px">
+            ${(()=>{const s=getProductRatingStats(p.id);if(!s.count)return '<span style="font-size:.72rem;color:#aaa">রেটিং নেই</span>';const full=Math.round(s.avg);return '<span style="color:#f4a40a;font-size:.9rem;letter-spacing:1px">'+'★'.repeat(full)+'<span style="color:#ddd">'+'★'.repeat(5-full)+'</span></span><span style="font-size:.78rem;font-weight:700;color:#f4a40a;margin-left:2px">'+s.avg+'</span><span style="font-size:.72rem;color:#aaa;margin-left:2px">('+s.count+')</span>';})()}
+          </div>
+          <span style="font-size:.72rem;color:var(--green-mid);font-weight:600;display:flex;align-items:center;gap:3px"><i class="fas fa-comment-dots"></i> রিভিউ</span>
+        </div>
       </div>
       ${p.stock>0?`<div class="product-footer">
         <button class="btn-cart" onclick="addToCart(${p.id})"><i class="fas fa-cart-plus"></i> কার্টে যোগ</button>
@@ -2449,7 +2492,185 @@ function showTrackResult(orderId){
 }
 
 // ============================================================
-// WISHLIST — works without login, saves to localStorage
+// REVIEWS & RATINGS
+// ============================================================
+function getReviews(pid){
+  try{const d=JSON.parse(localStorage.getItem('amb_reviews_'+pid)||'[]');return Array.isArray(d)?d:[];}catch{return [];}
+}
+function saveReviews(pid,data){localStorage.setItem('amb_reviews_'+pid,JSON.stringify(data));}
+function getAllReviews(){
+  // Collect all product reviews for admin
+  const prods=getProducts();
+  let all=[];
+  prods.forEach(p=>{
+    const revs=getReviews(p.id);
+    revs.forEach(r=>all.push({...r,productName:p.name,productId:p.id}));
+  });
+  return all.sort((a,b)=>b.createdAt-a.createdAt);
+}
+function getProductRatingStats(pid){
+  const revs=getReviews(pid);
+  if(!revs.length) return {avg:0,count:0};
+  const avg=revs.reduce((s,r)=>s+(r.rating||0),0)/revs.length;
+  return {avg:Math.round(avg*10)/10,count:revs.length};
+}
+function getProductRatingSummaryHtml(pid){
+  const s=getProductRatingStats(pid);
+  if(!s.count) return '<span style="font-size:.75rem;color:var(--text-muted)">কোনো রিভিউ নেই</span>';
+  const stars='★'.repeat(Math.round(s.avg))+'☆'.repeat(5-Math.round(s.avg));
+  return `<span class="rating-avg">${s.avg}</span><span style="color:#f4a40a;font-size:.8rem">${stars}</span><span class="rating-count">(${s.count})</span>`;
+}
+let currentReviewPid=null;
+let selectedRating=0;
+function openReviewModal(pid){
+  currentReviewPid=pid;
+  selectedRating=0;
+  const p=getProducts().find(x=>Number(x.id)===pid);
+  if(!p) return;
+  document.getElementById('review-modal-title').innerHTML=`<i class="fas fa-star" style="color:var(--yellow);margin-right:8px"></i>${p.name} — রিভিউ ও মন্তব্য`;
+  renderReviewModal(pid);
+  openModal('review-modal');
+}
+function renderReviewModal(pid){
+  const u=getCurrentUser();
+  const revs=getReviews(pid);
+  const s=getProductRatingStats(pid);
+  // Rating distribution
+  const dist=[5,4,3,2,1].map(n=>{
+    const c=revs.filter(r=>r.rating===n).length;
+    const pct=revs.length?Math.round(c/revs.length*100):0;
+    return {n,c,pct};
+  });
+  document.getElementById('review-modal-body').innerHTML=`
+    <!-- Rating Overview -->
+    <div style="background:linear-gradient(135deg,var(--green-pale),#f9f5e7);padding:20px 22px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div style="font-size:3rem;font-weight:700;color:#f4a40a;line-height:1">${s.avg||'—'}</div>
+          <div style="font-size:1.2rem;color:#f4a40a">${'★'.repeat(Math.round(s.avg))}${'☆'.repeat(5-Math.round(s.avg))}</div>
+          <div style="font-size:.78rem;color:var(--text-muted);margin-top:3px">${s.count}টি রিভিউ</div>
+        </div>
+        <div style="flex:1;min-width:160px">
+          ${dist.map(d=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <span style="font-size:.75rem;width:14px;text-align:right;color:var(--text-muted)">${d.n}</span>
+            <span style="font-size:.7rem;color:#f4a40a">★</span>
+            <div style="flex:1;height:6px;background:#e0d8c8;border-radius:3px;overflow:hidden">
+              <div style="height:100%;width:${d.pct}%;background:#f4a40a;border-radius:3px;transition:width .4s"></div>
+            </div>
+            <span style="font-size:.72rem;color:var(--text-muted);width:20px">${d.c}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Write Review -->
+    <div style="padding:18px 22px;border-bottom:1px solid var(--border)">
+      <h4 style="color:var(--green-dark);font-size:.95rem;margin-bottom:12px"><i class="fas fa-pen" style="color:var(--green-mid);margin-right:6px"></i>আপনার রিভিউ লিখুন</h4>
+      ${!u?`<div style="background:var(--yellow-light);border:1px solid var(--yellow);border-radius:8px;padding:10px 14px;font-size:.85rem;color:#856404;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span>রিভিউ দিতে লগইন করুন</span>
+        <button onclick="closeModal('review-modal');openModal('login-modal')" style="background:var(--green-mid);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:.82rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif">লগইন করুন</button>
+      </div>`:`
+      <div style="margin-bottom:10px">
+        <div style="font-size:.85rem;font-weight:600;color:var(--text-muted);margin-bottom:6px">রেটিং দিন *</div>
+        <div class="input-star-row" id="rating-stars">
+          ${[1,2,3,4,5].map(n=>`<span class="input-star" onclick="setRating(${n})" onmouseover="hoverRating(${n})" onmouseout="unhoverRating()">★</span>`).join('')}
+        </div>
+        <div id="rating-label" style="font-size:.78rem;color:var(--text-muted);height:16px"></div>
+      </div>
+      <textarea id="review-text" class="form-control" rows="3" placeholder="আপনার অভিজ্ঞতা শেয়ার করুন... আমের গুণমান, ডেলিভারি, স্বাদ ইত্যাদি লিখুন।" style="resize:vertical;margin-bottom:10px"></textarea>
+      <div id="review-error" class="error-msg" style="margin-bottom:6px"></div>
+      <button onclick="submitReview()" style="background:var(--green-mid);color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-paper-plane"></i> রিভিউ জমা দিন</button>`}
+    </div>
+
+    <!-- Reviews List -->
+    <div style="padding:18px 22px" id="reviews-list">
+      ${revs.length?revs.slice().sort((a,b)=>b.createdAt-a.createdAt).map(r=>{
+        const initials=(r.userName||'U').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+        const stars='★'.repeat(r.rating||0)+'☆'.repeat(5-(r.rating||0));
+        const isOwn=u&&r.userId===u.id;
+        return `<div class="review-card" id="review_${r.id}">
+          <div class="review-header">
+            <div class="reviewer-info">
+              <div class="reviewer-avatar">${r.avatar?`<img src="${r.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`:'<span>'+initials+'</span>'}</div>
+              <div>
+                <div class="reviewer-name">${r.userName||'গ্রাহক'}</div>
+                <div class="review-stars-sm">${stars} <span style="color:var(--text-muted)">(${r.rating}/৫)</span></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="review-date">${new Date(r.createdAt).toLocaleDateString('bn-BD',{day:'numeric',month:'short',year:'numeric'})}</span>
+              ${isOwn?`<button onclick="deleteReview(${currentReviewPid},'${r.id}')" style="background:#fee;border:1px solid #fcc;color:#e74c3c;padding:3px 8px;border-radius:4px;font-size:.72rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-trash"></i></button>`:''}
+            </div>
+          </div>
+          <div class="review-text">${r.text}</div>
+        </div>`;
+      }).join(''):`<div style="text-align:center;padding:24px;color:var(--text-muted)"><div style="font-size:2.5rem;margin-bottom:10px">💬</div><p>এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!</p></div>`}
+    </div>`;
+}
+const ratingLabels={1:'খুব খারাপ 😞',2:'খারাপ 😕',3:'ঠিক আছে 😐',4:'ভালো 😊',5:'অসাধারণ 🤩'};
+function setRating(n){
+  selectedRating=n;
+  const stars=document.querySelectorAll('.input-star');
+  stars.forEach((s,i)=>{s.style.color=i<n?'#f4a40a':'#ddd';});
+  const lbl=document.getElementById('rating-label');
+  if(lbl) lbl.textContent=ratingLabels[n]||'';
+}
+function hoverRating(n){
+  const stars=document.querySelectorAll('.input-star');
+  stars.forEach((s,i)=>{s.style.color=i<n?'#f4a40a':'#ddd';});
+}
+function unhoverRating(){
+  const stars=document.querySelectorAll('.input-star');
+  stars.forEach((s,i)=>{s.style.color=i<selectedRating?'#f4a40a':'#ddd';});
+}
+function submitReview(){
+  const u=getCurrentUser();
+  if(!u){showToast('লগইন করুন','warning');return;}
+  if(!selectedRating){
+    const err=document.getElementById('review-error');
+    if(err) err.textContent='রেটিং দিন (১-৫ তারা)';
+    return;
+  }
+  const text=(document.getElementById('review-text')?.value||'').trim();
+  if(!text||text.length<5){
+    const err=document.getElementById('review-error');
+    if(err) err.textContent='অন্তত ৫ অক্ষরের মন্তব্য লিখুন';
+    return;
+  }
+  const revs=getReviews(currentReviewPid);
+  // One review per user per product
+  const existing=revs.find(r=>r.userId===u.id);
+  if(existing){
+    const err=document.getElementById('review-error');
+    if(err) err.textContent='আপনি এই পণ্যে ইতিমধ্যে রিভিউ দিয়েছেন';
+    return;
+  }
+  const review={
+    id:'rv_'+Date.now(),
+    userId:u.id,userName:u.name,avatar:u.avatar||'',
+    rating:selectedRating,text,
+    createdAt:Date.now()
+  };
+  revs.push(review);
+  saveReviews(currentReviewPid,revs);
+  selectedRating=0;
+  showToast('রিভিউ জমা হয়েছে! ধন্যবাদ ⭐','success');
+  renderReviewModal(currentReviewPid);
+  renderProducts(); // update rating on card
+}
+function deleteReview(pid,reviewId){
+  const u=getCurrentUser();
+  if(!u) return;
+  showCustomAlert('রিভিউ মুছুন','আপনার রিভিউটি মুছে ফেলা হবে।','হ্যাঁ, মুছুন','danger',()=>{
+    const revs=getReviews(pid).filter(r=>r.id!==reviewId||(r.userId!==u.id));
+    saveReviews(pid,revs);
+    showToast('রিভিউ মুছে ফেলা হয়েছে','success');
+    renderReviewModal(pid);
+    renderProducts();
+  });
+}
+
+// ============================================================
 // ============================================================
 function getWishlist(){
   try{const d=JSON.parse(localStorage.getItem('amb_wishlist')||'[]');return Array.isArray(d)?d:[];}catch{return [];}
@@ -2641,13 +2862,13 @@ function showAdminTab(tab,silent=false){
   // Update sidebar active state
   document.querySelectorAll('.admin-nav-item').forEach(b=>b.classList.remove('active'));
   const btns=document.querySelectorAll('.admin-nav-item');
-  const tabMap={dashboard:0,products:1,orders:2,customers:3,coupons:4,delivery:5,password:6};
+  const tabMap={dashboard:0,products:1,orders:2,customers:3,coupons:4,reviews:5,delivery:6,password:7,customize:8};
   if(btns[tabMap[tab]]) btns[tabMap[tab]].classList.add('active');
   // Update page title
-  const titles={dashboard:'ড্যাশবোর্ড',products:'পণ্য ব্যবস্থাপনা',orders:'অর্ডার ব্যবস্থাপনা',customers:'কাস্টমার তালিকা',coupons:'কুপন ব্যবস্থাপনা',delivery:'ডেলিভারি সেটিংস',password:'পাসওয়ার্ড পরিবর্তন'};
+  const titles={dashboard:'ড্যাশবোর্ড',products:'পণ্য ব্যবস্থাপনা',orders:'অর্ডার ব্যবস্থাপনা',customers:'কাস্টমার তালিকা',coupons:'কুপন ব্যবস্থাপনা',reviews:'রিভিউ ব্যবস্থাপনা',delivery:'ডেলিভারি সেটিংস',password:'পাসওয়ার্ড পরিবর্তন',customize:'🎨 সাইট কাস্টমাইজ'};
   document.getElementById('admin-page-title').textContent=titles[tab]||tab;
   // Render the tab content
-  const fn={dashboard:renderDashboard,products:renderAdminProducts,orders:renderAdminOrders,customers:renderAdminCustomers,coupons:renderAdminCoupons,delivery:renderDeliverySettings,password:renderPasswordChange};
+  const fn={dashboard:renderDashboard,products:renderAdminProducts,orders:renderAdminOrders,customers:renderAdminCustomers,coupons:renderAdminCoupons,reviews:renderAdminReviews,delivery:renderDeliverySettings,password:renderPasswordChange,customize:renderCustomizeSettings};
   if(fn[tab]) fn[tab]();
 }
 
@@ -2764,7 +2985,311 @@ function renderDashboard(){
     </div>`;
 }
 
-// ADMIN PRODUCTS
+// ============================================================
+// SITE CUSTOMIZE SETTINGS
+// ============================================================
+function getSiteSettings(){
+  try{
+    const d=JSON.parse(localStorage.getItem('amb_site_settings')||'{}');
+    return {
+      siteName: d.siteName||'আমের হাট বাজার',
+      siteTagline: d.siteTagline||'তাজা আম, সরাসরি বাগান থেকে আপনার দরজায়',
+      heroTitle: d.heroTitle||'তাজা আম, সরাসরি বাগান থেকে <span>আপনার দরজায়</span>',
+      heroSubtext: d.heroSubtext||'রাজশাহী, চাঁপাইনবাবগঞ্জ ও সারা বাংলাদেশের সেরা বাগান থেকে সংগ্রহ করা প্রিমিয়াম মানের আম।',
+      primaryColor: d.primaryColor||'#2d6a4f',
+      accentColor: d.accentColor||'#f4a40a',
+      bgColor: d.bgColor||'#f9f5e7',
+      navBg: d.navBg||'#1b4332',
+      heroBg1: d.heroBg1||'#1b4332',
+      heroBg2: d.heroBg2||'#2d6a4f',
+      phoneNumber: d.phoneNumber||'+880 1305-144356',
+      email: d.email||'info@amerhatabazar.com',
+      address: d.address||'রাজশাহী, বাংলাদেশ',
+      fbLink: d.fbLink||'#',
+      igLink: d.igLink||'#',
+      ytLink: d.ytLink||'#',
+      waLink: d.waLink||'https://wa.me/8801305144356',
+      showBanner: d.showBanner!==false,
+      bannerText: d.bannerText||'',
+      bannerColor: d.bannerColor||'#e74c3c',
+      showReviews: d.showReviews!==false,
+      showWishlist: d.showWishlist!==false,
+      showShare: d.showShare!==false,
+    };
+  }catch{return {};}
+}
+function saveSiteSettings(s){localStorage.setItem('amb_site_settings',JSON.stringify(s));}
+
+function applySettings(s){
+  if(!s) s=getSiteSettings();
+  // CSS variables
+  const root=document.documentElement;
+  root.style.setProperty('--green-mid',s.primaryColor);
+  root.style.setProperty('--yellow',s.accentColor);
+  root.style.setProperty('--bg',s.bgColor);
+  // Navbar bg
+  const nav=document.getElementById('navbar');
+  if(nav) nav.style.background=s.navBg;
+  // Admin sidebar
+  const sidebar=document.getElementById('admin-sidebar');
+  if(sidebar) sidebar.style.background=s.navBg;
+  // Hero
+  const hero=document.getElementById('hero');
+  if(hero) hero.style.background=`linear-gradient(135deg,${s.heroBg1} 0%,${s.heroBg2} 50%,${s.heroBg1} 100%)`;
+  // Site name in navbar
+  const logoSpans=document.querySelectorAll('.nav-logo>div>div:first-child');
+  logoSpans.forEach(el=>{if(el) el.textContent=s.siteName;});
+  // Page title
+  document.title=s.siteName;
+  // Phone / email in footer (update .contact-item spans)
+  // Banner
+  let banner=document.getElementById('site-banner');
+  if(s.showBanner&&s.bannerText){
+    if(!banner){
+      banner=document.createElement('div');
+      banner.id='site-banner';
+      banner.style.cssText='position:fixed;top:65px;left:0;right:0;z-index:999;text-align:center;padding:7px;font-size:.85rem;font-weight:600;font-family:Hind Siliguri,sans-serif';
+      document.body.appendChild(banner);
+    }
+    banner.style.background=s.bannerColor;
+    banner.style.color='#fff';
+    banner.textContent=s.bannerText;
+    banner.style.display='block';
+  } else if(banner){banner.style.display='none';}
+  // Social links
+  const links={fb:s.fbLink,ig:s.igLink,yt:s.ytLink,wa:s.waLink};
+  document.querySelectorAll('.social-icon').forEach(a=>{
+    const cls=[...a.classList].find(c=>['fb','ig','yt','wa'].includes(c));
+    if(cls&&links[cls]) a.href=links[cls];
+  });
+}
+
+function renderCustomizeSettings(){
+  const s=getSiteSettings();
+  document.getElementById('admin-main').innerHTML=`
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+
+    <!-- General -->
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🏷️ সাধারণ তথ্য</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label>সাইটের নাম</label><input id="cs-siteName" value="${s.siteName}" oninput="livePreview('siteName',this.value)"></div>
+        <div class="form-group"><label>ট্যাগলাইন</label><input id="cs-siteTagline" value="${s.siteTagline}"></div>
+        <div class="form-group"><label>হিরো শিরোনাম</label><textarea id="cs-heroTitle" rows="2">${s.heroTitle}</textarea></div>
+        <div class="form-group"><label>হিরো সাবটেক্সট</label><textarea id="cs-heroSubtext" rows="2">${s.heroSubtext}</textarea></div>
+      </div>
+    </div>
+
+    <!-- Colors -->
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🎨 রঙ কাস্টমাইজ</h3></div>
+      <div class="admin-form">
+        ${[
+          ['cs-primaryColor','প্রাইমারি রঙ (সবুজ)',s.primaryColor],
+          ['cs-accentColor','অ্যাকসেন্ট রঙ (হলুদ)',s.accentColor],
+          ['cs-bgColor','ব্যাকগ্রাউন্ড রঙ',s.bgColor],
+          ['cs-navBg','নেভবার রঙ',s.navBg],
+          ['cs-heroBg1','হিরো রঙ ১',s.heroBg1],
+          ['cs-heroBg2','হিরো রঙ ২',s.heroBg2],
+        ].map(([id,lbl,val])=>`
+          <div class="form-group" style="display:flex;align-items:center;gap:12px">
+            <label style="flex:1;margin-bottom:0">${lbl}</label>
+            <input type="color" id="${id}" value="${val}" oninput="livePreview('${id.replace('cs-','')}',this.value)"
+              style="width:46px;height:36px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;padding:2px">
+            <input type="text" value="${val}" style="width:90px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:.82rem;font-family:monospace"
+              oninput="document.getElementById('${id}').value=this.value;livePreview('${id.replace('cs-','')}',this.value)">
+          </div>`).join('')}
+        <button class="btn-secondary-btn" style="margin-top:8px;font-size:.82rem" onclick="resetColors()"><i class="fas fa-undo"></i> ডিফল্টে ফিরুন</button>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>📞 যোগাযোগ তথ্য</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label>ফোন নম্বর</label><input id="cs-phoneNumber" value="${s.phoneNumber}"></div>
+        <div class="form-group"><label>ইমেইল</label><input id="cs-email" value="${s.email}"></div>
+        <div class="form-group"><label>ঠিকানা</label><input id="cs-address" value="${s.address}"></div>
+      </div>
+    </div>
+
+    <!-- Social Media -->
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>📱 সোশ্যাল মিডিয়া</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label><i class="fab fa-facebook" style="color:#1877f2"></i> Facebook URL</label><input id="cs-fbLink" value="${s.fbLink}" placeholder="https://facebook.com/..."></div>
+        <div class="form-group"><label><i class="fab fa-instagram" style="color:#e4405f"></i> Instagram URL</label><input id="cs-igLink" value="${s.igLink}" placeholder="https://instagram.com/..."></div>
+        <div class="form-group"><label><i class="fab fa-youtube" style="color:#ff0000"></i> YouTube URL</label><input id="cs-ytLink" value="${s.ytLink}" placeholder="https://youtube.com/..."></div>
+        <div class="form-group"><label><i class="fab fa-whatsapp" style="color:#25d366"></i> WhatsApp URL</label><input id="cs-waLink" value="${s.waLink}" placeholder="https://wa.me/..."></div>
+      </div>
+    </div>
+
+    <!-- Banner -->
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>📢 ঘোষণা ব্যানার</h3></div>
+      <div class="admin-form">
+        <div class="form-group" style="display:flex;align-items:center;gap:10px">
+          <label style="margin-bottom:0">ব্যানার দেখাবে?</label>
+          <input type="checkbox" id="cs-showBanner" ${s.showBanner?'checked':''} style="width:18px;height:18px;cursor:pointer" onchange="livePreview('showBanner',this.checked)">
+        </div>
+        <div class="form-group"><label>ব্যানার টেক্সট</label><input id="cs-bannerText" value="${s.bannerText||''}" placeholder="যেমন: ঈদ স্পেশাল অফার! ৩০% ছাড়!" oninput="livePreview('bannerText',this.value)"></div>
+        <div class="form-group" style="display:flex;align-items:center;gap:12px">
+          <label style="flex:1;margin-bottom:0">ব্যানার রঙ</label>
+          <input type="color" id="cs-bannerColor" value="${s.bannerColor}" oninput="livePreview('bannerColor',this.value)" style="width:46px;height:36px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;padding:2px">
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Toggles -->
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>⚙️ ফিচার চালু/বন্ধ</h3></div>
+      <div class="admin-form">
+        ${[
+          ['cs-showReviews','রিভিউ ও রেটিং',s.showReviews],
+          ['cs-showWishlist','উইশলিস্ট বাটন',s.showWishlist],
+          ['cs-showShare','শেয়ার বাটন',s.showShare],
+        ].map(([id,lbl,val])=>`
+          <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+            <label style="margin-bottom:0;font-size:.9rem">${lbl}</label>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+              <input type="checkbox" id="${id}" ${val?'checked':''} style="opacity:0;width:0;height:0" onchange="livePreview('${id.replace('cs-','')}',this.checked)">
+              <span style="position:absolute;inset:0;background:${val?'var(--green-mid)':'#ccc'};border-radius:24px;transition:.3s" id="${id}-slider"></span>
+              <span style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:${val?'23px':'3px'};transition:.3s" id="${id}-thumb"></span>
+            </label>
+          </div>`).join('')}
+      </div>
+    </div>
+
+  </div>
+  <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+    <button onclick="saveAllCustomize()" style="background:var(--green-mid);color:#fff;border:none;padding:12px 28px;border-radius:var(--radius-sm);font-size:1rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-save"></i> সব পরিবর্তন সংরক্ষণ করুন</button>
+    <button onclick="resetAllSettings()" class="btn-secondary-btn" style="padding:12px 20px"><i class="fas fa-undo"></i> সব রিসেট করুন</button>
+    <span style="font-size:.82rem;color:var(--text-muted)">💡 রঙ পরিবর্তন তাৎক্ষণিক প্রিভিউ হয়</span>
+  </div>`;
+
+  // init toggle visuals
+  ['cs-showReviews','cs-showWishlist','cs-showShare','cs-showBanner'].forEach(id=>{
+    const cb=document.getElementById(id);
+    const slider=document.getElementById(id+'-slider');
+    const thumb=document.getElementById(id+'-thumb');
+    if(cb&&slider&&thumb){
+      cb.addEventListener('change',()=>{
+        slider.style.background=cb.checked?'var(--green-mid)':'#ccc';
+        thumb.style.left=cb.checked?'23px':'3px';
+      });
+    }
+  });
+}
+
+function livePreview(key,val){
+  const s=getSiteSettings();
+  s[key]=val;
+  applySettings(s);
+}
+
+function saveAllCustomize(){
+  const s={
+    siteName:document.getElementById('cs-siteName')?.value||'',
+    siteTagline:document.getElementById('cs-siteTagline')?.value||'',
+    heroTitle:document.getElementById('cs-heroTitle')?.value||'',
+    heroSubtext:document.getElementById('cs-heroSubtext')?.value||'',
+    primaryColor:document.getElementById('cs-primaryColor')?.value||'#2d6a4f',
+    accentColor:document.getElementById('cs-accentColor')?.value||'#f4a40a',
+    bgColor:document.getElementById('cs-bgColor')?.value||'#f9f5e7',
+    navBg:document.getElementById('cs-navBg')?.value||'#1b4332',
+    heroBg1:document.getElementById('cs-heroBg1')?.value||'#1b4332',
+    heroBg2:document.getElementById('cs-heroBg2')?.value||'#2d6a4f',
+    phoneNumber:document.getElementById('cs-phoneNumber')?.value||'',
+    email:document.getElementById('cs-email')?.value||'',
+    address:document.getElementById('cs-address')?.value||'',
+    fbLink:document.getElementById('cs-fbLink')?.value||'#',
+    igLink:document.getElementById('cs-igLink')?.value||'#',
+    ytLink:document.getElementById('cs-ytLink')?.value||'#',
+    waLink:document.getElementById('cs-waLink')?.value||'#',
+    showBanner:document.getElementById('cs-showBanner')?.checked||false,
+    bannerText:document.getElementById('cs-bannerText')?.value||'',
+    bannerColor:document.getElementById('cs-bannerColor')?.value||'#e74c3c',
+    showReviews:document.getElementById('cs-showReviews')?.checked!==false,
+    showWishlist:document.getElementById('cs-showWishlist')?.checked!==false,
+    showShare:document.getElementById('cs-showShare')?.checked!==false,
+  };
+  saveSiteSettings(s);
+  applySettings(s);
+  showToast('সব পরিবর্তন সংরক্ষিত হয়েছে ✅','success');
+}
+
+function resetColors(){
+  const defaults={primaryColor:'#2d6a4f',accentColor:'#f4a40a',bgColor:'#f9f5e7',navBg:'#1b4332',heroBg1:'#1b4332',heroBg2:'#2d6a4f'};
+  Object.entries(defaults).forEach(([k,v])=>{
+    const el=document.getElementById('cs-'+k);
+    if(el) el.value=v;
+    livePreview(k,v);
+  });
+  showToast('রঙ ডিফল্টে ফিরিয়ে আনা হয়েছে','success');
+}
+
+function resetAllSettings(){
+  showCustomAlert('সব সেটিংস রিসেট করুন','সমস্ত কাস্টম সেটিংস মুছে ডিফল্টে ফিরে যাবে।','হ্যাঁ, রিসেট করুন','warning',()=>{
+    localStorage.removeItem('amb_site_settings');
+    applySettings(getSiteSettings());
+    renderCustomizeSettings();
+    showToast('সব সেটিংস রিসেট হয়েছে','success');
+  });
+}
+function renderAdminReviews(){
+  const all=getAllReviews();
+  const products=getProducts();
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h3>⭐ রিভিউ তালিকা (${all.length}টি)</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input class="search-bar" placeholder="পণ্য বা গ্রাহক নামে খুঁজুন..." oninput="filterAdminReviews(this.value)" id="review-search">
+          <select class="filter-select" onchange="filterAdminReviews(document.getElementById('review-search').value,this.value)">
+            <option value="">সব রেটিং</option>
+            <option value="5">⭐⭐⭐⭐⭐ (৫)</option>
+            <option value="4">⭐⭐⭐⭐ (৪)</option>
+            <option value="3">⭐⭐⭐ (৩)</option>
+            <option value="2">⭐⭐ (২)</option>
+            <option value="1">⭐ (১)</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead><tr><th>পণ্য</th><th>গ্রাহক</th><th>রেটিং</th><th>মন্তব্য</th><th>তারিখ</th><th>অ্যাকশন</th></tr></thead>
+          <tbody id="reviews-admin-tbody">${renderAdminReviewRows(all)}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+function renderAdminReviewRows(reviews){
+  if(!reviews.length) return '<tr><td colspan="6" class="no-data">কোনো রিভিউ নেই</td></tr>';
+  return reviews.map(r=>`<tr>
+    <td><strong style="font-size:.85rem">${r.productName||'—'}</strong></td>
+    <td><strong>${r.userName||'—'}</strong></td>
+    <td><span style="color:#f4a40a;font-size:.9rem">${'★'.repeat(r.rating||0)}${'☆'.repeat(5-(r.rating||0))}</span> <strong>${r.rating}/৫</strong></td>
+    <td style="max-width:200px;font-size:.82rem;color:var(--text)">${(r.text||'').slice(0,80)}${(r.text||'').length>80?'...':''}</td>
+    <td style="font-size:.78rem;color:var(--text-muted)">${new Date(r.createdAt).toLocaleDateString('bn-BD')}</td>
+    <td><button class="btn-delete-sm" onclick="adminDeleteReview(${r.productId},'${r.id}')"><i class="fas fa-trash"></i></button></td>
+  </tr>`).join('');
+}
+function filterAdminReviews(q,rating){
+  let reviews=getAllReviews();
+  if(q) reviews=reviews.filter(r=>(r.productName||'').includes(q)||(r.userName||'').includes(q));
+  if(rating) reviews=reviews.filter(r=>String(r.rating)===String(rating));
+  const tbody=document.getElementById('reviews-admin-tbody');
+  if(tbody) tbody.innerHTML=renderAdminReviewRows(reviews);
+}
+function adminDeleteReview(pid,reviewId){
+  showCustomAlert('রিভিউ মুছুন','এই রিভিউটি স্থায়ীভাবে মুছে ফেলা হবে।','হ্যাঁ, মুছুন','danger',()=>{
+    const revs=getReviews(pid).filter(r=>r.id!==reviewId);
+    saveReviews(pid,revs);
+    showToast('রিভিউ মুছে ফেলা হয়েছে','success');
+    renderAdminReviews();
+    renderProducts();
+  });
+}
 let editProductId=null;
 function renderAdminProducts(){
   const products=getProducts();
@@ -3359,6 +3884,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateCartCount();
   updateWishlistCount();
   renderProducts();
+  applySettings(getSiteSettings()); // Apply saved customizations
   document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter') doLogin();});
   document.getElementById('admin-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter') doAdminLogin();});
 
