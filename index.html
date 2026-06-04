@@ -302,7 +302,8 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .pay-option{padding:12px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;text-align:center;transition:all .2s}
 .pay-option:hover{border-color:var(--green-light)}
 .pay-option.selected{border-color:var(--green-mid);background:var(--green-pale)}
-.pay-option-icon{font-size:1.4rem;margin-bottom:5px}
+.pay-option-icon{font-size:1.4rem;margin-bottom:5px;display:flex;align-items:center;justify-content:center;height:28px}
+.pay-option-icon svg{display:block}
 .pay-option-name{font-size:.82rem;font-weight:600;color:var(--green-dark)}
 .order-success-box{text-align:center;padding:20px 0}
 .success-icon-big{font-size:4rem;margin-bottom:15px}
@@ -793,12 +794,24 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
     <div>
       <h4>পেমেন্ট মেথড</h4>
       <div class="footer-payment-icons">
-        <div class="payment-icon-pill">💵 COD</div>
-        <div class="payment-icon-pill" style="background:#e2136e22;color:#ffaacc">📱 বিকাশ</div>
-        <div class="payment-icon-pill" style="background:#f7941d22;color:#ffc580">📱 নগদ</div>
-        <div class="payment-icon-pill" style="background:#8b1fa922;color:#d4a0f0">📲 রকেট</div>
-        <div class="payment-icon-pill" style="background:#00a65122;color:#80d4a8">📱 উপায়</div>
-        <div class="payment-icon-pill">🏦 ব্যাংক</div>
+        <div class="payment-icon-pill" title="ক্যাশ অন ডেলিভারি">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#2d6a4f"/><rect x="3" y="7" width="18" height="10" rx="2" fill="#fff" opacity=".9"/><circle cx="12" cy="12" r="3" fill="#2d6a4f"/></svg> COD
+        </div>
+        <div class="payment-icon-pill" style="background:#e2136e22;color:#e2136e" title="বিকাশ">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#E2136E"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">bKash</text></svg> বিকাশ
+        </div>
+        <div class="payment-icon-pill" style="background:#f7941d22;color:#c97000" title="নগদ">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#F7941D"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Nagad</text></svg> নগদ
+        </div>
+        <div class="payment-icon-pill" style="background:#8b1fa922;color:#8b1fa9" title="রকেট">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#8B1FA9"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="Arial">ROCKET</text></svg> রকেট
+        </div>
+        <div class="payment-icon-pill" style="background:#00a65122;color:#007a3d" title="উপায়">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#00a651"/><text x="12" y="16" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Upay</text></svg> উপায়
+        </div>
+        <div class="payment-icon-pill" title="ব্যাংক ট্রান্সফার">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#1b4332"/><polygon points="12,3 21,8 3,8" fill="#f4a40a"/><rect x="5" y="9" width="3" height="7" fill="#fff" opacity=".9"/><rect x="10.5" y="9" width="3" height="7" fill="#fff" opacity=".9"/><rect x="16" y="9" width="3" height="7" fill="#fff" opacity=".9"/><rect x="3" y="17" width="18" height="2" fill="#f4a40a"/></svg> ব্যাংক
+        </div>
       </div>
       <div style="margin-top:20px">
         <h4 style="margin-bottom:8px">কাজের সময়</h4>
@@ -1557,12 +1570,30 @@ function renderCheckoutForm(){
 let selectedPayment='cod';
 // Payment method info config
 const PAYMENT_METHODS={
-  cod:{icon:'💵',name:'ক্যাশ অন ডেলিভারি',needsTxn:false,color:'#2d6a4f'},
-  bkash:{icon:'<img src="https://i.ibb.co/k9mWxR4/bkash.png" onerror="this.outerHTML=\'📱\'" style="width:22px;height:22px;object-fit:contain">',name:'বিকাশ',needsTxn:true,color:'#e2136e',number:'01305-144356',hint:'বিকাশ নম্বরে পেমেন্ট করুন: 01305-144356'},
-  nagad:{icon:'<img src="https://i.ibb.co/6WtHZzb/nagad.png" onerror="this.outerHTML=\'📱\'" style="width:22px;height:22px;object-fit:contain">',name:'নগদ',needsTxn:true,color:'#f7941d',number:'01305-144356',hint:'নগদ নম্বরে পেমেন্ট করুন: 01305-144356'},
-  rocket:{icon:'📲',name:'রকেট',needsTxn:true,color:'#8b1fa9',number:'01305-144356',hint:'রকেট নম্বরে পেমেন্ট করুন: 01305-144356'},
-  upay:{icon:'📱',name:'উপায়',needsTxn:true,color:'#00a651',number:'01305-144356',hint:'উপায় নম্বরে পেমেন্ট করুন: 01305-144356'},
-  bank:{icon:'🏦',name:'ব্যাংক ট্রান্সফার',needsTxn:true,color:'#1b4332',hint:'ব্যাংক: Dutch-Bangla Bank | A/C: 1234567890 | Routing: 090261539'},
+  cod:{
+    icon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#2d6a4f"/><rect x="3" y="7" width="18" height="10" rx="2" fill="#fff" opacity=".9"/><circle cx="12" cy="12" r="3" fill="#2d6a4f"/><rect x="5" y="10" width="3" height="4" rx="1" fill="#d8f3dc"/><rect x="16" y="10" width="3" height="4" rx="1" fill="#d8f3dc"/></svg>',
+    name:'ক্যাশ অন ডেলিভারি',needsTxn:false,color:'#2d6a4f'
+  },
+  bkash:{
+    icon:'<svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#E2136E"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff" font-family="Arial">bKash</text></svg>',
+    name:'বিকাশ',needsTxn:true,color:'#e2136e',number:'01305-144356',hint:'বিকাশ নম্বরে পেমেন্ট করুন: 01305-144356'
+  },
+  nagad:{
+    icon:'<svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#F7941D"/><text x="12" y="10" text-anchor="middle" font-size="7" font-weight="bold" fill="#fff" font-family="Arial">নগদ</text><text x="12" y="18" text-anchor="middle" font-size="7" font-weight="bold" fill="#fff" font-family="Arial">Nagad</text></svg>',
+    name:'নগদ',needsTxn:true,color:'#f7941d',number:'01305-144356',hint:'নগদ নম্বরে পেমেন্ট করুন: 01305-144356'
+  },
+  rocket:{
+    icon:'<svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#8B1FA9"/><text x="12" y="11" text-anchor="middle" font-size="8" font-weight="bold" fill="#fff" font-family="Arial">ROCKET</text><text x="12" y="19" text-anchor="middle" font-size="7" fill="#e8c0ff" font-family="Arial">DBBL</text></svg>',
+    name:'রকেট',needsTxn:true,color:'#8b1fa9',number:'01305-144356',hint:'রকেট নম্বরে পেমেন্ট করুন: 01305-144356'
+  },
+  upay:{
+    icon:'<svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#00a651"/><text x="12" y="11" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">উপায়</text><text x="12" y="19" text-anchor="middle" font-size="7" fill="#c0ffd8" font-family="Arial">Upay</text></svg>',
+    name:'উপায়',needsTxn:true,color:'#00a651',number:'01305-144356',hint:'উপায় নম্বরে পেমেন্ট করুন: 01305-144356'
+  },
+  bank:{
+    icon:'<svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="4" fill="#1b4332"/><polygon points="12,3 21,8 3,8" fill="#f4a40a"/><rect x="5" y="9" width="3" height="8" fill="#fff" opacity=".9"/><rect x="10.5" y="9" width="3" height="8" fill="#fff" opacity=".9"/><rect x="16" y="9" width="3" height="8" fill="#fff" opacity=".9"/><rect x="3" y="18" width="18" height="2" fill="#f4a40a"/></svg>',
+    name:'ব্যাংক ট্রান্সফার',needsTxn:true,color:'#1b4332',hint:'ব্যাংক: Dutch-Bangla Bank | A/C: 1234567890 | Routing: 090261539'
+  },
 };
 
 function selectPayment(method){
@@ -2993,15 +3024,20 @@ function getSiteSettings(){
     const d=JSON.parse(localStorage.getItem('amb_site_settings')||'{}');
     return {
       siteName: d.siteName||'আমের হাট বাজার',
-      siteTagline: d.siteTagline||'তাজা আম, সরাসরি বাগান থেকে আপনার দরজায়',
+      siteTagline: d.siteTagline||'তাজা আম, সেরা দাম',
       heroTitle: d.heroTitle||'তাজা আম, সরাসরি বাগান থেকে <span>আপনার দরজায়</span>',
       heroSubtext: d.heroSubtext||'রাজশাহী, চাঁপাইনবাবগঞ্জ ও সারা বাংলাদেশের সেরা বাগান থেকে সংগ্রহ করা প্রিমিয়াম মানের আম।',
+      ctaText: d.ctaText||'🛒 এখনই অর্ডার করুন',
+      footerAbout: d.footerAbout||'বাংলাদেশের সেরা বাগান থেকে তাজা আম সরাসরি আপনার দরজায়।',
       primaryColor: d.primaryColor||'#2d6a4f',
       accentColor: d.accentColor||'#f4a40a',
+      accentColor2: d.accentColor2||'#e76f00',
       bgColor: d.bgColor||'#f9f5e7',
+      paleColor: d.paleColor||'#d8f3dc',
       navBg: d.navBg||'#1b4332',
       heroBg1: d.heroBg1||'#1b4332',
       heroBg2: d.heroBg2||'#2d6a4f',
+      fontFamily: d.fontFamily||'Hind Siliguri',
       phoneNumber: d.phoneNumber||'+880 1305-144356',
       email: d.email||'info@amerhatabazar.com',
       address: d.address||'রাজশাহী, বাংলাদেশ',
@@ -3009,12 +3045,13 @@ function getSiteSettings(){
       igLink: d.igLink||'#',
       ytLink: d.ytLink||'#',
       waLink: d.waLink||'https://wa.me/8801305144356',
-      showBanner: d.showBanner!==false,
+      showBanner: d.showBanner||false,
       bannerText: d.bannerText||'',
       bannerColor: d.bannerColor||'#e74c3c',
       showReviews: d.showReviews!==false,
       showWishlist: d.showWishlist!==false,
       showShare: d.showShare!==false,
+      customCSS: d.customCSS||'',
     };
   }catch{return {};}
 }
@@ -3022,220 +3059,313 @@ function saveSiteSettings(s){localStorage.setItem('amb_site_settings',JSON.strin
 
 function applySettings(s){
   if(!s) s=getSiteSettings();
-  // CSS variables
   const root=document.documentElement;
+  // CSS variables — auto-propagates everywhere
   root.style.setProperty('--green-mid',s.primaryColor);
+  root.style.setProperty('--green-dark',s.navBg);
   root.style.setProperty('--yellow',s.accentColor);
   root.style.setProperty('--bg',s.bgColor);
-  // Navbar bg
+  root.style.setProperty('--orange',s.accentColor2||'#e76f00');
+  root.style.setProperty('--green-pale',s.paleColor||'#d8f3dc');
+
+  // Navbar
   const nav=document.getElementById('navbar');
   if(nav) nav.style.background=s.navBg;
   // Admin sidebar
   const sidebar=document.getElementById('admin-sidebar');
   if(sidebar) sidebar.style.background=s.navBg;
-  // Hero
+  // Admin logo
+  const al=document.querySelector('.admin-logo');
+  if(al) al.style.borderBottomColor=s.primaryColor+'40';
+
+  // Hero gradient
   const hero=document.getElementById('hero');
-  if(hero) hero.style.background=`linear-gradient(135deg,${s.heroBg1} 0%,${s.heroBg2} 50%,${s.heroBg1} 100%)`;
-  // Site name in navbar
-  const logoSpans=document.querySelectorAll('.nav-logo>div>div:first-child');
-  logoSpans.forEach(el=>{if(el) el.textContent=s.siteName;});
-  // Page title
-  document.title=s.siteName;
-  // Phone / email in footer (update .contact-item spans)
-  // Banner
+  if(hero) hero.style.background=`linear-gradient(135deg,${s.heroBg1} 0%,${s.heroBg2} 60%,${s.heroBg1} 100%)`;
+  // Hero text
+  const h1=document.querySelector('#hero .hero-text h1');
+  if(h1&&s.heroTitle) h1.innerHTML=s.heroTitle;
+  const hp=document.querySelector('#hero .hero-text p');
+  if(hp&&s.heroSubtext) hp.textContent=s.heroSubtext;
+  // Hero CTA button
+  const heroCta=document.querySelector('.btn-hero-primary');
+  if(heroCta&&s.ctaText) heroCta.textContent=s.ctaText;
+
+  // Features bar bg
+  const featBar=document.getElementById('features');
+  if(featBar) featBar.style.background=s.navBg;
+
+  // Coupon section gradient
+  const cpSec=document.getElementById('coupon-section');
+  if(cpSec) cpSec.style.background=`linear-gradient(135deg,${s.navBg},${s.primaryColor})`;
+
+  // Site name — all occurrences
+  document.querySelectorAll('.nav-logo>div>div:first-child,.footer-about h3').forEach(el=>{
+    if(el.classList.contains('fa')) return;
+    el.childNodes.forEach(n=>{if(n.nodeType===3) n.textContent=n.textContent.replace(/আমের হাট বাজার/g,s.siteName);});
+  });
+
+  // Footer about text
+  const footerAbout=document.querySelector('.footer-about p');
+  if(footerAbout&&s.footerAbout) footerAbout.textContent=s.footerAbout;
+
+  // Contact info — phone
+  document.querySelectorAll('a[href^="tel:"]').forEach(a=>{
+    if(s.phoneNumber){a.href='tel:'+s.phoneNumber.replace(/[^+\d]/g,'');a.textContent=s.phoneNumber;}
+  });
+  document.querySelectorAll('a[href^="https://wa.me"]').forEach(a=>{
+    if(s.waLink) a.href=s.waLink;
+  });
+
+  // Social links
+  const socialMap={fb:'fbLink',ig:'igLink',yt:'ytLink',wa:'waLink'};
+  document.querySelectorAll('.social-icon').forEach(a=>{
+    const cls=[...a.classList].find(c=>socialMap[c]);
+    if(cls&&s[socialMap[cls]]) a.href=s[socialMap[cls]];
+  });
+
+  // Announcement banner
   let banner=document.getElementById('site-banner');
   if(s.showBanner&&s.bannerText){
     if(!banner){
       banner=document.createElement('div');
       banner.id='site-banner';
-      banner.style.cssText='position:fixed;top:65px;left:0;right:0;z-index:999;text-align:center;padding:7px;font-size:.85rem;font-weight:600;font-family:Hind Siliguri,sans-serif';
       document.body.appendChild(banner);
     }
-    banner.style.background=s.bannerColor;
-    banner.style.color='#fff';
-    banner.textContent=s.bannerText;
-    banner.style.display='block';
-  } else if(banner){banner.style.display='none';}
-  // Social links
-  const links={fb:s.fbLink,ig:s.igLink,yt:s.ytLink,wa:s.waLink};
-  document.querySelectorAll('.social-icon').forEach(a=>{
-    const cls=[...a.classList].find(c=>['fb','ig','yt','wa'].includes(c));
-    if(cls&&links[cls]) a.href=links[cls];
+    banner.style.cssText=`position:fixed;top:65px;left:0;right:0;z-index:999;text-align:center;padding:8px 20px;font-size:.88rem;font-weight:600;font-family:Hind Siliguri,sans-serif;background:${s.bannerColor};color:#fff;display:flex;align-items:center;justify-content:center;gap:10px`;
+    banner.innerHTML=`<i class="fas fa-bullhorn"></i><span>${s.bannerText}</span><button onclick="document.getElementById('site-banner').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:.75rem;margin-left:8px">✕</button>`;
+  } else if(banner) banner.style.display='none';
+
+  // Custom CSS injection
+  let customStyle=document.getElementById('custom-site-css');
+  if(s.customCSS){
+    if(!customStyle){customStyle=document.createElement('style');customStyle.id='custom-site-css';document.head.appendChild(customStyle);}
+    customStyle.textContent=s.customCSS;
+  } else if(customStyle) customStyle.textContent='';
+
+  // Font
+  if(s.fontFamily){
+    document.body.style.fontFamily=s.fontFamily+",sans-serif";
+  }
+}
+
+// ── Customize helpers ──────────────────────────────────────
+function livePreview(key,val){
+  // Save to a temp working copy so reload restores current state
+  const s=getSiteSettings(); s[key]=val;
+  localStorage.setItem('amb_site_settings',JSON.stringify(s));
+  applySettings(s);
+}
+function saveAllCustomize(){
+  // Start from existing saved settings so no field is lost
+  const existing=getSiteSettings();
+  const textIds=['siteName','siteTagline','heroTitle','heroSubtext','ctaText','footerAbout',
+    'primaryColor','accentColor','accentColor2','bgColor','paleColor','navBg','heroBg1','heroBg2',
+    'fontFamily','phoneNumber','email','address','fbLink','igLink','ytLink','waLink',
+    'bannerText','bannerColor','customCSS'];
+  textIds.forEach(k=>{
+    const el=document.getElementById('cs-'+k);
+    if(el) existing[k]=el.value;
   });
+  ['showBanner','showReviews','showWishlist','showShare'].forEach(k=>{
+    const el=document.getElementById('cs-'+k);
+    if(el) existing[k]=el.checked;
+  });
+  saveSiteSettings(existing);
+  applySettings(existing);
+  showToast('✅ সব পরিবর্তন সংরক্ষিত হয়েছে!','success');
+}
+function resetColors(){
+  const def={primaryColor:'#2d6a4f',accentColor:'#f4a40a',accentColor2:'#e76f00',bgColor:'#f9f5e7',paleColor:'#d8f3dc',navBg:'#1b4332',heroBg1:'#1b4332',heroBg2:'#2d6a4f'};
+  Object.entries(def).forEach(([k,v])=>{
+    const el=document.getElementById('cs-'+k);
+    const txt=document.getElementById('cs-'+k+'-txt');
+    if(el) el.value=v;
+    if(txt) txt.value=v;
+    livePreview(k,v); // livePreview now saves immediately
+  });
+  showToast('রঙ ডিফল্টে ফিরে এসেছে','success');
+}
+function resetAllSettings(){
+  showCustomAlert('সব সেটিংস রিসেট','সমস্ত কাস্টম সেটিংস মুছে ডিফল্টে ফিরে যাবে।','হ্যাঁ, রিসেট করুন','warning',()=>{
+    localStorage.removeItem('amb_site_settings'); applySettings(getSiteSettings()); renderCustomizeSettings();
+    showToast('সব সেটিংস রিসেট হয়েছে','success');
+  });
+}
+function csToggle(key,el){
+  const checked=el.checked;
+  const track=document.getElementById('cst-'+key);
+  const thumb=document.getElementById('csth-'+key);
+  if(track) track.style.background=checked?'var(--green-mid)':'#ccc';
+  if(thumb) thumb.style.left=checked?'22px':'3px';
+  livePreview(key,checked);
+}
+function mkToggle(key,label,val,desc){
+  return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+    <div><div style="font-size:.88rem;font-weight:600;color:var(--green-dark)">${label}</div>${desc?'<div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">'+desc+'</div>':''}</div>
+    <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex-shrink:0">
+      <input type="checkbox" id="cs-${key}" ${val?'checked':''} onchange="csToggle('${key}',this)" style="opacity:0;width:0;height:0">
+      <span id="cst-${key}" style="position:absolute;inset:0;border-radius:24px;background:${val?'var(--green-mid)':'#ccc'};transition:.25s"></span>
+      <span id="csth-${key}" style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:${val?'22px':'3px'};transition:.25s;box-shadow:0 1px 4px rgba(0,0,0,.2)"></span>
+    </label>
+  </div>`;
+}
+function mkColor(key,label,val){
+  return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+    <div style="flex:1;font-size:.85rem;color:var(--text)">${label}</div>
+    <input type="color" id="cs-${key}" value="${val}" oninput="document.getElementById('cs-${key}-txt').value=this.value;livePreview('${key}',this.value)"
+      style="width:38px;height:32px;border-radius:6px;border:1.5px solid var(--border);padding:2px;cursor:pointer;flex-shrink:0">
+    <input type="text" id="cs-${key}-txt" value="${val}" maxlength="7" style="width:80px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.8rem;font-family:monospace"
+      oninput="if(/^#[0-9a-fA-F]{6}$/.test(this.value)){document.getElementById('cs-${key}').value=this.value;livePreview('${key}',this.value)}">
+  </div>`;
 }
 
 function renderCustomizeSettings(){
   const s=getSiteSettings();
+  const FONTS=['Hind Siliguri','Noto Sans Bengali','Poppins','Arial','Georgia'];
   document.getElementById('admin-main').innerHTML=`
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-
-    <!-- General -->
-    <div class="admin-section">
-      <div class="admin-section-header"><h3>🏷️ সাধারণ তথ্য</h3></div>
-      <div class="admin-form">
-        <div class="form-group"><label>সাইটের নাম</label><input id="cs-siteName" value="${s.siteName}" oninput="livePreview('siteName',this.value)"></div>
-        <div class="form-group"><label>ট্যাগলাইন</label><input id="cs-siteTagline" value="${s.siteTagline}"></div>
-        <div class="form-group"><label>হিরো শিরোনাম</label><textarea id="cs-heroTitle" rows="2">${s.heroTitle}</textarea></div>
-        <div class="form-group"><label>হিরো সাবটেক্সট</label><textarea id="cs-heroSubtext" rows="2">${s.heroSubtext}</textarea></div>
-      </div>
-    </div>
-
-    <!-- Colors -->
-    <div class="admin-section">
-      <div class="admin-section-header"><h3>🎨 রঙ কাস্টমাইজ</h3></div>
-      <div class="admin-form">
-        ${[
-          ['cs-primaryColor','প্রাইমারি রঙ (সবুজ)',s.primaryColor],
-          ['cs-accentColor','অ্যাকসেন্ট রঙ (হলুদ)',s.accentColor],
-          ['cs-bgColor','ব্যাকগ্রাউন্ড রঙ',s.bgColor],
-          ['cs-navBg','নেভবার রঙ',s.navBg],
-          ['cs-heroBg1','হিরো রঙ ১',s.heroBg1],
-          ['cs-heroBg2','হিরো রঙ ২',s.heroBg2],
-        ].map(([id,lbl,val])=>`
-          <div class="form-group" style="display:flex;align-items:center;gap:12px">
-            <label style="flex:1;margin-bottom:0">${lbl}</label>
-            <input type="color" id="${id}" value="${val}" oninput="livePreview('${id.replace('cs-','')}',this.value)"
-              style="width:46px;height:36px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;padding:2px">
-            <input type="text" value="${val}" style="width:90px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:.82rem;font-family:monospace"
-              oninput="document.getElementById('${id}').value=this.value;livePreview('${id.replace('cs-','')}',this.value)">
-          </div>`).join('')}
-        <button class="btn-secondary-btn" style="margin-top:8px;font-size:.82rem" onclick="resetColors()"><i class="fas fa-undo"></i> ডিফল্টে ফিরুন</button>
-      </div>
-    </div>
-
-    <!-- Contact -->
-    <div class="admin-section">
-      <div class="admin-section-header"><h3>📞 যোগাযোগ তথ্য</h3></div>
-      <div class="admin-form">
-        <div class="form-group"><label>ফোন নম্বর</label><input id="cs-phoneNumber" value="${s.phoneNumber}"></div>
-        <div class="form-group"><label>ইমেইল</label><input id="cs-email" value="${s.email}"></div>
-        <div class="form-group"><label>ঠিকানা</label><input id="cs-address" value="${s.address}"></div>
-      </div>
-    </div>
-
-    <!-- Social Media -->
-    <div class="admin-section">
-      <div class="admin-section-header"><h3>📱 সোশ্যাল মিডিয়া</h3></div>
-      <div class="admin-form">
-        <div class="form-group"><label><i class="fab fa-facebook" style="color:#1877f2"></i> Facebook URL</label><input id="cs-fbLink" value="${s.fbLink}" placeholder="https://facebook.com/..."></div>
-        <div class="form-group"><label><i class="fab fa-instagram" style="color:#e4405f"></i> Instagram URL</label><input id="cs-igLink" value="${s.igLink}" placeholder="https://instagram.com/..."></div>
-        <div class="form-group"><label><i class="fab fa-youtube" style="color:#ff0000"></i> YouTube URL</label><input id="cs-ytLink" value="${s.ytLink}" placeholder="https://youtube.com/..."></div>
-        <div class="form-group"><label><i class="fab fa-whatsapp" style="color:#25d366"></i> WhatsApp URL</label><input id="cs-waLink" value="${s.waLink}" placeholder="https://wa.me/..."></div>
-      </div>
-    </div>
-
-    <!-- Banner -->
-    <div class="admin-section">
-      <div class="admin-section-header"><h3>📢 ঘোষণা ব্যানার</h3></div>
-      <div class="admin-form">
-        <div class="form-group" style="display:flex;align-items:center;gap:10px">
-          <label style="margin-bottom:0">ব্যানার দেখাবে?</label>
-          <input type="checkbox" id="cs-showBanner" ${s.showBanner?'checked':''} style="width:18px;height:18px;cursor:pointer" onchange="livePreview('showBanner',this.checked)">
-        </div>
-        <div class="form-group"><label>ব্যানার টেক্সট</label><input id="cs-bannerText" value="${s.bannerText||''}" placeholder="যেমন: ঈদ স্পেশাল অফার! ৩০% ছাড়!" oninput="livePreview('bannerText',this.value)"></div>
-        <div class="form-group" style="display:flex;align-items:center;gap:12px">
-          <label style="flex:1;margin-bottom:0">ব্যানার রঙ</label>
-          <input type="color" id="cs-bannerColor" value="${s.bannerColor}" oninput="livePreview('bannerColor',this.value)" style="width:46px;height:36px;border-radius:8px;border:1.5px solid var(--border);cursor:pointer;padding:2px">
-        </div>
-      </div>
-    </div>
-
-    <!-- Feature Toggles -->
-    <div class="admin-section">
-      <div class="admin-section-header"><h3>⚙️ ফিচার চালু/বন্ধ</h3></div>
-      <div class="admin-form">
-        ${[
-          ['cs-showReviews','রিভিউ ও রেটিং',s.showReviews],
-          ['cs-showWishlist','উইশলিস্ট বাটন',s.showWishlist],
-          ['cs-showShare','শেয়ার বাটন',s.showShare],
-        ].map(([id,lbl,val])=>`
-          <div class="form-group" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-            <label style="margin-bottom:0;font-size:.9rem">${lbl}</label>
-            <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
-              <input type="checkbox" id="${id}" ${val?'checked':''} style="opacity:0;width:0;height:0" onchange="livePreview('${id.replace('cs-','')}',this.checked)">
-              <span style="position:absolute;inset:0;background:${val?'var(--green-mid)':'#ccc'};border-radius:24px;transition:.3s" id="${id}-slider"></span>
-              <span style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:${val?'23px':'3px'};transition:.3s" id="${id}-thumb"></span>
-            </label>
-          </div>`).join('')}
-      </div>
-    </div>
-
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px" id="cust-tabs">
+    ${[['general','🏷️ সাধারণ'],['colors','🎨 রঙ'],['content','📝 কন্টেন্ট'],['contact','📞 যোগাযোগ'],['social','📱 সোশ্যাল'],['banner','📢 ব্যানার'],['features','⚙️ ফিচার'],['code','💻 কাস্টম CSS']].map(([k,l])=>
+      `<button onclick="switchCustTab('${k}')" id="custtab-${k}" style="padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--text-muted);transition:all .2s;font-family:'Hind Siliguri',sans-serif">${l}</button>`).join('')}
   </div>
-  <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
-    <button onclick="saveAllCustomize()" style="background:var(--green-mid);color:#fff;border:none;padding:12px 28px;border-radius:var(--radius-sm);font-size:1rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-save"></i> সব পরিবর্তন সংরক্ষণ করুন</button>
-    <button onclick="resetAllSettings()" class="btn-secondary-btn" style="padding:12px 20px"><i class="fas fa-undo"></i> সব রিসেট করুন</button>
-    <span style="font-size:.82rem;color:var(--text-muted)">💡 রঙ পরিবর্তন তাৎক্ষণিক প্রিভিউ হয়</span>
+  <div id="cust-content" style="max-width:700px"></div>
+  <div style="margin-top:20px;display:flex;gap:10px;align-items:center">
+    <button onclick="saveAllCustomize()" style="background:var(--green-mid);color:#fff;border:none;padding:12px 28px;border-radius:var(--radius-sm);font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-save"></i> সব সংরক্ষণ করুন</button>
+    <button onclick="resetAllSettings()" class="btn-secondary-btn" style="padding:12px 18px"><i class="fas fa-undo"></i> রিসেট</button>
+    <span style="font-size:.78rem;color:var(--green-mid)">💡 রঙ পরিবর্তন তাৎক্ষণিক</span>
   </div>`;
 
-  // init toggle visuals
-  ['cs-showReviews','cs-showWishlist','cs-showShare','cs-showBanner'].forEach(id=>{
-    const cb=document.getElementById(id);
-    const slider=document.getElementById(id+'-slider');
-    const thumb=document.getElementById(id+'-thumb');
-    if(cb&&slider&&thumb){
-      cb.addEventListener('change',()=>{
-        slider.style.background=cb.checked?'var(--green-mid)':'#ccc';
-        thumb.style.left=cb.checked?'23px':'3px';
-      });
-    }
+  const TABS={
+    general:`
+      <div class="admin-section"><div class="admin-section-header"><h3>🏷️ সাধারণ তথ্য</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label>সাইটের নাম</label><input id="cs-siteName" value="${s.siteName}" oninput="livePreview('siteName',this.value)"></div>
+        <div class="form-group"><label>ট্যাগলাইন</label><input id="cs-siteTagline" value="${s.siteTagline}" oninput="livePreview('siteTagline',this.value)"></div>
+        <div class="form-group"><label>CTA বাটন টেক্সট</label><input id="cs-ctaText" value="${s.ctaText}"></div>
+        <div class="form-group"><label>ফন্ট</label>
+          <select id="cs-fontFamily" onchange="livePreview('fontFamily',this.value)" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;font-size:.9rem">
+            ${FONTS.map(f=>`<option value="${f}" ${s.fontFamily===f?'selected':''}>${f}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>Footer পরিচিতি</label><textarea id="cs-footerAbout" rows="2" style="width:100%">${s.footerAbout}</textarea></div>
+      </div></div>`,
+
+    colors:`
+      <div class="admin-section"><div class="admin-section-header"><h3>🎨 রঙ কাস্টমাইজ</h3>
+        <button class="btn-secondary-btn" style="font-size:.78rem;padding:6px 12px" onclick="resetColors()"><i class="fas fa-undo"></i> ডিফল্ট</button>
+      </div>
+      <div class="admin-form">
+        ${mkColor('primaryColor','প্রাইমারি (সবুজ)',s.primaryColor)}
+        ${mkColor('accentColor','অ্যাকসেন্ট (হলুদ)',s.accentColor)}
+        ${mkColor('accentColor2','সেকেন্ডারি (কমলা)',s.accentColor2||'#e76f00')}
+        ${mkColor('bgColor','ব্যাকগ্রাউন্ড',s.bgColor)}
+        ${mkColor('paleColor','হালকা সবুজ',s.paleColor||'#d8f3dc')}
+        ${mkColor('navBg','নেভবার রঙ',s.navBg)}
+        ${mkColor('heroBg1','হিরো গ্রেডিয়েন্ট ১',s.heroBg1)}
+        ${mkColor('heroBg2','হিরো গ্রেডিয়েন্ট ২',s.heroBg2)}
+        <div style="margin-top:12px;background:var(--bg);border-radius:8px;padding:12px;font-size:.82rem;color:var(--text-muted)">
+          🎨 <strong>প্রিসেট থিম:</strong>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            ${[['🌿 গ্রিন','#2d6a4f','#f4a40a','#1b4332'],['🔵 ব্লু','#1a6eb0','#f4a40a','#0d3d6b'],['🟣 পার্পল','#6b3fa0','#f4a40a','#3d1a6b'],['🔴 রেড','#b03a2e','#f4a40a','#6b1a1a'],['🌊 টিল','#1a8a8a','#f4c40a','#0d4b4b']].map(([n,p,a,nav])=>
+              `<button onclick="applyTheme('${p}','${a}','${nav}')" style="padding:5px 12px;border-radius:20px;background:${p};color:#fff;border:none;font-size:.75rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif">${n}</button>`).join('')}
+          </div>
+        </div>
+      </div></div>`,
+
+    content:`
+      <div class="admin-section"><div class="admin-section-header"><h3>📝 পেজ কন্টেন্ট</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label>হিরো শিরোনাম <span style="font-size:.72rem;color:#888">(HTML সাপোর্ট)</span></label>
+          <textarea id="cs-heroTitle" rows="2" style="width:100%" oninput="livePreview('heroTitle',this.value)">${s.heroTitle}</textarea></div>
+        <div class="form-group"><label>হিরো সাবটেক্সট</label>
+          <textarea id="cs-heroSubtext" rows="3" style="width:100%" oninput="livePreview('heroSubtext',this.value)">${s.heroSubtext}</textarea></div>
+        <div style="background:var(--green-pale);border-radius:8px;padding:12px;font-size:.82rem;color:var(--green-dark);margin-top:8px">
+          <strong>💡 টিপস:</strong> শিরোনামে <code style="background:#fff;padding:1px 5px;border-radius:3px">&lt;span&gt;হাইলাইট&lt;/span&gt;</code> ব্যবহার করলে হলুদ রঙে দেখাবে।
+        </div>
+      </div></div>`,
+
+    contact:`
+      <div class="admin-section"><div class="admin-section-header"><h3>📞 যোগাযোগ তথ্য</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label>📞 ফোন নম্বর</label><input id="cs-phoneNumber" value="${s.phoneNumber}"></div>
+        <div class="form-group"><label>📧 ইমেইল ঠিকানা</label><input id="cs-email" value="${s.email}"></div>
+        <div class="form-group"><label>📍 অফিসের ঠিকানা</label><input id="cs-address" value="${s.address}"></div>
+      </div></div>`,
+
+    social:`
+      <div class="admin-section"><div class="admin-section-header"><h3>📱 সোশ্যাল মিডিয়া লিংক</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label><i class="fab fa-facebook" style="color:#1877f2;width:18px"></i> Facebook</label><input id="cs-fbLink" value="${s.fbLink}" placeholder="https://facebook.com/yourpage"></div>
+        <div class="form-group"><label><i class="fab fa-instagram" style="color:#e4405f;width:18px"></i> Instagram</label><input id="cs-igLink" value="${s.igLink}" placeholder="https://instagram.com/yourpage"></div>
+        <div class="form-group"><label><i class="fab fa-youtube" style="color:#ff0000;width:18px"></i> YouTube</label><input id="cs-ytLink" value="${s.ytLink}" placeholder="https://youtube.com/yourchannel"></div>
+        <div class="form-group"><label><i class="fab fa-whatsapp" style="color:#25d366;width:18px"></i> WhatsApp</label><input id="cs-waLink" value="${s.waLink}" placeholder="https://wa.me/8801XXXXXXXXX"></div>
+      </div></div>`,
+
+    banner:`
+      <div class="admin-section"><div class="admin-section-header"><h3>📢 ঘোষণা ব্যানার</h3></div>
+      <div class="admin-form">
+        ${mkToggle('showBanner','ব্যানার সক্রিয় করুন',s.showBanner,'পেজের উপরে একটি ঘোষণা ব্যানার দেখাবে')}
+        <div style="height:12px"></div>
+        <div class="form-group"><label>ব্যানার টেক্সট</label><input id="cs-bannerText" value="${s.bannerText||''}" placeholder="যেমন: 🎉 ঈদ স্পেশাল! সব আমে ৩০% ছাড়" oninput="livePreview('bannerText',this.value)"></div>
+        ${mkColor('bannerColor','ব্যানার রঙ',s.bannerColor||'#e74c3c')}
+        <div style="background:var(--bg);border-radius:8px;padding:12px;margin-top:10px;font-size:.82rem">
+          <strong>প্রিসেট:</strong>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+            ${[['🔴 লাল','#e74c3c'],['🟠 কমলা','#e67e22'],['🟢 সবুজ','#27ae60'],['🔵 নীল','#2980b9'],['🟣 বেগুনি','#8e44ad'],['⚫ কালো','#2c3e50']].map(([n,c])=>
+              `<button onclick="document.getElementById('cs-bannerColor').value='${c}';livePreview('bannerColor','${c}')" style="padding:4px 10px;border-radius:12px;background:${c};color:#fff;border:none;font-size:.72rem;cursor:pointer">${n}</button>`).join('')}
+          </div>
+        </div>
+      </div></div>`,
+
+    features:`
+      <div class="admin-section"><div class="admin-section-header"><h3>⚙️ ফিচার চালু/বন্ধ</h3></div>
+      <div class="admin-form">
+        ${mkToggle('showReviews','⭐ রিভিউ ও রেটিং সিস্টেম',s.showReviews,'পণ্য কার্ডে রেটিং ও রিভিউ বাটন দেখাবে')}
+        ${mkToggle('showWishlist','❤️ উইশলিস্ট বাটন',s.showWishlist,'প্রতিটি পণ্যে হার্ট বাটন দেখাবে')}
+        ${mkToggle('showShare','📤 শেয়ার বাটন',s.showShare,'WhatsApp ও লিংক শেয়ার বাটন দেখাবে')}
+      </div></div>`,
+
+    code:`
+      <div class="admin-section"><div class="admin-section-header"><h3>💻 কাস্টম CSS</h3></div>
+      <div class="admin-form">
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:.82rem;color:#856404">
+          ⚠️ শুধুমাত্র অভিজ্ঞ ব্যবহারকারীদের জন্য। ভুল CSS সাইটের ডিজাইন ভাঙতে পারে।
+        </div>
+        <div class="form-group">
+          <label>কাস্টম CSS কোড</label>
+          <textarea id="cs-customCSS" rows="10" placeholder="/* আপনার কাস্টম CSS এখানে লিখুন */\n.product-card { border-radius: 20px; }" style="width:100%;font-family:monospace;font-size:.82rem;resize:vertical" oninput="livePreview('customCSS',this.value)">${s.customCSS||''}</textarea>
+        </div>
+        <button onclick="document.getElementById('cs-customCSS').value='';livePreview('customCSS','')" class="btn-secondary-btn" style="font-size:.82rem"><i class="fas fa-trash"></i> CSS মুছুন</button>
+      </div></div>`,
+  };
+
+  // Show first tab
+  window._custTabs=TABS;
+  switchCustTab('general');
+}
+
+function switchCustTab(key){
+  const content=document.getElementById('cust-content');
+  if(content&&window._custTabs) content.innerHTML=window._custTabs[key]||'';
+  document.querySelectorAll('#cust-tabs button').forEach(b=>{
+    const isActive=b.id==='custtab-'+key;
+    b.style.background=isActive?'var(--green-mid)':'#fff';
+    b.style.color=isActive?'#fff':'var(--text-muted)';
+    b.style.borderColor=isActive?'var(--green-mid)':'var(--border)';
   });
 }
 
-function livePreview(key,val){
-  const s=getSiteSettings();
-  s[key]=val;
-  applySettings(s);
-}
-
-function saveAllCustomize(){
-  const s={
-    siteName:document.getElementById('cs-siteName')?.value||'',
-    siteTagline:document.getElementById('cs-siteTagline')?.value||'',
-    heroTitle:document.getElementById('cs-heroTitle')?.value||'',
-    heroSubtext:document.getElementById('cs-heroSubtext')?.value||'',
-    primaryColor:document.getElementById('cs-primaryColor')?.value||'#2d6a4f',
-    accentColor:document.getElementById('cs-accentColor')?.value||'#f4a40a',
-    bgColor:document.getElementById('cs-bgColor')?.value||'#f9f5e7',
-    navBg:document.getElementById('cs-navBg')?.value||'#1b4332',
-    heroBg1:document.getElementById('cs-heroBg1')?.value||'#1b4332',
-    heroBg2:document.getElementById('cs-heroBg2')?.value||'#2d6a4f',
-    phoneNumber:document.getElementById('cs-phoneNumber')?.value||'',
-    email:document.getElementById('cs-email')?.value||'',
-    address:document.getElementById('cs-address')?.value||'',
-    fbLink:document.getElementById('cs-fbLink')?.value||'#',
-    igLink:document.getElementById('cs-igLink')?.value||'#',
-    ytLink:document.getElementById('cs-ytLink')?.value||'#',
-    waLink:document.getElementById('cs-waLink')?.value||'#',
-    showBanner:document.getElementById('cs-showBanner')?.checked||false,
-    bannerText:document.getElementById('cs-bannerText')?.value||'',
-    bannerColor:document.getElementById('cs-bannerColor')?.value||'#e74c3c',
-    showReviews:document.getElementById('cs-showReviews')?.checked!==false,
-    showWishlist:document.getElementById('cs-showWishlist')?.checked!==false,
-    showShare:document.getElementById('cs-showShare')?.checked!==false,
-  };
-  saveSiteSettings(s);
-  applySettings(s);
-  showToast('সব পরিবর্তন সংরক্ষিত হয়েছে ✅','success');
-}
-
-function resetColors(){
-  const defaults={primaryColor:'#2d6a4f',accentColor:'#f4a40a',bgColor:'#f9f5e7',navBg:'#1b4332',heroBg1:'#1b4332',heroBg2:'#2d6a4f'};
-  Object.entries(defaults).forEach(([k,v])=>{
+function applyTheme(primary,accent,nav){
+  const keys={primaryColor:primary,accentColor:accent,navBg:nav,heroBg1:nav,heroBg2:primary};
+  Object.entries(keys).forEach(([k,v])=>{
     const el=document.getElementById('cs-'+k);
+    const txt=document.getElementById('cs-'+k+'-txt');
     if(el) el.value=v;
+    if(txt) txt.value=v;
     livePreview(k,v);
   });
-  showToast('রঙ ডিফল্টে ফিরিয়ে আনা হয়েছে','success');
+  showToast('থিম প্রয়োগ হয়েছে! সংরক্ষণ করুন।','success');
 }
 
-function resetAllSettings(){
-  showCustomAlert('সব সেটিংস রিসেট করুন','সমস্ত কাস্টম সেটিংস মুছে ডিফল্টে ফিরে যাবে।','হ্যাঁ, রিসেট করুন','warning',()=>{
-    localStorage.removeItem('amb_site_settings');
-    applySettings(getSiteSettings());
-    renderCustomizeSettings();
-    showToast('সব সেটিংস রিসেট হয়েছে','success');
-  });
-}
 function renderAdminReviews(){
   const all=getAllReviews();
   const products=getProducts();
