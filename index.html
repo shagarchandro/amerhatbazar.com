@@ -324,18 +324,73 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 /* ===== ADMIN PANEL ===== */
 #admin-panel{display:none;position:fixed;inset:0;z-index:3000;background:var(--bg)}
 #admin-panel.open{display:flex}
-.admin-sidebar{width:240px;background:var(--green-dark);min-height:100vh;display:flex;flex-direction:column;flex-shrink:0}
-.admin-logo{padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px;color:var(--yellow);font-size:1rem;font-weight:700}
-.admin-nav{flex:1;padding:15px 0}
-.admin-nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,.7);cursor:pointer;transition:all .2s;font-size:.92rem;border:none;background:none;width:100%;text-align:left}
-.admin-nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
-.admin-nav-item.active{background:rgba(244,164,10,.15);color:var(--yellow);border-left:3px solid var(--yellow)}
-.admin-nav-item i{width:18px}
-.admin-content{flex:1;overflow-y:auto}
-.admin-topbar{background:#fff;padding:15px 25px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
-.admin-topbar h2{font-size:1.1rem;font-weight:700;color:var(--green-dark)}
-.btn-admin-logout{background:#e74c3c;color:#fff;border:none;padding:7px 16px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:600}
-.admin-main{padding:25px}
+
+.admin-sidebar{
+  width:230px;background:#1a2e23;
+  min-height:100vh;display:flex;flex-direction:column;flex-shrink:0;
+  transition:width .25s ease;overflow:hidden;position:relative;z-index:10;
+  box-shadow:4px 0 20px rgba(0,0,0,.15)
+}
+.admin-sidebar.collapsed{width:62px}
+.admin-logo{
+  padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:10px;color:var(--yellow);
+  font-size:.95rem;font-weight:700;white-space:nowrap;overflow:hidden
+}
+.admin-logo-text{transition:opacity .2s,width .2s;white-space:nowrap}
+.admin-sidebar.collapsed .admin-logo-text{opacity:0;width:0;overflow:hidden}
+.admin-nav{flex:1;padding:10px 0;overflow-y:auto;overflow-x:hidden}
+.admin-nav::-webkit-scrollbar{width:3px}
+.admin-nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+
+.admin-nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 20px;color:rgba(255,255,255,.65);cursor:pointer;
+  transition:all .18s;font-size:.88rem;border:none;background:none;
+  width:100%;text-align:left;white-space:nowrap;overflow:hidden;
+  border-left:3px solid transparent;position:relative;
+  font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif!important
+}
+.admin-nav-item:hover{background:rgba(255,255,255,.07);color:#fff;border-left-color:rgba(244,164,10,.4)}
+.admin-nav-item.active{background:rgba(244,164,10,.12);color:var(--yellow);border-left-color:var(--yellow)}
+.admin-nav-item i{width:20px;flex-shrink:0;text-align:center;font-size:.95rem}
+.admin-nav-label{transition:opacity .2s;white-space:nowrap;overflow:hidden}
+.admin-sidebar.collapsed .admin-nav-label{opacity:0;width:0}
+/* Tooltip on collapsed */
+.admin-sidebar.collapsed .admin-nav-item:hover::after{
+  content:attr(data-label);position:absolute;left:62px;top:50%;transform:translateY(-50%);
+  background:#1a2e23;color:#fff;padding:5px 12px;border-radius:6px;font-size:.82rem;
+  white-space:nowrap;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,.3);
+  pointer-events:none;border:1px solid rgba(255,255,255,.1)
+}
+
+/* Collapse toggle button */
+.admin-collapse-btn{
+  width:100%;padding:12px 20px;background:rgba(255,255,255,.04);border:none;
+  color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  border-top:1px solid rgba(255,255,255,.06);transition:all .2s;font-size:.85rem
+}
+.admin-collapse-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+
+/* Nav sections divider */
+.admin-nav-divider{height:1px;background:rgba(255,255,255,.06);margin:8px 16px}
+.admin-nav-section-label{
+  font-size:.65rem;text-transform:uppercase;letter-spacing:.8px;
+  color:rgba(255,255,255,.3);padding:8px 20px 4px;
+  white-space:nowrap;overflow:hidden;transition:opacity .2s
+}
+.admin-sidebar.collapsed .admin-nav-section-label{opacity:0}
+
+.admin-content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.admin-topbar{
+  background:#fff;padding:14px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);flex-wrap:wrap;gap:10px;flex-shrink:0
+}
+.admin-topbar h2{font-size:1.05rem;font-weight:700;color:var(--green-dark);display:flex;align-items:center;gap:8px}
+.btn-admin-logout{background:#fee;border:1px solid #fcc;color:#e74c3c;padding:7px 14px;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-admin-logout:hover{background:#e74c3c;color:#fff;border-color:#e74c3c}
+.admin-main{padding:20px;flex:1}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px}
 .stat-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border-left:4px solid var(--green-mid)}
 .stat-card:nth-child(2){border-left-color:var(--yellow)}
@@ -393,6 +448,9 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .coupon-type-radios label{display:flex;align-items:center;gap:6px;font-size:.9rem;font-weight:400;cursor:pointer}
 .table-wrapper{overflow-x:auto}
 .admin-sidebar-toggle{display:none;position:fixed;bottom:20px;left:20px;z-index:3500;width:46px;height:46px;background:var(--green-dark);color:#fff;border:none;border-radius:50%;font-size:1.1rem;box-shadow:var(--shadow-lg)}
+/* Only show toggle button when admin panel is open */
+#admin-panel.open~.admin-sidebar-toggle,
+body.admin-open .admin-sidebar-toggle{display:none}
 .order-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
 .detail-box{background:var(--bg);border-radius:var(--radius-sm);padding:15px}
 .detail-box h4{font-size:.9rem;font-weight:700;color:var(--green-dark);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:7px}
@@ -410,9 +468,14 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
   .footer-grid{grid-template-columns:1fr 1fr;gap:25px}
 }
 @media(max-width:900px){
-  .admin-sidebar{display:none;position:fixed;left:0;top:0;height:100vh;z-index:3100}
+  .admin-sidebar{display:none;position:fixed;left:0;top:0;height:100vh;z-index:3100;width:220px!important}
   .admin-sidebar.mob-open{display:flex}
-  .admin-sidebar-toggle{display:flex;align-items:center;justify-content:center}
+  .admin-sidebar.collapsed{width:220px!important}
+  .admin-sidebar.collapsed .admin-nav-label{opacity:1!important;width:auto!important}
+  .admin-sidebar.collapsed .admin-logo-text{opacity:1!important;width:auto!important}
+  .admin-sidebar.collapsed .admin-nav-section-label{opacity:1!important}
+  #admin-panel.open .admin-sidebar-toggle{display:flex;align-items:center;justify-content:center}
+  .admin-collapse-btn{display:none}
   .features-inner{grid-template-columns:repeat(2,1fr)}
   .hero-inner{grid-template-columns:1fr}
   .hero-image{display:none}
@@ -1119,34 +1182,52 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 </div>
 
 <!-- ADMIN PANEL -->
-<div id="admin-panel">
-  <div class="admin-sidebar" id="admin-sidebar">
-    <div class="admin-logo"><span style="font-size:1.5rem">🥭</span><div><div>আমের হাট বাজার</div><div style="font-size:.7rem;color:rgba(255,255,255,.4);font-weight:400">অ্যাডমিন প্যানেল</div></div></div>
+<div id="admin-panel">  <div class="admin-sidebar" id="admin-sidebar">
+    <div class="admin-logo">
+      <span style="font-size:1.4rem;flex-shrink:0">🥭</span>
+      <div class="admin-logo-text">
+        <div>আমের হাট বাজার</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,.4);font-weight:400">Admin Panel</div>
+      </div>
+    </div>
     <nav class="admin-nav">
-      <button class="admin-nav-item active" onclick="showAdminTab('dashboard')"><i class="fas fa-chart-bar"></i>ড্যাশবোর্ড</button>
-      <button class="admin-nav-item" onclick="showAdminTab('products')"><i class="fas fa-box"></i>পণ্য ব্যবস্থাপনা</button>
-      <button class="admin-nav-item" onclick="showAdminTab('orders')"><i class="fas fa-shopping-bag"></i>অর্ডার ব্যবস্থাপনা</button>
-      <button class="admin-nav-item" onclick="showAdminTab('customers')"><i class="fas fa-users"></i>কাস্টমার তালিকা</button>
-      <button class="admin-nav-item" onclick="showAdminTab('coupons')"><i class="fas fa-ticket-alt"></i>কুপন ব্যবস্থাপনা</button>
-      <button class="admin-nav-item" onclick="showAdminTab('reviews')"><i class="fas fa-star"></i>রিভিউ ব্যবস্থাপনা</button>
-      <button class="admin-nav-item" onclick="showAdminTab('delivery')"><i class="fas fa-truck"></i>ডেলিভারি সেটিংস</button>
-      <button class="admin-nav-item" onclick="showAdminTab('password')"><i class="fas fa-key"></i>পাসওয়ার্ড পরিবর্তন</button>
-      <button class="admin-nav-item" onclick="showAdminTab('customize')"><i class="fas fa-paint-brush"></i>সাইট কাস্টমাইজ</button>
+      <div class="admin-nav-section-label">মেইন</div>
+      <button class="admin-nav-item active" onclick="showAdminTab('dashboard')" data-label="ড্যাশবোর্ড"><i class="fas fa-chart-bar"></i><span class="admin-nav-label">ড্যাশবোর্ড</span></button>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-section-label">পণ্য ও বিক্রয়</div>
+      <button class="admin-nav-item" onclick="showAdminTab('products')" data-label="পণ্য ব্যবস্থাপনা"><i class="fas fa-box"></i><span class="admin-nav-label">পণ্য ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('orders')" data-label="অর্ডার ব্যবস্থাপনা"><i class="fas fa-shopping-bag"></i><span class="admin-nav-label">অর্ডার ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('customers')" data-label="কাস্টমার তালিকা"><i class="fas fa-users"></i><span class="admin-nav-label">কাস্টমার তালিকা</span></button>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-section-label">মার্কেটিং</div>
+      <button class="admin-nav-item" onclick="showAdminTab('coupons')" data-label="কুপন ব্যবস্থাপনা"><i class="fas fa-ticket-alt"></i><span class="admin-nav-label">কুপন ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('reviews')" data-label="রিভিউ ব্যবস্থাপনা"><i class="fas fa-star"></i><span class="admin-nav-label">রিভিউ ব্যবস্থাপনা</span></button>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-section-label">সেটিংস</div>
+      <button class="admin-nav-item" onclick="showAdminTab('delivery')" data-label="ডেলিভারি সেটিংস"><i class="fas fa-truck"></i><span class="admin-nav-label">ডেলিভারি সেটিংস</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('customize')" data-label="সাইট কাস্টমাইজ"><i class="fas fa-paint-brush"></i><span class="admin-nav-label">সাইট কাস্টমাইজ</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('password')" data-label="পাসওয়ার্ড"><i class="fas fa-key"></i><span class="admin-nav-label">পাসওয়ার্ড পরিবর্তন</span></button>
     </nav>
-    <button class="admin-nav-item" style="border-top:1px solid rgba(255,255,255,.1);color:#ff8a80" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i>লগআউট</button>
+    <button class="admin-nav-item" style="border-top:1px solid rgba(255,255,255,.06);color:#ff8a80" data-label="লগআউট" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i><span class="admin-nav-label">লগআউট</span></button>
+    <button class="admin-collapse-btn" id="admin-collapse-btn" onclick="toggleAdminCollapse()" title="সাইডবার">
+      <i class="fas fa-chevron-left" id="admin-collapse-icon"></i>
+    </button>
   </div>
   <div class="admin-content" id="admin-content">
     <div class="admin-topbar">
-      <h2 id="admin-page-title">ড্যাশবোর্ড</h2>
-      <div style="display:flex;align-items:center;gap:12px">
-        <span style="font-size:.85rem;color:var(--text-muted)">🟢 ড্যাশবোর্ড অটো-আপডেট চালু</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="toggleAdminCollapse()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:4px;border-radius:4px" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+        <h2 id="admin-page-title">ড্যাশবোর্ড</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:.78rem;color:var(--green-mid);display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green-mid);display:inline-block;animation:pulse 2s infinite"></span>লাইভ</span>
         <button class="btn-admin-logout" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> লগআউট</button>
       </div>
     </div>
     <div class="admin-main" id="admin-main"></div>
   </div>
+  <button class="admin-sidebar-toggle" id="admin-sidebar-toggle" onclick="toggleAdminSidebar()"><i class="fas fa-bars"></i></button>
 </div>
-<button class="admin-sidebar-toggle" id="admin-sidebar-toggle" onclick="toggleAdminSidebar()"><i class="fas fa-bars"></i></button>
 
 <!-- CUSTOM ALERT MODAL -->
 <div id="custom-alert-overlay">
@@ -2842,6 +2923,13 @@ function doAdminLogin(){
 function openAdminPanel(startTab){
   sessionStorage.setItem('amb_admin_open','1');
   document.getElementById('admin-panel').classList.add('open');
+  // Restore collapse state
+  const sb=document.getElementById('admin-sidebar');
+  const icon=document.getElementById('admin-collapse-icon');
+  if(sb&&sessionStorage.getItem('amb_sidebar_collapsed')==='1'){
+    sb.classList.add('collapsed');
+    if(icon) icon.className='fas fa-chevron-right';
+  }
   showAdminTab(startTab||'dashboard');
   startAdminRefresh();
 }
@@ -3060,95 +3148,149 @@ function saveSiteSettings(s){localStorage.setItem('amb_site_settings',JSON.strin
 function applySettings(s){
   if(!s) s=getSiteSettings();
   const root=document.documentElement;
-  // CSS variables — auto-propagates everywhere
-  root.style.setProperty('--green-mid',s.primaryColor);
-  root.style.setProperty('--green-dark',s.navBg);
-  root.style.setProperty('--yellow',s.accentColor);
-  root.style.setProperty('--bg',s.bgColor);
-  root.style.setProperty('--orange',s.accentColor2||'#e76f00');
-  root.style.setProperty('--green-pale',s.paleColor||'#d8f3dc');
 
-  // Navbar
+  // ── CSS Variables (propagates to ALL elements instantly) ──
+  root.style.setProperty('--green-mid', s.primaryColor||'#2d6a4f');
+  root.style.setProperty('--green-dark', s.navBg||'#1b4332');
+  root.style.setProperty('--green-light', lightenColor(s.primaryColor||'#2d6a4f',20));
+  root.style.setProperty('--yellow', s.accentColor||'#f4a40a');
+  root.style.setProperty('--orange', s.accentColor2||'#e76f00');
+  root.style.setProperty('--bg', s.bgColor||'#f9f5e7');
+  root.style.setProperty('--green-pale', s.paleColor||'#d8f3dc');
+
+  // ── Navbar ──
   const nav=document.getElementById('navbar');
-  if(nav) nav.style.background=s.navBg;
-  // Admin sidebar
+  if(nav) nav.style.background=s.navBg||'#1b4332';
+  // Nav logo text
+  const navLogoText=document.querySelector('.nav-logo>div>div:first-child');
+  if(navLogoText) navLogoText.textContent=s.siteName||'আমের হাট বাজার';
+  // Nav tagline
+  const navTagline=document.querySelector('.nav-logo>div>div:last-child');
+  if(navTagline&&navTagline!==navLogoText) navTagline.textContent=s.siteTagline||'তাজা আম, সেরা দাম';
+
+  // ── Admin sidebar ──
   const sidebar=document.getElementById('admin-sidebar');
-  if(sidebar) sidebar.style.background=s.navBg;
-  // Admin logo
-  const al=document.querySelector('.admin-logo');
-  if(al) al.style.borderBottomColor=s.primaryColor+'40';
+  if(sidebar) sidebar.style.background=s.navBg||'#1b4332';
+  const adminLogo=document.querySelector('.admin-logo');
+  if(adminLogo) adminLogo.style.borderBottomColor=(s.primaryColor||'#2d6a4f')+'44';
 
-  // Hero gradient
+  // ── Hero section ──
   const hero=document.getElementById('hero');
-  if(hero) hero.style.background=`linear-gradient(135deg,${s.heroBg1} 0%,${s.heroBg2} 60%,${s.heroBg1} 100%)`;
-  // Hero text
-  const h1=document.querySelector('#hero .hero-text h1');
-  if(h1&&s.heroTitle) h1.innerHTML=s.heroTitle;
-  const hp=document.querySelector('#hero .hero-text p');
-  if(hp&&s.heroSubtext) hp.textContent=s.heroSubtext;
-  // Hero CTA button
+  if(hero) hero.style.background=`linear-gradient(135deg,${s.heroBg1||'#1b4332'} 0%,${s.heroBg2||'#2d6a4f'} 55%,${s.heroBg1||'#1b4332'} 100%)`;
+  const heroH1=document.querySelector('#hero .hero-text h1');
+  if(heroH1&&s.heroTitle) heroH1.innerHTML=s.heroTitle;
+  const heroP=document.querySelector('#hero .hero-text>p');
+  if(heroP&&s.heroSubtext) heroP.textContent=s.heroSubtext;
   const heroCta=document.querySelector('.btn-hero-primary');
-  if(heroCta&&s.ctaText) heroCta.textContent=s.ctaText;
+  if(heroCta&&s.ctaText) heroCta.innerHTML=s.ctaText;
 
-  // Features bar bg
+  // ── Features bar ──
   const featBar=document.getElementById('features');
-  if(featBar) featBar.style.background=s.navBg;
+  if(featBar) featBar.style.background=s.navBg||'#1b4332';
 
-  // Coupon section gradient
+  // ── Coupon section ──
   const cpSec=document.getElementById('coupon-section');
-  if(cpSec) cpSec.style.background=`linear-gradient(135deg,${s.navBg},${s.primaryColor})`;
+  if(cpSec) cpSec.style.background=`linear-gradient(135deg,${s.navBg||'#1b4332'},${s.primaryColor||'#2d6a4f'})`;
 
-  // Site name — all occurrences
-  document.querySelectorAll('.nav-logo>div>div:first-child,.footer-about h3').forEach(el=>{
-    if(el.classList.contains('fa')) return;
-    el.childNodes.forEach(n=>{if(n.nodeType===3) n.textContent=n.textContent.replace(/আমের হাট বাজার/g,s.siteName);});
+  // ── Section badges & headers (primaryColor tints) ──
+  document.querySelectorAll('.section-badge').forEach(el=>{
+    el.style.background=lightenColor(s.primaryColor||'#2d6a4f',45);
+    el.style.color=s.primaryColor||'#2d6a4f';
   });
 
-  // Footer about text
-  const footerAbout=document.querySelector('.footer-about p');
-  if(footerAbout&&s.footerAbout) footerAbout.textContent=s.footerAbout;
+  // ── Footer ──
+  const footer=document.querySelector('footer');
+  if(footer) footer.style.background=s.navBg||'#1b4332';
+  const footerAboutEl=document.querySelector('.footer-about p');
+  if(footerAboutEl&&s.footerAbout) footerAboutEl.textContent=s.footerAbout;
+  // Footer logo text
+  const footerH3=document.querySelector('.footer-about h3');
+  if(footerH3){
+    const span=footerH3.querySelector('span');
+    const text=footerH3.childNodes[footerH3.childNodes.length-1];
+    if(text&&text.nodeType===3) text.textContent=' '+(s.siteName||'আমের হাট বাজার');
+  }
 
-  // Contact info — phone
-  document.querySelectorAll('a[href^="tel:"]').forEach(a=>{
-    if(s.phoneNumber){a.href='tel:'+s.phoneNumber.replace(/[^+\d]/g,'');a.textContent=s.phoneNumber;}
+  // ── Contact info ──
+  if(s.phoneNumber){
+    document.querySelectorAll('a[href^="tel:"]').forEach(a=>{
+      a.href='tel:'+s.phoneNumber.replace(/[^+\d]/g,'');
+      a.textContent=s.phoneNumber;
+    });
+    // Plain text phone spans
+    document.querySelectorAll('.contact-item').forEach(ci=>{
+      const spans=ci.querySelectorAll('span');
+      spans.forEach(sp=>{
+        if(sp.textContent.match(/^\+880|^01[3-9]/)) sp.textContent=s.phoneNumber;
+      });
+    });
+  }
+  if(s.email){
+    document.querySelectorAll('a[href^="mailto:"]').forEach(a=>{
+      a.href='mailto:'+s.email; a.textContent=s.email;
+    });
+  }
+  if(s.address){
+    document.querySelectorAll('.contact-item').forEach(ci=>{
+      const spans=ci.querySelectorAll('span');
+      spans.forEach(sp=>{if(sp.textContent.includes('বাংলাদেশ')||sp.textContent.includes('রাজশাহী')) sp.textContent=s.address;});
+    });
+  }
+
+  // ── Social links ──
+  const socMap={fb:'fbLink',ig:'igLink',yt:'ytLink',wa:'waLink'};
+  document.querySelectorAll('.social-icon').forEach(a=>{
+    const cls=[...a.classList].find(c=>socMap[c]);
+    if(cls&&s[socMap[cls]]) a.href=s[socMap[cls]];
   });
-  document.querySelectorAll('a[href^="https://wa.me"]').forEach(a=>{
+  // WhatsApp links
+  document.querySelectorAll('a[href*="wa.me"]').forEach(a=>{
     if(s.waLink) a.href=s.waLink;
   });
 
-  // Social links
-  const socialMap={fb:'fbLink',ig:'igLink',yt:'ytLink',wa:'waLink'};
-  document.querySelectorAll('.social-icon').forEach(a=>{
-    const cls=[...a.classList].find(c=>socialMap[c]);
-    if(cls&&s[socialMap[cls]]) a.href=s[socialMap[cls]];
-  });
+  // ── Font ──
+  if(s.fontFamily){
+    const ff=`'${s.fontFamily}','Hind Siliguri','Noto Sans Bengali',sans-serif`;
+    root.style.setProperty('font-family',ff);
+    document.body.style.fontFamily=ff;
+    // Force on all elements via inline style tag
+    let fontStyle=document.getElementById('dynamic-font-style');
+    if(!fontStyle){fontStyle=document.createElement('style');fontStyle.id='dynamic-font-style';document.head.appendChild(fontStyle);}
+    fontStyle.textContent=`*:not(i):not(.fas):not(.far):not(.fab):not([class*="fa-"]){font-family:'${s.fontFamily}','Hind Siliguri','Noto Sans Bengali',sans-serif!important}`;
+  }
 
-  // Announcement banner
+  // ── Announcement banner ──
   let banner=document.getElementById('site-banner');
   if(s.showBanner&&s.bannerText){
-    if(!banner){
-      banner=document.createElement('div');
-      banner.id='site-banner';
-      document.body.appendChild(banner);
-    }
-    banner.style.cssText=`position:fixed;top:65px;left:0;right:0;z-index:999;text-align:center;padding:8px 20px;font-size:.88rem;font-weight:600;font-family:Hind Siliguri,sans-serif;background:${s.bannerColor};color:#fff;display:flex;align-items:center;justify-content:center;gap:10px`;
-    banner.innerHTML=`<i class="fas fa-bullhorn"></i><span>${s.bannerText}</span><button onclick="document.getElementById('site-banner').style.display='none'" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;font-size:.75rem;margin-left:8px">✕</button>`;
-  } else if(banner) banner.style.display='none';
+    if(!banner){banner=document.createElement('div');banner.id='site-banner';document.body.appendChild(banner);}
+    banner.style.cssText=`position:fixed;top:65px;left:0;right:0;z-index:999;text-align:center;padding:8px 40px;font-size:.88rem;font-weight:600;font-family:'Hind Siliguri',sans-serif;background:${s.bannerColor||'#e74c3c'};color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.2)`;
+    banner.innerHTML=`<i class="fas fa-bullhorn"></i><span>${s.bannerText}</span><button onclick="this.parentElement.style.display='none'" style="position:absolute;right:12px;background:rgba(255,255,255,.2);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:.75rem">✕</button>`;
+  } else if(banner){banner.style.display='none';}
 
-  // Custom CSS injection
-  let customStyle=document.getElementById('custom-site-css');
+  // ── Custom CSS ──
+  let cStyle=document.getElementById('custom-site-css');
   if(s.customCSS){
-    if(!customStyle){customStyle=document.createElement('style');customStyle.id='custom-site-css';document.head.appendChild(customStyle);}
-    customStyle.textContent=s.customCSS;
-  } else if(customStyle) customStyle.textContent='';
+    if(!cStyle){cStyle=document.createElement('style');cStyle.id='custom-site-css';document.head.appendChild(cStyle);}
+    cStyle.textContent=s.customCSS;
+  } else if(cStyle) cStyle.textContent='';
 
-  // Font
-  if(s.fontFamily){
-    document.body.style.fontFamily=s.fontFamily+",sans-serif";
-  }
+  // ── Page title ──
+  // (don't override animated title, just update base)
+  document.querySelector('title') && (document.querySelector('title').dataset.base=s.siteName||'আমের হাট বাজার');
 }
 
-// ── Customize helpers ──────────────────────────────────────
+// Helper: lighten a hex color by percent
+function lightenColor(hex,pct){
+  try{
+    const n=parseInt(hex.replace('#',''),16);
+    const r=Math.min(255,((n>>16)&0xff)+Math.round(2.55*pct));
+    const g=Math.min(255,((n>>8)&0xff)+Math.round(2.55*pct));
+    const b=Math.min(255,(n&0xff)+Math.round(2.55*pct));
+    return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }catch{return hex;}
+}
+
+
 function livePreview(key,val){
   // Save to a temp working copy so reload restores current state
   const s=getSiteSettings(); s[key]=val;
@@ -4001,8 +4143,18 @@ function showToast(msg,type='success'){
 // ============================================================
 function toggleMobile(){document.getElementById('mobile-menu').classList.toggle('open');}
 function closeMobile(){document.getElementById('mobile-menu').classList.remove('open');}
+function toggleAdminCollapse(){
+  const sb=document.getElementById('admin-sidebar');
+  const icon=document.getElementById('admin-collapse-icon');
+  if(!sb) return;
+  sb.classList.toggle('collapsed');
+  const collapsed=sb.classList.contains('collapsed');
+  if(icon) icon.className=collapsed?'fas fa-chevron-right':'fas fa-chevron-left';
+  sessionStorage.setItem('amb_sidebar_collapsed',collapsed?'1':'0');
+}
 function toggleAdminSidebar(){
-  document.getElementById('admin-sidebar').classList.toggle('mob-open');
+  const sb=document.getElementById('admin-sidebar');
+  if(sb) sb.classList.toggle('mob-open');
 }
 
 // ============================================================
