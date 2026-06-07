@@ -425,6 +425,8 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .btn-delete-sm:hover{background:#e74c3c;color:#fff}
 .btn-view-sm{background:#e8f4fd;border:none;color:#2980b9;padding:5px 10px;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer}
 .btn-view-sm:hover{background:#2980b9;color:#fff}
+.btn-print-sm{background:#eaf7f0;border:none;color:#1a7a4a;padding:5px 10px;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer}
+.btn-print-sm:hover{background:#1a7a4a;color:#fff}
 .btn-invoice-sm{background:#fff3cd;border:none;color:#856404;padding:5px 10px;border-radius:4px;font-size:.78rem;font-weight:600;cursor:pointer}
 .btn-invoice-sm:hover{background:#f4a40a;color:#fff}
 .admin-form{padding:20px}
@@ -1263,7 +1265,17 @@ function getUsers(){const d=DB.get('amb_users');return Array.isArray(d)?d:[];}
 function saveUsers(d){DB.set('amb_users',d)}
 function getCoupons(){const d=DB.get('amb_coupons');return Array.isArray(d)?d:[];}
 function saveCoupons(d){DB.set('amb_coupons',d)}
-function getDelivery(){return DB.get('amb_delivery')||{inside:60,outside:120,freeLimit:1000}}
+function getDelivery(){
+  return DB.get('amb_delivery')||{
+    inside:60,outside:120,freeLimit:1000,
+    // Zone-specific overrides
+    zones:{
+      'ঢাকা':60,'নারায়ণগঞ্জ':70,'গাজীপুর':70,'মুন্সিগঞ্জ':80,'মানিকগঞ্জ':80,
+      'নরসিংদী':90,'রাজশাহী':100,'চট্টগ্রাম':110,'খুলনা':110,'সিলেট':110,
+      'বরিশাল':120,'রংপুর':120,'ময়মনসিংহ':100,'কুমিল্লা':100
+    }
+  };
+}
 function saveDelivery(d){DB.set('amb_delivery',d)}
 function getAdmin(){return DB.get('amb_admin')||{email:'admin@amerbazar.com',password:'admin123'}}
 function saveAdmin(d){DB.set('amb_admin',d)}
@@ -1448,13 +1460,21 @@ function calcCartTotals(cart,district){
     else discount=Number(appliedCoupon.value)||0;
   }
   const afterDiscount=Math.max(0,subtotal-discount);
-  // District-based delivery charge
-  const insideDistricts=['ঢাকা','Dhaka'];
-  const isInside=district&&insideDistricts.some(d=>district.toLowerCase().includes(d.toLowerCase()));
-  const baseCharge=isInside?delivery.inside:delivery.outside;
+  // Zone-based delivery charge
+  let baseCharge=delivery.outside;
+  let isInside=false;
+  if(district){
+    const zones=delivery.zones||{};
+    const matched=Object.keys(zones).find(z=>district.includes(z)||z.includes(district.split(' ')[0]));
+    if(matched){baseCharge=zones[matched];}
+    else if(['ঢাকা','Dhaka'].some(d=>district.toLowerCase().includes(d.toLowerCase()))){
+      baseCharge=delivery.inside; isInside=true;
+    }
+    if(district.includes('ঢাকা')||district==='ঢাকা') isInside=true;
+  }
   const delCharge=afterDiscount>=delivery.freeLimit?0:baseCharge;
   const total=afterDiscount+delCharge;
-  return{subtotal,discount,delCharge,total,freeLimit:delivery.freeLimit,isInside};
+  return{subtotal,discount,delCharge,total,freeLimit:delivery.freeLimit,isInside,baseCharge};
 }
 function renderCart(){
   const list=document.getElementById('cart-items-list');
@@ -1626,11 +1646,31 @@ function renderCheckoutForm(){
     <div class="form-group"><label>পূর্ণ নাম *</label><input class="form-control" id="co-name" value="${u.name}" placeholder="আপনার নাম"></div>
     <div class="form-row">
       <div class="form-group"><label>ফোন নম্বর *</label><input class="form-control" id="co-phone" value="${u.phone||''}" placeholder="০১XXXXXXXXX"></div>
-      <div class="form-group"><label>জেলা *</label><select class="form-control" id="co-district" onchange="updateCheckoutDelivery()">
-        <option>ঢাকা</option><option>রাজশাহী</option><option>চট্টগ্রাম</option><option>খুলনা</option><option>সিলেট</option><option>বরিশাল</option><option>রংপুর</option><option>ময়মনসিংহ</option><option>কুমিল্লা</option><option>নারায়ণগঞ্জ</option><option>গাজীপুর</option><option>টাঙ্গাইল</option><option>ফরিদপুর</option><option>যশোর</option><option>বগুড়া</option><option>দিনাজপুর</option>
-      </select></div>
+      <div class="form-group"><label>বিকল্প ফোন</label><input class="form-control" id="co-phone2" placeholder="ঐচ্ছিক"></div>
     </div>
-    <div class="form-group"><label>সম্পূর্ণ ঠিকানা *</label><textarea class="form-control" id="co-address" rows="2" placeholder="গ্রাম/রোড, থানা, জেলা"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>জেলা *</label>
+        <select class="form-control" id="co-district" onchange="updateUpazilaDropdown('co-district','co-upazila');updateCheckoutDelivery()">
+          <option value="">-- জেলা বেছে নিন --</option>
+          ${districtOptions('ঢাকা')}
+        </select>
+      </div>
+      <div class="form-group"><label>উপজেলা / থানা</label>
+        <select class="form-control" id="co-upazila">
+          ${upazilaOptions('ঢাকা')}
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>গ্রাম / রোড / এলাকা *</label>
+      <input class="form-control" id="co-area" placeholder="গ্রাম, রোড নম্বর, এলাকার নাম">
+    </div>
+    <div class="form-group"><label>সম্পূর্ণ ঠিকানা *</label>
+      <textarea class="form-control" id="co-address" rows="2" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রোড, এলাকা, উপজেলা, জেলা"></textarea>
+    </div>
+    <div style="background:var(--green-pale);border-radius:6px;padding:7px 12px;font-size:.78rem;color:var(--green-dark);margin-bottom:8px;display:flex;align-items:center;gap:6px">
+      <i class="fas fa-lightbulb" style="color:var(--yellow)"></i>
+      <span>সঠিক ঠিকানা দিলে দ্রুত ডেলিভারি পাবেন।</span>
+    </div>
     <div id="co-delivery-preview" style="background:var(--green-pale);border-radius:6px;padding:8px 12px;font-size:.85rem;color:var(--green-dark);margin-bottom:10px"></div>
     <div class="form-group">
       <label style="margin-bottom:10px;display:block">পেমেন্ট পদ্ধতি *</label>
@@ -1649,7 +1689,39 @@ function renderCheckoutForm(){
   },0);
 }
 let selectedPayment='cod';
-// Payment method info config
+// All Bangladesh districts
+const BD_DISTRICTS=['ঢাকা','নারায়ণগঞ্জ','গাজীপুর','মুন্সিগঞ্জ','মানিকগঞ্জ','নরসিংদী','কিশোরগঞ্জ','ময়মনসিংহ','টাঙ্গাইল','জামালপুর','শেরপুর','নেত্রকোণা','চট্টগ্রাম','কক্সবাজার','রাঙ্গামাটি','বান্দরবান','খাগড়াছড়ি','ফেনী','নোয়াখালী','লক্ষ্মীপুর','চাঁদপুর','কুমিল্লা','ব্রাহ্মণবাড়িয়া','সিলেট','মৌলভীবাজার','হবিগঞ্জ','সুনামগঞ্জ','রাজশাহী','চাঁপাইনবাবগঞ্জ','নওগাঁ','নাটোর','পাবনা','সিরাজগঞ্জ','বগুড়া','জয়পুরহাট','রংপুর','গাইবান্ধা','কুড়িগ্রাম','লালমনিরহাট','নীলফামারী','দিনাজপুর','ঠাকুরগাঁও','পঞ্চগড়','খুলনা','বাগেরহাট','সাতক্ষীরা','যশোর','ঝিনাইদহ','মাগুরা','নড়াইল','কুষ্টিয়া','মেহেরপুর','চুয়াডাঙ্গা','বরিশাল','পটুয়াখালী','পিরোজপুর','ঝালকাঠি','বরগুনা','ভোলা','ফরিদপুর','মাদারীপুর','শরীয়তপুর','রাজবাড়ী','গোপালগঞ্জ'];
+
+// Key upazilas per district (abbreviated — major ones)
+const BD_UPAZILAS={
+  'ঢাকা':['ধামরাই','দোহার','কেরানীগঞ্জ','নবাবগঞ্জ','সাভার','তেজগাঁও','মিরপুর','উত্তরা','মতিঝিল','ডেমরা','কদমতলী','কামরাঙ্গীরচর','লালবাগ','হাজারীবাগ','মোহাম্মদপুর','শাহবাগ','রমনা','পল্লবী','বাড্ডা','ভাটারা','খিলক্ষেত','সবুজবাগ','গেন্ডারিয়া','শ্যামপুর','যাত্রাবাড়ী','সূত্রাপুর','কোতোয়ালি','ওয়ারী'],
+  'নারায়ণগঞ্জ':['আড়াইহাজার','বন্দর','নারায়ণগঞ্জ সদর','রূপগঞ্জ','সোনারগাঁও'],
+  'গাজীপুর':['কালিয়াকৈর','কালীগঞ্জ','কাপাসিয়া','গাজীপুর সদর','শ্রীপুর','টঙ্গী'],
+  'চট্টগ্রাম':['আনোয়ারা','বাঁশখালী','বোয়ালখালী','চন্দনাইশ','ফটিকছড়ি','হাটহাজারী','কর্ণফুলী','লোহাগাড়া','মীরসরাই','পটিয়া','রাউজান','রাঙ্গুনিয়া','সাতকানিয়া','সীতাকুণ্ড','সন্দ্বীপ','কক্সবাজার সদর','চট্টগ্রাম সদর'],
+  'রাজশাহী':['বাগমারা','চারঘাট','দুর্গাপুর','গোদাগাড়ী','মোহনপুর','পবা','পুঠিয়া','তানোর','বাঘা','রাজশাহী সদর'],
+  'চাঁপাইনবাবগঞ্জ':['ভোলাহাট','গোমস্তাপুর','নাচোল','শিবগঞ্জ','চাঁপাইনবাবগঞ্জ সদর'],
+  'সিলেট':['বালাগঞ্জ','বিয়ানীবাজার','বিশ্বনাথ','কোম্পানীগঞ্জ','ফেঞ্চুগঞ্জ','গোলাপগঞ্জ','গোয়াইনঘাট','জৈন্তাপুর','কানাইঘাট','সিলেট সদর','ওসমানীনগর','দক্ষিণ সুরমা','জকিগঞ্জ'],
+  'খুলনা':['বটিয়াঘাটা','দাকোপ','দিঘলিয়া','দুমুরিয়া','ফুলতলা','কয়রা','পাইকগাছা','রূপসা','তেরখাদা','খুলনা সদর'],
+  'বরিশাল':['আগৈলঝাড়া','বাকেরগঞ্জ','বানারীপাড়া','গৌরনদী','হিজলা','মেহেন্দিগঞ্জ','মুলাদী','উজিরপুর','বরিশাল সদর'],
+  'ময়মনসিংহ':['ভালুকা','ধোবাউড়া','ফুলবাড়িয়া','গফরগাঁও','গৌরীপুর','হালুয়াঘাট','ঈশ্বরগঞ্জ','নান্দাইল','ফুলপুর','ময়মনসিংহ সদর','তারাকান্দা','মুক্তাগাছা','ত্রিশাল'],
+  'রংপুর':['বদরগঞ্জ','গঙ্গাচড়া','কাউনিয়া','মিঠাপুকুর','পীরগঞ্জ','পীরগাছা','রংপুর সদর','তারাগঞ্জ'],
+  'দিনাজপুর':['বিরামপুর','বিরল','বোচাগঞ্জ','চিরিরবন্দর','ফুলবাড়ী','ঘোড়াঘাট','হাকিমপুর','কাহারোল','খানসামা','নবাবগঞ্জ','পার্বতীপুর','সেতাবগঞ্জ','দিনাজপুর সদর'],
+  'কুমিল্লা':['বরুড়া','ব্রাহ্মণপাড়া','বুড়িচং','চান্দিনা','চৌদ্দগ্রাম','দাউদকান্দি','দেবিদ্বার','হোমনা','লাকসাম','লালমাই','মেঘনা','মনোহরগঞ্জ','মুরাদনগর','নাঙ্গলকোট','কুমিল্লা সদর','তিতাস'],
+};
+
+function districtOptions(selected){
+  return BD_DISTRICTS.map(d=>`<option value="${d}" ${d===selected?'selected':''}>${d}</option>`).join('');
+}
+function upazilaOptions(district){
+  const ups=BD_UPAZILAS[district]||[];
+  if(!ups.length) return '<option value="">উপজেলা নির্বাচন করুন</option>';
+  return '<option value="">-- উপজেলা --</option>'+ups.map(u=>`<option value="${u}">${u}</option>`).join('');
+}
+function updateUpazilaDropdown(distId,upazilaId){
+  const district=document.getElementById(distId)?.value||'';
+  const sel=document.getElementById(upazilaId);
+  if(sel) sel.innerHTML=upazilaOptions(district);
+}
 const PAYMENT_METHODS={
   cod:{
     icon:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#2d6a4f"/><rect x="3" y="7" width="18" height="10" rx="2" fill="#fff" opacity=".9"/><circle cx="12" cy="12" r="3" fill="#2d6a4f"/><rect x="5" y="10" width="3" height="4" rx="1" fill="#d8f3dc"/><rect x="16" y="10" width="3" height="4" rx="1" fill="#d8f3dc"/></svg>',
@@ -1709,20 +1781,30 @@ function getPaymentOptionsHTML(){
 function placeOrder(isBuyNow){
   const nameEl=document.getElementById(isBuyNow?'bn-name':'co-name');
   const phoneEl=document.getElementById(isBuyNow?'bn-phone':'co-phone');
+  const phone2El=document.getElementById(isBuyNow?'bn-phone2':'co-phone2');
+  const areaEl=document.getElementById(isBuyNow?'bn-area':'co-area');
   const addressEl=document.getElementById(isBuyNow?'bn-address':'co-address');
   const districtEl=document.getElementById(isBuyNow?'bn-district':'co-district');
+  const upazilaEl=document.getElementById(isBuyNow?'bn-upazila':'co-upazila');
   const errEl=document.getElementById(isBuyNow?'bn-error':'co-error');
+
   const name=(nameEl?.value||'').trim();
   const phone=(phoneEl?.value||'').trim();
-  const address=(addressEl?.value||'').trim();
+  const phone2=(phone2El?.value||'').trim();
+  const area=(areaEl?.value||'').trim();
   const district=districtEl?.value||'';
-  if(!name||!phone||!address){
-    if(errEl){errEl.textContent='সব তারকাচিহ্নিত ঘর পূরণ করুন';errEl.scrollIntoView({behavior:'smooth',block:'center'});}
+  const upazila=upazilaEl?.value||'';
+  // Build full address from parts
+  const addressParts=[area,upazila,district].filter(Boolean);
+  const manualAddress=(addressEl?.value||'').trim();
+  const address=manualAddress||addressParts.join(', ');
+
+  if(!name||!phone||!district||!address){
+    if(errEl){errEl.textContent='নাম, ফোন, জেলা ও ঠিকানা আবশ্যক';errEl.scrollIntoView({behavior:'smooth',block:'center'});}
     return;
   }
   const u=getCurrentUser();
   if(!u){showToast('লগইন করুন','warning');return;}
-  // Validate transaction ID for non-COD
   const pm=PAYMENT_METHODS[selectedPayment];
   if(pm&&pm.needsTxn){
     const txn=(document.getElementById('pay-txnid')?.value||'').trim();
@@ -1732,19 +1814,15 @@ function placeOrder(isBuyNow){
     }
   }
   let items;
-  if(isBuyNow&&buyNowProduct){
-    items=[{...buyNowProduct,qty:buyNowQty||1}];
-  } else {
-    items=getMyCart();
-    if(!items.length){showToast('কার্ট খালি','warning');return;}
-  }
-  const t=calcCartTotals(items, district);
+  if(isBuyNow&&buyNowProduct){items=[{...buyNowProduct,qty:buyNowQty||1}];}
+  else{items=getMyCart();if(!items.length){showToast('কার্ট খালি','warning');return;}}
+  const t=calcCartTotals(items,district);
   const payNum=document.getElementById('pay-number')?.value||'';
   const payTxn=document.getElementById('pay-txnid')?.value||'';
   const order={
     id:'AMB-'+Date.now(),
-    userId:u.id,userName:name,userPhone:phone,userEmail:u.email||'',
-    address,district,items,
+    userId:u.id,userName:name,userPhone:phone,userPhone2:phone2,userEmail:u.email||'',
+    address,area,upazila,district,items,
     subtotal:t.subtotal,discount:t.discount,delivery:t.delCharge,total:t.total,
     coupon:appliedCoupon?.code||null,
     payment:selectedPayment,paymentRef:payNum,paymentTxn:payTxn,
@@ -1862,15 +1940,25 @@ function renderBuyNowModal(p,u){
         <span>ডেলিভারি চার্জ:</span><span id="bn-del-preview">${t.delCharge===0?'ফ্রি':'৳'+t.delCharge}</span>
       </div>
       <div class="form-group" style="margin-bottom:12px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">নাম *</label><input class="form-control" id="bn-name" value="${u.name}"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-        <div class="form-group"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">ফোন *</label><input class="form-control" id="bn-phone" value="${u.phone||''}"></div>
-        <div class="form-group"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">জেলা</label>
-          <select class="form-control" id="bn-district" onchange="changeBuyNowQty(0)">
-            ${['ঢাকা','রাজশাহী','চট্টগ্রাম','খুলনা','সিলেট','বরিশাল','রংপুর','ময়মনসিংহ','কুমিল্লা','নারায়ণগঞ্জ','গাজীপুর','টাঙ্গাইল','ফরিদপুর','যশোর','বগুড়া','দিনাজপুর'].map(d=>`<option>${d}</option>`).join('')}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">ফোন *</label><input class="form-control" id="bn-phone" value="${u.phone||''}" placeholder="০১XXXXXXXXX"></div>
+        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">বিকল্প ফোন</label><input class="form-control" id="bn-phone2" placeholder="ঐচ্ছিক"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">জেলা *</label>
+          <select class="form-control" id="bn-district" onchange="updateUpazilaDropdown('bn-district','bn-upazila');changeBuyNowQty(0)">
+            <option value="">-- জেলা --</option>
+            ${districtOptions('ঢাকা')}
+          </select>
+        </div>
+        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">উপজেলা</label>
+          <select class="form-control" id="bn-upazila">
+            ${upazilaOptions('ঢাকা')}
           </select>
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:14px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">ঠিকানা *</label><textarea class="form-control" id="bn-address" rows="2" placeholder="সম্পূর্ণ ঠিকানা লিখুন"></textarea></div>
+      <div class="form-group" style="margin-bottom:8px"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">এলাকা / রোড</label><input class="form-control" id="bn-area" placeholder="গ্রাম, রোড, এলাকা"></div>
+      <div class="form-group" style="margin-bottom:14px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">সম্পূর্ণ ঠিকানা *</label><textarea class="form-control" id="bn-address" rows="2" placeholder="বাড়ি নম্বর, ফ্ল্যাট, রোড, এলাকা, উপজেলা, জেলা"></textarea></div>
       <div class="form-group" style="margin-bottom:14px">
         <label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:8px">পেমেন্ট পদ্ধতি *</label>
         <div class="payment-options" style="grid-template-columns:repeat(3,1fr)" id="bn-payment-options"></div>
@@ -2269,42 +2357,56 @@ function generateInvoice(orderId){
   y+=8;
   doc.setFillColor(250,248,242); doc.rect(ML,y,boxW,44,'F');
   doc.setDrawColor(215,210,200); doc.rect(ML,y,boxW,44,'S');
-  // Labels (Latin)
-  const custLabels=['Name','Phone','Email','District'];
-  const custVals=[order.userName, order.userPhone, latinOnly(order.userEmail), order.district||'-'];
+  const custLabels=['Name','Phone','Alt Phone','Email','District'];
+  const custVals=[
+    order.userName,
+    order.userPhone,
+    order.userPhone2||'-',
+    latinOnly(order.userEmail),
+    [order.upazila,order.district].filter(Boolean).join(', ')||'-'
+  ];
   custLabels.forEach((lbl,i)=>{
     doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7.5);
-    doc.text(lbl+':',ML+3,y+7+i*8);
-    // Value — use bText for Bengali content
-    bText(custVals[i],ML+18,y+7+i*8,7.5,'#1a1a1a',boxW-20);
+    doc.text(lbl+':',ML+3,y+6+i*7.5);
+    bText(custVals[i],ML+22,y+6+i*7.5,7,'#1a1a1a',boxW-24);
   });
 
   // ─── DELIVERY BOX ──────────────────────────────────────────
+  // Build full address string
+  const fullAddr=[order.area,order.upazila,order.district].filter(Boolean).join(', ')||order.address||'-';
+  const displayAddr=order.address||fullAddr;
+
   doc.setFillColor(27,67,50); doc.roundedRect(box2X,y-8,boxW,7,1.5,1.5,'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
   doc.text('DELIVERY & PAYMENT',box2X+3,y-3);
   doc.setFillColor(250,248,242); doc.rect(box2X,y,boxW,44,'F');
   doc.setDrawColor(215,210,200); doc.rect(box2X,y,boxW,44,'S');
   doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7.5);
-  doc.text('Address:',box2X+3,y+7);
-  bText(order.address||'-',box2X+19,y+7,7,'#1a1a1a',boxW-22);
+  doc.text('Address:',box2X+3,y+6);
+  bText(displayAddr,box2X+19,y+6,6.5,'#1a1a1a',boxW-21);
+  // Upazila+District separate line
+  if(order.upazila||order.district){
+    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
+    doc.text('Area:',box2X+3,y+18);
+    bText([order.area,order.upazila].filter(Boolean).join(', ')||'-',box2X+19,y+18,6.5,'#444',boxW-21);
+  }
   doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-  doc.text('Payment:',box2X+3,y+20);
+  doc.text('Payment:',box2X+3,y+25);
   doc.setFont('helvetica','normal'); doc.setTextColor(25,25,25);
-  doc.text(payMap[order.payment]||order.payment||'-',box2X+19,y+20);
+  doc.text(payMap[order.payment]||order.payment||'-',box2X+19,y+25);
   if(order.paymentRef){
     doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text('Pay No:',box2X+3,y+27);
+    doc.text('Pay No:',box2X+3,y+32);
     doc.setFont('helvetica','normal'); doc.setTextColor(25,25,25);
-    doc.text(String(order.paymentRef).slice(0,22),box2X+19,y+27);
+    doc.text(String(order.paymentRef).slice(0,22),box2X+19,y+32);
   }
   if(order.paymentTxn){
     doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text('Txn ID:',box2X+3,y+34);
+    doc.text('Txn ID:',box2X+3,y+39);
     doc.setFillColor(216,243,220);
-    doc.roundedRect(box2X+18,y+30,boxW-21,6,1,1,'F');
+    doc.roundedRect(box2X+18,y+35,boxW-21,6,1,1,'F');
     doc.setFont('helvetica','bold'); doc.setTextColor(27,67,50);
-    doc.text(String(order.paymentTxn).slice(0,24),box2X+20,y+34);
+    doc.text(String(order.paymentTxn).slice(0,24),box2X+20,y+39);
   }
   if(order.coupon){
     doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
@@ -3746,6 +3848,7 @@ function renderOrdersRows(orders){
     <td><div class="action-btns">
       <button class="btn-view-sm" onclick="viewOrderDetail('${o.id}')"><i class="fas fa-eye"></i></button>
       <button class="btn-invoice-sm" onclick="generateInvoice('${o.id}')"><i class="fas fa-file-pdf"></i></button>
+      <button class="btn-print-sm" onclick="printOrder('${o.id}')"><i class="fas fa-print"></i></button>
       <button class="btn-delete-sm" onclick="deleteOrder('${o.id}')"><i class="fas fa-trash"></i></button>
     </div></td>
   </tr>`).join('');
@@ -4102,7 +4205,149 @@ function changeAdminPassword(){
 }
 
 // ============================================================
-// CUSTOM ALERT
+// PRINT ORDER
+// ============================================================
+function printOrder(orderId){
+  const o=getOrders().find(x=>x.id===orderId);
+  if(!o){showToast('অর্ডার পাওয়া যায়নি','error');return;}
+  const payLbl={'cod':'ক্যাশ অন ডেলিভারি','bkash':'বিকাশ','nagad':'নগদ','rocket':'রকেট','upay':'উপায়','bank':'ব্যাংক ট্রান্সফার'};
+  const statusLbl={'pending':'অপেক্ষারত','processing':'প্রক্রিয়াধীন','shipped':'শিপড','delivered':'ডেলিভারড','cancelled':'বাতিল'};
+  const fullAddr=[o.area,o.upazila,o.district].filter(Boolean).join(', ')||o.address||'—';
+  const displayAddr=o.address||fullAddr;
+  const printWin=window.open('','_blank','width=800,height=900');
+  if(!printWin){showToast('Popup blocked করা আছে — অনুমতি দিন','warning');return;}
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>Order ${o.id}</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Hind Siliguri',Arial,sans-serif;font-size:13px;color:#222;background:#fff;padding:20px}
+  @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+  .header{background:#1b4332;color:#fff;padding:18px 22px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center;margin-bottom:0}
+  .header h1{font-size:20px;font-weight:700;color:#f4a40a}
+  .header p{font-size:11px;color:rgba(255,255,255,.7);margin-top:3px}
+  .header-right{text-align:right}
+  .header-right .order-id{font-size:14px;font-weight:700;color:#f4a40a}
+  .status-bar{background:#f0faf4;border-left:4px solid #1b4332;padding:10px 16px;margin-bottom:16px;display:flex;gap:20px;flex-wrap:wrap;font-size:12px}
+  .status-bar span{color:#666}
+  .status-bar strong{color:#1b4332}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+  .info-box{border:1.5px solid #e0d8c8;border-radius:8px;overflow:hidden}
+  .info-box-header{background:#1b4332;color:#fff;padding:7px 14px;font-size:12px;font-weight:700}
+  .info-box-body{padding:12px 14px;background:#fafaf8}
+  .info-row{display:flex;gap:8px;margin-bottom:6px;font-size:12px}
+  .info-label{color:#888;min-width:90px;flex-shrink:0;font-weight:600}
+  .info-val{color:#222;flex:1;line-height:1.4}
+  .addr-box{border:1.5px solid #e0d8c8;border-radius:8px;margin-bottom:16px;overflow:hidden}
+  .addr-body{padding:12px 16px;background:#fafaf8;font-size:12px;line-height:1.7}
+  .addr-body .addr-line{display:flex;gap:10px;margin-bottom:4px}
+  .addr-body .addr-label{color:#888;font-weight:600;min-width:80px}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px}
+  thead th{background:#1b4332;color:#fff;padding:8px 12px;text-align:left;font-weight:700}
+  tbody td{padding:8px 12px;border-bottom:1px solid #eee}
+  tbody tr:nth-child(even){background:#fafaf8}
+  tfoot td{padding:8px 12px;font-weight:700;border-top:2px solid #e0d8c8}
+  .grand-row{background:#1b4332;color:#fff}
+  .grand-row td{color:#fff;padding:10px 12px}
+  .grand-row .amount{color:#f4a40a;font-size:16px}
+  .txn-box{background:#d8f3dc;border:1px solid #52b788;border-radius:6px;padding:8px 14px;margin-bottom:16px;font-size:12px;display:flex;gap:16px;flex-wrap:wrap}
+  .footer-note{text-align:center;color:#888;font-size:11px;padding:14px;border-top:1px solid #eee;margin-top:4px}
+  @media print{
+    body{padding:0}
+    .no-print{display:none}
+    button{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🥭 আমের হাট বাজার</h1>
+    <p>amerhatabazar.com | +880 1305-144356</p>
+  </div>
+  <div class="header-right">
+    <div style="font-size:11px;color:rgba(255,255,255,.6)">অর্ডার আইডি</div>
+    <div class="order-id">${o.id}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:3px">${new Date(o.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div><span>স্ট্যাটাস: </span><strong>${statusLbl[o.status]||o.status}</strong></div>
+  <div><span>পেমেন্ট: </span><strong>${payLbl[o.payment]||o.payment}</strong></div>
+  <div><span>সময়: </span><strong>${new Date(o.createdAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</strong></div>
+</div>
+
+<div class="info-grid">
+  <div class="info-box">
+    <div class="info-box-header">👤 গ্রাহকের তথ্য</div>
+    <div class="info-box-body">
+      <div class="info-row"><span class="info-label">নাম</span><span class="info-val">${o.userName||'—'}</span></div>
+      <div class="info-row"><span class="info-label">ফোন</span><span class="info-val">${o.userPhone||'—'}</span></div>
+      ${o.userPhone2?`<div class="info-row"><span class="info-label">বিকল্প ফোন</span><span class="info-val">${o.userPhone2}</span></div>`:''}
+      <div class="info-row"><span class="info-label">ইমেইল</span><span class="info-val">${o.userEmail||'—'}</span></div>
+    </div>
+  </div>
+  <div class="info-box">
+    <div class="info-box-header">💳 পেমেন্ট তথ্য</div>
+    <div class="info-box-body">
+      <div class="info-row"><span class="info-label">পদ্ধতি</span><span class="info-val">${payLbl[o.payment]||o.payment}</span></div>
+      ${o.paymentRef?`<div class="info-row"><span class="info-label">একাউন্ট</span><span class="info-val">${o.paymentRef}</span></div>`:''}
+      ${o.paymentTxn?`<div class="info-row"><span class="info-label">Txn ID</span><span class="info-val" style="color:#1b4332;font-weight:700">${o.paymentTxn}</span></div>`:''}
+      ${o.coupon?`<div class="info-row"><span class="info-label">কুপন</span><span class="info-val">${o.coupon}</span></div>`:''}
+    </div>
+  </div>
+</div>
+
+<div class="addr-box">
+  <div class="info-box-header">📍 ডেলিভারি ঠিকানা</div>
+  <div class="addr-body">
+    ${o.area?`<div class="addr-line"><span class="addr-label">এলাকা</span><span>${o.area}</span></div>`:''}
+    ${o.upazila?`<div class="addr-line"><span class="addr-label">উপজেলা</span><span>${o.upazila}</span></div>`:''}
+    <div class="addr-line"><span class="addr-label">জেলা</span><span>${o.district||'—'}</span></div>
+    <div class="addr-line"><span class="addr-label">পূর্ণ ঠিকানা</span><span style="color:#1b4332;font-weight:600">${displayAddr}</span></div>
+  </div>
+</div>
+
+<table>
+  <thead><tr><th>#</th><th>পণ্য</th><th>উৎপত্তি</th><th>একক মূল্য</th><th>পরিমাণ</th><th style="text-align:right">মোট</th></tr></thead>
+  <tbody>
+    ${o.items.map((it,i)=>`<tr>
+      <td>${i+1}</td>
+      <td><strong>${it.name}</strong></td>
+      <td>${it.origin||'—'}</td>
+      <td>৳${it.price}</td>
+      <td>${it.qty||1} কেজি</td>
+      <td style="text-align:right;font-weight:600">৳${it.price*(it.qty||1)}</td>
+    </tr>`).join('')}
+  </tbody>
+  <tfoot>
+    <tr><td colspan="5" style="text-align:right;color:#666">সাবটোটাল:</td><td style="text-align:right">৳${o.subtotal}</td></tr>
+    ${o.discount>0?`<tr><td colspan="5" style="text-align:right;color:#e74c3c">কুপন ছাড়:</td><td style="text-align:right;color:#e74c3c">−৳${o.discount}</td></tr>`:''}
+    <tr><td colspan="5" style="text-align:right;color:#666">ডেলিভারি চার্জ:</td><td style="text-align:right">${o.delivery===0?'ফ্রি':'৳'+o.delivery}</td></tr>
+    <tr class="grand-row"><td colspan="5" style="text-align:right">সর্বমোট</td><td style="text-align:right" class="amount">৳${o.total}</td></tr>
+  </tfoot>
+</table>
+
+<div class="footer-note">
+  ধন্যবাদ আমের হাট বাজারে কেনাকাটা করার জন্য 🥭<br>
+  যেকোনো সমস্যায়: +880 1305-144356 | amerhatabazar.com
+</div>
+
+<div class="no-print" style="text-align:center;margin-top:20px;display:flex;gap:12px;justify-content:center">
+  <button onclick="window.print()" style="background:#1b4332;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;cursor:pointer;font-family:Arial,sans-serif">🖨️ প্রিন্ট করুন</button>
+  <button onclick="window.close()" style="background:#f0f0f0;color:#333;border:none;padding:10px 18px;border-radius:8px;font-size:14px;cursor:pointer;font-family:Arial,sans-serif">বন্ধ করুন</button>
+</div>
+
+<scr'+'ipt>
+  setTimeout(function(){},500);
+</scr'+'ipt>
+</body></html>`);
+  printWin.document.close();
+  showToast('প্রিন্ট উইন্ডো খোলা হচ্ছে...','success');
+}
 // ============================================================
 let alertCallback=null;
 function showCustomAlert(title,message,confirmText,type,cb){
