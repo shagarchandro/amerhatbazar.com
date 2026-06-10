@@ -2285,9 +2285,11 @@ function showMyOrderDetail(orderId){
     <div class="detail-box" style="margin-bottom:12px">
       <h4>📍 ডেলিভারি ঠিকানা</h4>
       <div class="detail-row"><span>নাম</span><span><strong>${o.userName}</strong></span></div>
-      <div class="detail-row"><span>ফোন</span><span>${o.userPhone}</span></div>
+      <div class="detail-row"><span>ফোন</span><span>${o.userPhone}${o.userPhone2?' / '+o.userPhone2:''}</span></div>
       <div class="detail-row"><span>জেলা</span><span>${o.district||'—'}</span></div>
-      <div class="detail-row" style="align-items:flex-start"><span>ঠিকানা</span><span style="text-align:right;max-width:160px;font-size:.82rem">${o.address}</span></div>
+      ${o.upazila?`<div class="detail-row"><span>উপজেলা</span><span>${o.upazila}</span></div>`:''}
+      ${o.area?`<div class="detail-row"><span>এলাকা</span><span style="text-align:right;max-width:160px;font-size:.82rem">${o.area}</span></div>`:''}
+      <div class="detail-row" style="align-items:flex-start"><span>পূর্ণ ঠিকানা</span><span style="text-align:right;max-width:160px;font-size:.82rem;color:var(--green-dark);font-weight:600">${o.address||[o.area,o.upazila,o.district].filter(Boolean).join(', ')||'—'}</span></div>
     </div>
     <div class="detail-box" style="margin-bottom:12px">
       <h4>🥭 অর্ডারকৃত পণ্য</h4>
