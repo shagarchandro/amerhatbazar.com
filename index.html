@@ -2415,8 +2415,8 @@ function generateInvoice(orderId){
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
   doc.text('CUSTOMER INFORMATION',ML+3,y+5);
   y+=8;
-  doc.setFillColor(250,248,242); doc.rect(ML,y,boxW,44,'F');
-  doc.setDrawColor(215,210,200); doc.rect(ML,y,boxW,44,'S');
+  doc.setFillColor(250,248,242); doc.rect(ML,y,boxW,50,'F');
+  doc.setDrawColor(215,210,200); doc.rect(ML,y,boxW,50,'S');
   const custLabels=['Name','Phone','Alt Phone','Email','District'];
   const custVals=[
     order.userName,
@@ -2432,51 +2432,43 @@ function generateInvoice(orderId){
   });
 
   // ─── DELIVERY BOX ──────────────────────────────────────────
-  // Build full address string
   const fullAddr=[order.area,order.upazila,order.district].filter(Boolean).join(', ')||order.address||'-';
   const displayAddr=order.address||fullAddr;
 
   doc.setFillColor(27,67,50); doc.roundedRect(box2X,y-8,boxW,7,1.5,1.5,'F');
   doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
   doc.text('DELIVERY & PAYMENT',box2X+3,y-3);
-  doc.setFillColor(250,248,242); doc.rect(box2X,y,boxW,44,'F');
-  doc.setDrawColor(215,210,200); doc.rect(box2X,y,boxW,44,'S');
-  doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7.5);
-  doc.text('Address:',box2X+3,y+6);
-  bText(displayAddr,box2X+19,y+6,6.5,'#1a1a1a',boxW-21);
-  // Upazila+District separate line
-  if(order.upazila||order.district){
-    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text('Area:',box2X+3,y+18);
-    bText([order.area,order.upazila].filter(Boolean).join(', ')||'-',box2X+19,y+18,6.5,'#444',boxW-21);
-  }
-  doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-  doc.text('Payment:',box2X+3,y+25);
-  doc.setFont('helvetica','normal'); doc.setTextColor(25,25,25);
-  doc.text(payMap[order.payment]||order.payment||'-',box2X+19,y+25);
-  if(order.paymentRef){
-    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text('Pay No:',box2X+3,y+32);
-    doc.setFont('helvetica','normal'); doc.setTextColor(25,25,25);
-    doc.text(String(order.paymentRef).slice(0,22),box2X+19,y+32);
-  }
+  doc.setFillColor(250,248,242); doc.rect(box2X,y,boxW,50,'F');
+  doc.setDrawColor(215,210,200); doc.rect(box2X,y,boxW,50,'S');
+
+  const delRows=[
+    ['Area/Road', order.area||'-'],
+    ['Upazila', order.upazila||'-'],
+    ['District', order.district||'-'],
+    ['Full Address', displayAddr],
+    ['Payment', payMap[order.payment]||order.payment||'-'],
+  ];
+  if(order.paymentRef) delRows.push(['Pay No', order.paymentRef]);
+  if(order.paymentTxn) delRows.push(['Txn ID', order.paymentTxn]);
+  if(order.coupon) delRows.push(['Coupon', order.coupon]);
+
+  delRows.forEach(([lbl,val],i)=>{
+    if(i>=7) return; // max 7 rows to fit box
+    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7);
+    doc.text(lbl+':',box2X+2,y+7+i*6.5);
+    bText(String(val||'-'),box2X+19,y+7+i*6.5,6.5,'#1a1a1a',boxW-21);
+  });
+  // Highlight txn id if present
   if(order.paymentTxn){
-    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text('Txn ID:',box2X+3,y+39);
-    doc.setFillColor(216,243,220);
-    doc.roundedRect(box2X+18,y+35,boxW-21,6,1,1,'F');
-    doc.setFont('helvetica','bold'); doc.setTextColor(27,67,50);
-    doc.text(String(order.paymentTxn).slice(0,24),box2X+20,y+39);
-  }
-  if(order.coupon){
-    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text('Coupon:',box2X+3,y+41);
-    doc.setFont('helvetica','normal'); doc.setTextColor(180,40,40);
-    doc.text(String(order.coupon),box2X+19,y+41);
+    const txnIdx=delRows.findIndex(r=>r[0]==='Txn ID');
+    if(txnIdx>=0&&txnIdx<7){
+      doc.setFillColor(216,243,220);
+      doc.roundedRect(box2X+18,y+3+txnIdx*6.5,boxW-21,6,1,1,'F');
+    }
   }
 
   // ─── ITEMS TABLE ───────────────────────────────────────────
-  y+=49;
+  y+=55;
   // Build table rows — Bengali product names as Latin using transliteration backup
   const bnMap2={'ক':'k','খ':'kh','গ':'g','ঘ':'gh','চ':'ch','ছ':'chh','জ':'j','ট':'t','ড':'d','ত':'t','দ':'d','ন':'n','প':'p','ব':'b','ম':'m','য':'y','র':'r','ল':'l','শ':'sh','স':'s','হ':'h','া':'a','ি':'i','ু':'u','ে':'e','ো':'o','০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9','৳':'Tk '};
   const safeText=s=>String(s||'-').split('').map(c=>bnMap2[c]!==undefined?bnMap2[c]:(/[\u0980-\u09FF]/.test(c)?'':c)).join('').replace(/\s+/g,' ').trim()||'-';
@@ -3955,12 +3947,14 @@ function viewOrderDetail(id){
     </div>
     <div class="order-detail-grid">
       <div class="detail-box">
-        <h4>👤 কাস্টমার তথ্য</h4>
+        <h4>👤 কাস্টমার ও ঠিকানা তথ্য</h4>
         <div class="detail-row"><span>নাম</span><span><strong>${o.userName}</strong></span></div>
-        <div class="detail-row"><span>ফোন</span><span>${o.userPhone}</span></div>
+        <div class="detail-row"><span>ফোন</span><span>${o.userPhone}${o.userPhone2?' / '+o.userPhone2:''}</span></div>
         <div class="detail-row"><span>ইমেইল</span><span style="font-size:.8rem">${o.userEmail||'—'}</span></div>
         <div class="detail-row"><span>জেলা</span><span>${o.district||'—'}</span></div>
-        <div class="detail-row" style="align-items:flex-start"><span>ঠিকানা</span><span style="text-align:right;max-width:150px;font-size:.82rem">${o.address}</span></div>
+        ${o.upazila?`<div class="detail-row"><span>উপজেলা</span><span>${o.upazila}</span></div>`:''}
+        ${o.area?`<div class="detail-row"><span>এলাকা</span><span style="text-align:right;max-width:150px;font-size:.82rem">${o.area}</span></div>`:''}
+        <div class="detail-row" style="align-items:flex-start"><span>পূর্ণ ঠিকানা</span><span style="text-align:right;max-width:150px;font-size:.82rem;color:var(--green-dark);font-weight:600">${o.address||[o.area,o.upazila,o.district].filter(Boolean).join(', ')||'—'}</span></div>
       </div>
       <div class="detail-box">
         <h4>💳 পেমেন্ট তথ্য</h4>
