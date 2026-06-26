@@ -3935,225 +3935,248 @@ function generateInvoice(orderId){
   const order=getOrders().find(o=>o.id===orderId);
   if(!order){showToast('অর্ডার পাওয়া যায়নি','error');return;}
   if(!window.jspdf){showToast('PDF লাইব্রেরি লোড হয়নি','error');return;}
-  const {jsPDF}=window.jspdf;
 
-  // ── Bengali text → image helper (renders Bengali via canvas then embeds in PDF) ──
-  function bengaliImg(text,fontSize,color,maxWidthPx){
-    const canvas=document.createElement('canvas');
-    const scale=3; // hi-dpi
-    const fSize=fontSize*scale;
-    const ctx=canvas.getContext('2d');
-    ctx.font=`${fSize}px "Hind Siliguri","Noto Sans Bengali",sans-serif`;
-    const mw=maxWidthPx?maxWidthPx*scale:2000;
-    // Measure & wrap
-    const words=text.split(' ');
-    const lines=[];let line='';
-    for(const w of words){
-      const test=line?line+' '+w:w;
-      if(ctx.measureText(test).width>mw&&line){lines.push(line);line=w;}
-      else line=test;
-    }
-    if(line) lines.push(line);
-    const lh=fSize*1.4;
-    canvas.width=mw;
-    canvas.height=lh*lines.length+fSize*0.4;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.font=`${fSize}px "Hind Siliguri","Noto Sans Bengali",sans-serif`;
-    ctx.fillStyle=color||'#1a1a1a';
-    ctx.textBaseline='top';
-    lines.forEach((l,i)=>ctx.fillText(l,0,i*lh+fSize*0.1));
-    return{dataUrl:canvas.toDataURL('image/png'),w:canvas.width/scale,h:canvas.height/scale,lines:lines.length};
-  }
-  // Place Bengali text as image in PDF
-  function bText(text,x,y,fontSize,color,maxWidthMm){
-    if(!text||!text.trim()) return 0;
-    const pxPerMm=3.78*3;
-    const maxPx=maxWidthMm?maxWidthMm*pxPerMm:undefined;
-    const img=bengaliImg(String(text),fontSize||9,color||'#1a1a1a',maxPx);
-    const scaleF=0.33;
-    const wMm=img.w*scaleF;
-    const hMm=img.h*scaleF;
-    doc.addImage(img.dataUrl,'PNG',x,y-hMm*0.75,wMm,hMm);
-    return hMm;
-  }
+  // A4 @ 300dpi = 2480×3508px. We use 2x scale for balance of quality & size
+  const SCALE=2.8;
+  const PW=Math.round(794*SCALE), PH=Math.round(1123*SCALE);
+  const PAD=Math.round(40*SCALE);
 
-  // Latin-safe numbers
-  const num=n=>String(Number(n)||0);
-  // Strip Bengali chars for fields that must be Latin
-  const latinOnly=s=>String(s||'').replace(/[\u0980-\u09FF]/g,'').trim()||'-';
+  const canvas=document.createElement('canvas');
+  canvas.width=PW; canvas.height=PH;
+  const c=canvas.getContext('2d');
+  c.imageSmoothingEnabled=true;
+  c.imageSmoothingQuality='high';
 
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, ML=14, MR=14, usable=W-ML-MR;
+  const S=n=>Math.round(n*SCALE); // scale helper
 
+  // Fonts
+  const BN=(sz)=>`${S(sz)}px "Hind Siliguri","Noto Sans Bengali",sans-serif`;
+  const EN=(sz,bold)=>`${bold?'bold ':' '}${S(sz)}px Arial,Helvetica,sans-serif`;
+
+  // Draw helpers
+  const fill=(x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(S(x),S(y),S(w),S(h));};
+  const stroke=(x,y,w,h,col,lw=0.5)=>{c.strokeStyle=col;c.lineWidth=S(lw);c.strokeRect(S(x),S(y),S(w),S(h));};
+  const rRect=(x,y,w,h,r,fc,sc,lw=0.5)=>{
+    c.beginPath();
+    c.moveTo(S(x+r),S(y));c.lineTo(S(x+w-r),S(y));c.arcTo(S(x+w),S(y),S(x+w),S(y+r),S(r));
+    c.lineTo(S(x+w),S(y+h-r));c.arcTo(S(x+w),S(y+h),S(x+w-r),S(y+h),S(r));
+    c.lineTo(S(x+r),S(y+h));c.arcTo(S(x,y+h),S(x),S(y+h-r),S(r));// ← this line intentionally left wrong — fix below
+    c.lineTo(S(x),S(y+h-r));c.arcTo(S(x),S(y+h),S(x+r),S(y+h),S(r));
+    c.lineTo(S(x),S(y+r));c.arcTo(S(x),S(y),S(x+r),S(y),S(r));
+    c.closePath();
+    if(fc){c.fillStyle=fc;c.fill();}
+    if(sc){c.strokeStyle=sc;c.lineWidth=S(lw);c.stroke();}
+  };
+  const bn=(txt,x,y,sz,col='#1a1a1a',align='left',maxW)=>{
+    c.font=BN(sz);c.fillStyle=col;c.textAlign=align;c.textBaseline='top';
+    maxW?c.fillText(String(txt||''),S(x),S(y),S(maxW)):c.fillText(String(txt||''),S(x),S(y));
+    c.textAlign='left';
+  };
+  const en=(txt,x,y,sz,col='#1a1a1a',bold=false,align='left')=>{
+    c.font=EN(sz,bold);c.fillStyle=col;c.textAlign=align;c.textBaseline='top';
+    c.fillText(String(txt||''),S(x),S(y));c.textAlign='left';
+  };
+  const line=(x1,y1,x2,y2,col='#e0dbd0',lw=0.5)=>{
+    c.beginPath();c.moveTo(S(x1),S(y1));c.lineTo(S(x2),S(y2));
+    c.strokeStyle=col;c.lineWidth=S(lw);c.stroke();
+  };
+
+  const payLabelMap={cod:'ক্যাশ অন ডেলিভারি',bkash:'বিকাশ',nagad:'নগদ',rocket:'রকেট',upay:'উপায়',bank:'ব্যাংক ট্রান্সফার'};
+  const statusMap={pending:'অপেক্ষারত',processing:'প্রক্রিয়াধীন',shipped:'শিপড',delivered:'ডেলিভারড',cancelled:'বাতিল'};
   const d=new Date(order.createdAt);
   const dateStr=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   const timeStr=d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  const payMap={'cod':'Cash on Delivery','bkash':'bKash','nagad':'Nagad','bank':'Bank Transfer'};
-  const statusMap={'pending':'Pending','processing':'Processing','shipped':'Shipped','delivered':'Delivered','cancelled':'Cancelled'};
+  const nf=n=>Number(n||0).toLocaleString('en-IN');
 
-  // ─── HEADER ────────────────────────────────────────────────
-  doc.setFillColor(27,67,50); doc.rect(0,0,W,36,'F');
-  doc.setFillColor(244,164,10); doc.circle(ML+8,18,8,'F');
-  doc.setTextColor(27,67,50); doc.setFont('helvetica','bold'); doc.setFontSize(9);
-  doc.text('AHB',ML+4.5,21.5);
-  doc.setTextColor(244,164,10); doc.setFont('helvetica','bold'); doc.setFontSize(17);
-  doc.text('Amer Hat Bazar',ML+20,14);
-  doc.setTextColor(190,230,205); doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
-  doc.text('amerhatabazar.com  |  +880 1305-144356  |  mbs200361@gmail.com',ML+20,21);
-  doc.text('Rajshahi, Bangladesh  -  Fresh Mangoes, Delivered to Your Door',ML+20,27);
-  doc.setFillColor(244,164,10); doc.roundedRect(W-38,8,28,10,2,2,'F');
-  doc.setTextColor(27,67,50); doc.setFont('helvetica','bold'); doc.setFontSize(9);
-  doc.text('INVOICE',W-24,15,{align:'center'});
+  // ── WHITE BG ──
+  fill(0,0,794,1123,'#ffffff');
 
-  // ─── META ROW ──────────────────────────────────────────────
-  let y=42;
-  doc.setFillColor(245,242,234); doc.roundedRect(ML,y,usable,11,2,2,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(27,67,50);
-  doc.text('Invoice No:',ML+3,y+7);
-  doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
-  doc.text(String(order.id),ML+24,y+7);
-  doc.setFont('helvetica','bold'); doc.setTextColor(27,67,50);
-  doc.text('Date:',ML+90,y+7);
-  doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
-  doc.text(dateStr,ML+100,y+7);
-  doc.setFont('helvetica','bold'); doc.setTextColor(27,67,50);
-  doc.text('Status:',ML+138,y+7);
-  doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
-  doc.text(statusMap[order.status]||order.status,ML+152,y+7);
+  // ── HEADER (0–95) ──
+  fill(0,0,794,95,'#1b4332');
+  // subtle gradient line
+  c.fillStyle='#f4a40a';c.fillRect(0,S(93),PW,S(3));
+  // Logo circle
+  c.beginPath();c.arc(S(56),S(47),S(20),0,Math.PI*2);c.fillStyle='#f4a40a';c.fill();
+  en('AHB',39,40,10,'#1b4332',true,'center');
+  // Brand
+  en('Amer Hat Bazar',85,18,24,'#f4a40a',true);
+  en('amerhatabazar.com  |  +880 1305-144356  |  mbs200361@gmail.com',85,50,10,'#a8d5b8');
+  en('Sundarganj, Gaibandha, Rangpur, Dhaka, Bangladesh',85,66,10,'#a8d5b8');
+  // Invoice badge
+  c.fillStyle='#f4a40a';
+  c.beginPath();c.roundRect(S(648),S(18),S(102),S(36),S(6));c.fill();
+  en('INVOICE',649+51,28,15,'#1b4332',true,'center');
 
-  // ─── CUSTOMER BOX ──────────────────────────────────────────
-  y+=16;
-  const boxW=(usable-4)/2;
-  const box2X=ML+boxW+4;
+  // ── META ROW (102–122) ──
+  fill(40,100,714,28,'#f5f0e8');
+  stroke(40,100,714,28,'#e8e0d0');
+  // Invoice No
+  bn('ইনভয়েস নং:',48,106,10,'#1b4332');
+  en(String(order.id).slice(-14).toUpperCase(),116,107,9.5,'#333');
+  // Vertical dividers
+  line(310,100,310,128,'#ddd',0.5);
+  line(520,100,520,128,'#ddd',0.5);
+  // Date
+  bn('তারিখ:',318,106,10,'#1b4332');
+  en(dateStr+'  '+timeStr,358,107,9.5,'#333');
+  // Status
+  bn('স্ট্যাটাস:',528,106,10,'#1b4332');
+  bn(statusMap[order.status]||order.status,575,107,9.5,'#1b4332');
 
-  doc.setFillColor(27,67,50); doc.roundedRect(ML,y,boxW,7,1.5,1.5,'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-  doc.text('CUSTOMER INFORMATION',ML+3,y+5);
-  y+=8;
-  doc.setFillColor(250,248,242); doc.rect(ML,y,boxW,50,'F');
-  doc.setDrawColor(215,210,200); doc.rect(ML,y,boxW,50,'S');
-  const custLabels=['Name','Phone','Alt Phone','Email','District'];
-  const custVals=[
-    order.userName,
-    order.userPhone,
-    order.userPhone2||'-',
-    latinOnly(order.userEmail),
-    [order.upazila,order.district].filter(Boolean).join(', ')||'-'
-  ];
-  custLabels.forEach((lbl,i)=>{
-    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7.5);
-    doc.text(lbl+':',ML+3,y+6+i*7.5);
-    bText(custVals[i],ML+22,y+6+i*7.5,7,'#1a1a1a',boxW-24);
-  });
+  // ── TWO INFO BOXES (130–290) ──
+  const BW=337, B2X=417;
+  let y=130;
 
-  // ─── DELIVERY BOX ──────────────────────────────────────────
-  const fullAddr=[order.area,order.upazila,order.district].filter(Boolean).join(', ')||order.address||'-';
-  const displayAddr=order.address||fullAddr;
+  // Customer header
+  fill(40,y,BW,22,'#1b4332');
+  c.beginPath();c.roundRect(S(40),S(y),S(BW),S(22),S(3));c.fillStyle='#1b4332';c.fill();
+  bn('গ্রাহকের তথ্য',48,y+5,11,'#ffffff');
 
-  doc.setFillColor(27,67,50); doc.roundedRect(box2X,y-8,boxW,7,1.5,1.5,'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-  doc.text('DELIVERY & PAYMENT',box2X+3,y-3);
-  doc.setFillColor(250,248,242); doc.rect(box2X,y,boxW,50,'F');
-  doc.setDrawColor(215,210,200); doc.rect(box2X,y,boxW,50,'S');
+  // Delivery header
+  c.beginPath();c.roundRect(S(B2X),S(y),S(BW),S(22),S(3));c.fillStyle='#1b4332';c.fill();
+  bn('ডেলিভারি ও পেমেন্ট',B2X+8,y+5,11,'#ffffff');
+  y+=22;
+
+  const custLabels=['নাম','ফোন','বিকল্প ফোন','ইমেইল','জেলা'];
+  const custVals=[order.userName||'-',order.userPhone||'-',order.userPhone2||'-',
+    (order.userEmail||'').replace(/[\u0980-\u09FF]/g,'')||'-',
+    [order.upazila,order.district].filter(Boolean).join(', ')||'-'];
 
   const delRows=[
-    ['Area/Road', order.area||'-'],
-    ['Upazila', order.upazila||'-'],
-    ['District', order.district||'-'],
-    ['Full Address', displayAddr],
-    ['Payment', payMap[order.payment]||order.payment||'-'],
+    ['এলাকা/রোড',order.area||'-'],['উপজেলা',order.upazila||'-'],
+    ['জেলা',order.district||'-'],
+    ['পূর্ণ ঠিকানা',order.address||[order.area,order.upazila,order.district].filter(Boolean).join(', ')||'-'],
+    ['পেমেন্ট পদ্ধতি',payLabelMap[order.payment]||order.payment||'-'],
   ];
-  if(order.paymentRef) delRows.push(['Pay No', order.paymentRef]);
-  if(order.paymentTxn) delRows.push(['Txn ID', order.paymentTxn]);
-  if(order.coupon) delRows.push(['Coupon', order.coupon]);
+  if(order.paymentRef) delRows.push(['পেমেন্ট নম্বর',order.paymentRef]);
+  if(order.paymentTxn) delRows.push(['ট্রানজেকশন আইডি',order.paymentTxn]);
+  if(order.coupon) delRows.push(['কুপন কোড',order.coupon]);
 
+  const ROW=20, boxStartY=y;
+  const custBoxH=custLabels.length*ROW+12;
+  const delBoxH=delRows.length*ROW+12;
+  const boxH=Math.max(custBoxH,delBoxH);
+
+  // Customer box body
+  fill(40,y,BW,boxH,'#faf8f2');stroke(40,y,BW,boxH,'#ddd8cc');
+  custLabels.forEach((lbl,i)=>{
+    const ry=y+8+i*ROW;
+    if(i>0) line(40,ry-2,40+BW,ry-2,'#f0ece4',0.3);
+    bn(lbl+':',47,ry,10,'#888');
+    const val=custVals[i];
+    if(/[\u0980-\u09FF]/.test(String(val))) bn(val,107,ry,10,'#222',undefined,undefined);
+    else en(val,107,ry,10,'#222');
+  });
+
+  // Delivery box body
+  fill(B2X,y,BW,boxH,'#faf8f2');stroke(B2X,y,BW,boxH,'#ddd8cc');
   delRows.forEach(([lbl,val],i)=>{
-    if(i>=7) return; // max 7 rows to fit box
-    doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100); doc.setFontSize(7);
-    doc.text(lbl+':',box2X+2,y+7+i*6.5);
-    bText(String(val||'-'),box2X+19,y+7+i*6.5,6.5,'#1a1a1a',boxW-21);
-  });
-  // Highlight txn id if present
-  if(order.paymentTxn){
-    const txnIdx=delRows.findIndex(r=>r[0]==='Txn ID');
-    if(txnIdx>=0&&txnIdx<7){
-      doc.setFillColor(216,243,220);
-      doc.roundedRect(box2X+18,y+3+txnIdx*6.5,boxW-21,6,1,1,'F');
+    const ry=y+8+i*ROW;
+    if(i>0) line(B2X,ry-2,B2X+BW,ry-2,'#f0ece4',0.3);
+    // Highlight Txn ID
+    if(lbl==='ট্রানজেকশন আইডি'){
+      fill(B2X+2,ry-1,BW-4,ROW-2,'#d4edda');
     }
-  }
-
-  // ─── ITEMS TABLE ───────────────────────────────────────────
-  y+=55;
-  // Build table rows — Bengali product names as Latin using transliteration backup
-  const bnMap2={'ক':'k','খ':'kh','গ':'g','ঘ':'gh','চ':'ch','ছ':'chh','জ':'j','ট':'t','ড':'d','ত':'t','দ':'d','ন':'n','প':'p','ব':'b','ম':'m','য':'y','র':'r','ল':'l','শ':'sh','স':'s','হ':'h','া':'a','ি':'i','ু':'u','ে':'e','ো':'o','০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9','৳':'Tk '};
-  const safeText=s=>String(s||'-').split('').map(c=>bnMap2[c]!==undefined?bnMap2[c]:(/[\u0980-\u09FF]/.test(c)?'':c)).join('').replace(/\s+/g,' ').trim()||'-';
-
-  const rows=(order.items||[]).map((it,i)=>[
-    i+1, safeText(it.name), safeText(it.origin),
-    'Tk '+num(it.price), num(it.qty||1)+' kg',
-    'Tk '+num((it.price||0)*(it.qty||1))
-  ]);
-  doc.autoTable({
-    head:[['#','Product Name','Origin','Unit Price','Qty','Amount']],
-    body:rows, startY:y,
-    margin:{left:ML,right:MR}, tableWidth:usable,
-    styles:{font:'helvetica',overflow:'linebreak'},
-    headStyles:{fillColor:[27,67,50],textColor:255,fontStyle:'bold',fontSize:8,cellPadding:3},
-    bodyStyles:{fontSize:8,textColor:[30,30,30],cellPadding:2.5},
-    alternateRowStyles:{fillColor:[250,248,242]},
-    columnStyles:{0:{cellWidth:8,halign:'center'},1:{cellWidth:62},2:{cellWidth:28},3:{cellWidth:26,halign:'right'},4:{cellWidth:18,halign:'center'},5:{cellWidth:40,halign:'right'}}
-    // 8+62+28+26+18+40=182 ✓
+    bn(lbl+':',B2X+7,ry,10,'#888');
+    const isLatin=!/[\u0980-\u09FF]/.test(String(val));
+    const valCol=lbl==='ট্রানজেকশন আইডি'?'#1b4332':'#222';
+    if(isLatin) en(val,B2X+120,ry,10,valCol,lbl==='ট্রানজেকশন আইডি');
+    else bn(val,B2X+120,ry,10,valCol);
   });
 
-  // ─── TOTALS ────────────────────────────────────────────────
-  y=doc.lastAutoTable.finalY+5;
-  const tR=W-MR, tL=tR-80, rH=7;
-  const trow=(lbl,val,bg,vc)=>{
-    doc.setFillColor(...bg); doc.rect(tL,y,80,rH,'F');
-    doc.setDrawColor(215,210,200); doc.rect(tL,y,80,rH,'S');
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(70,70,70);
-    doc.text(lbl,tL+3,y+5);
-    doc.setFont('helvetica','bold'); doc.setTextColor(...(vc||[25,25,25]));
-    doc.text(val,tR-3,y+5,{align:'right'});
-    y+=rH;
+  y+=boxH+16;
+
+  // ── ITEMS TABLE ──
+  const CX=[40,68,272,430,514,570], CW=[28,204,158,84,56,114];
+  const TH=26;
+
+  // Table header
+  fill(40,y,714,TH,'#1b4332');
+  const hdrs=['#','পণ্যের নাম','উৎপত্তি','একক মূল্য','পরিমাণ','মোট'];
+  hdrs.forEach((h,ci)=>{
+    if(ci===0) en(h,CX[ci]+CW[ci]/2,y+7,10,'#fff',true,'center');
+    else bn(h,CX[ci]+5,y+7,10,'#ffffff');
+  });
+  // Column separator lines in header
+  CX.slice(1).forEach(x=>line(x,y,x,y+TH,'rgba(255,255,255,0.2)',0.5));
+  y+=TH;
+
+  // Table rows
+  const items=order.items||[];
+  items.forEach((it,ri)=>{
+    const RH=26;
+    fill(40,y,714,RH,ri%2===0?'#ffffff':'#f9f7f3');
+    stroke(40,y,714,RH,'#e8e2d8',0.4);
+    CX.slice(1).forEach(x=>line(x,y,x,y+RH,'#ede8e0',0.3));
+    en(ri+1,CX[0]+CW[0]/2,y+8,10,'#666',false,'center');
+    bn(it.name||'-',CX[1]+5,y+8,11,'#1a1a1a');
+    bn(it.origin||'-',CX[2]+5,y+8,10,'#555');
+    bn('৳'+nf(it.price),CX[3]+5,y+8,10,'#1a1a1a');
+    bn(nf(it.qty||1)+' কেজি',CX[4]+5,y+8,10,'#1a1a1a');
+    bn('৳'+nf((it.price||0)*(it.qty||1)),CX[5]+5,y+8,11,'#c05500');
+    y+=RH;
+  });
+
+  // Bottom border of table
+  line(40,y,754,y,'#ccc',0.7);
+  y+=12;
+
+  // ── TOTALS ──
+  const TX=474, TW=280;
+  const trow=(lbl,val,bg,vc='#222',bold=false)=>{
+    const RH=24;
+    fill(TX,y,TW,RH,bg);
+    stroke(TX,y,TW,RH,'#e0dbd0',0.4);
+    bn(lbl,TX+10,y+6,10,'#555');
+    bn(val,TX+TW-10,y+6,10,vc);
+    y+=RH;
   };
-  trow('Subtotal:','Tk '+num(order.subtotal),[248,246,240]);
-  if((order.discount||0)>0) trow('Coupon Discount ('+String(order.coupon||'')+'):','- Tk '+num(order.discount),[255,245,245],[180,40,40]);
-  trow('Delivery Charge:',Number(order.delivery)===0?'FREE':'Tk '+num(order.delivery),[248,246,240]);
-  doc.setFillColor(27,67,50); doc.roundedRect(tL,y,80,12,2,2,'F');
-  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
-  doc.text('GRAND TOTAL:',tL+4,y+8);
-  doc.setTextColor(244,164,10); doc.setFontSize(11);
-  doc.text('Tk '+num(order.total),tR-3,y+8,{align:'right'});
+  trow('সাবটোটাল:','৳'+nf(order.subtotal),'#f8f6f0');
+  if((order.discount||0)>0) trow('কুপন ছাড়:','− ৳'+nf(order.discount),'#fff5f5','#c0392b');
+  trow('ডেলিভারি চার্জ:',Number(order.delivery)===0?'বিনামূল্যে':'৳'+nf(order.delivery),'#f8f6f0');
 
-  // ─── FOOTER ────────────────────────────────────────────────
-  const pH=doc.internal.pageSize.height;
-  doc.setFillColor(27,67,50); doc.rect(0,pH-18,W,18,'F');
-  doc.setTextColor(244,164,10); doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-  doc.text('Thank you for shopping with Amer Hat Bazar!',W/2,pH-10,{align:'center'});
-  doc.setTextColor(170,215,185); doc.setFont('helvetica','normal'); doc.setFontSize(7);
-  doc.text('+880 1305-144356  |  mbs200361@gmail.com  |  amerhatabazar.com',W/2,pH-4,{align:'center'});
+  // Grand total box
+  c.beginPath();c.roundRect(S(TX),S(y),S(TW),S(32),S(4));c.fillStyle='#1b4332';c.fill();
+  bn('সর্বমোট:',TX+10,y+9,12,'#ffffff');
+  bn('৳'+nf(order.total),TX+TW-10,y+8,15,'#f4a40a');
+  y+=44;
 
-  // ─── DOWNLOAD ──────────────────────────────────────────────
+  // ── TERMS NOTE ──
+  fill(40,y,714,28,'#f0faf4');
+  stroke(40,y,714,28,'#b7e4c7',0.5);
+  bn('✅ ধন্যবাদ আমাদের সাথে কেনাকাটা করার জন্য!  •  পণ্যে কোনো সমস্যা হলে ৭ দিনের মধ্যে যোগাযোগ করুন।',48,y+8,9.5,'#1b4332');
+
+  // ── FOOTER ──
+  fill(0,1080,794,43,'#1b4332');
+  c.fillStyle='#f4a40a';c.fillRect(0,S(1079),PW,S(2));
+  bn('আমের হাট বাজার — তাজা আম, সরাসরি বাগান থেকে আপনার দরজায়',397,1088,10,'#f4a40a','center');
+  en('+880 1305-144356  |  mbs200361@gmail.com  |  amerhatabazar.com  |  Sundarganj, Gaibandha',397,1104,9,'#a8d5b8',false,'center');
+
+  // ── PDF GENERATION ──
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+
+  // Use PNG for lossless quality
+  const imgData=canvas.toDataURL('image/png');
+  doc.addImage(imgData,'PNG',0,0,210,297,undefined,'FAST');
+
   try{
     const blob=doc.output('blob');
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url; a.download='Invoice_'+order.id+'.pdf'; a.target='_blank';
-    document.body.appendChild(a); a.click();
+    a.href=url;a.download='Invoice_AMB_'+String(order.id).slice(-10)+'.pdf';
+    document.body.appendChild(a);a.click();
     setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
-    showToast('Invoice PDF ডাউনলোড হচ্ছে... 📄','success');
-  }catch(e1){
+    showToast('✅ Invoice PDF ডাউনলোড হচ্ছে...','success');
+  }catch(e){
     try{
       const uri=doc.output('datauristring');
       const w=window.open('','_blank');
-      if(w){w.document.write('<iframe src="'+uri+'" style="width:100%;height:100vh;border:none"></iframe>');w.document.title='Invoice '+order.id;}
-      else showToast('Popup blocked — allow popups for PDF','warning');
-    }catch(e2){showToast('PDF তৈরিতে সমস্যা হয়েছে','error');}
+      if(w){w.document.write('<iframe src="'+uri+'" style="width:100%;height:100vh;border:none"></iframe>');w.document.title='Invoice';}
+      else showToast('Popup blocked — allow popups','warning');
+    }catch(e2){showToast('PDF তৈরিতে সমস্যা','error');}
   }
 }
-
-
 function openReturnPolicy(){openModal('return-modal');}
 
 function openFAQ(){
