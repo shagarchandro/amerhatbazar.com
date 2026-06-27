@@ -1763,6 +1763,96 @@ button,a[role="button"]{-webkit-tap-highlight-color:transparent;user-select:none
 /* ── SHARE CART ── */
 .share-cart-code{background:var(--green-pale);border:1.5px dashed var(--green-mid);border-radius:8px;padding:8px 14px;font-size:.85rem;font-weight:700;letter-spacing:2px;color:var(--green-dark);cursor:pointer;text-align:center;transition:all .2s}
 .share-cart-code:hover{background:var(--green-mid);color:#fff}
+
+/* ===== PRODUCT DETAIL PAGE ===== */
+#product-detail-page{position:fixed;inset:0;z-index:2500;background:var(--bg);overflow-y:auto;transform:translateX(100%);transition:transform .38s cubic-bezier(.25,.8,.25,1)}
+#product-detail-page.open{transform:translateX(0)}
+.pdp-topbar{position:sticky;top:0;z-index:10;background:var(--green-dark);color:#fff;padding:0 20px;height:56px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.pdp-back-btn{background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;flex-shrink:0;transition:all .2s}
+.pdp-back-btn:hover{background:rgba(255,255,255,.25)}
+.pdp-topbar-title{font-size:1rem;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pdp-topbar-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;transition:all .2s}
+.pdp-topbar-btn:hover{background:rgba(255,255,255,.22)}
+.pdp-topbar-btn.wishlisted{background:rgba(231,76,60,.55)}
+.pdp-inner{max-width:1100px;margin:0 auto;padding:24px 20px 110px}
+.pdp-img-wrap{border-radius:var(--radius);overflow:hidden;background:linear-gradient(135deg,#e8f5e9,#d8f3dc);min-height:320px;display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:20px}
+.pdp-img-wrap img{width:100%;height:360px;object-fit:cover}
+.pdp-img-emoji{font-size:8rem;line-height:1}
+.pdp-discount-ribbon{position:absolute;top:14px;left:-6px;background:var(--orange);color:#fff;font-size:.82rem;font-weight:800;padding:5px 16px 5px 10px;border-radius:0 20px 20px 0;box-shadow:2px 2px 8px rgba(0,0,0,.2)}
+.pdp-stock-ribbon{position:absolute;bottom:14px;right:14px;background:rgba(255,255,255,.9);backdrop-filter:blur(6px);border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.pdp-grid{display:grid;grid-template-columns:1fr 370px;gap:28px;align-items:start}
+.pdp-name{font-size:1.9rem;font-weight:800;color:var(--green-dark);line-height:1.2;margin-bottom:8px}
+.pdp-origin-row{display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:.9rem;margin-bottom:12px;flex-wrap:wrap}
+.pdp-badges-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.pdp-badge{padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.pdp-badge-premium{background:linear-gradient(135deg,#fff3cd,#ffd700);color:#7a5000;border:1px solid #f4a40a}
+.pdp-badge-standard{background:var(--green-pale);color:var(--green-dark)}
+.pdp-badge-economy{background:#f0f0f0;color:#555}
+.pdp-rating-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.pdp-stars{color:#f4a40a;font-size:1.1rem}
+.pdp-price-box{background:linear-gradient(135deg,#fffaf0,#fff9e6);border:1.5px solid #f4c875;border-radius:var(--radius);padding:18px;margin-bottom:18px}
+[data-theme="dark"] .pdp-price-box{background:linear-gradient(135deg,#1a1a00,#1a2800);border-color:#5a4000}
+.pdp-price-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.pdp-price{font-size:2.2rem;font-weight:800;color:var(--orange)}
+.pdp-old-price{font-size:1.1rem;color:#aaa;text-decoration:line-through}
+.pdp-saving-tag{background:#fff0f0;color:#c0392b;font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:10px;border:1px solid #ffcdd2}
+.pdp-wholesale-tip{font-size:.78rem;color:var(--green-mid);font-weight:600;margin-top:6px;display:flex;align-items:center;gap:5px}
+.pdp-desc-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px;font-size:.9rem;color:var(--text-muted);line-height:1.8}
+[data-theme="dark"] .pdp-desc-box{background:#1a2e1f;border-color:#2d4a35}
+.pdp-features-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.pdp-feat-item{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.pdp-feat-icon{font-size:1.4rem;flex-shrink:0}
+.pdp-feat-title{font-size:.82rem;font-weight:700;color:var(--green-dark)}
+.pdp-feat-sub{font-size:.73rem;color:var(--text-muted)}
+[data-theme="dark"] .pdp-feat-item{background:#1a2e1f;border-color:#2d4a35}
+.pdp-section-hd{font-size:1.1rem;font-weight:800;color:var(--green-dark);display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:2px solid var(--border);margin-bottom:14px}
+.pdp-review-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px}
+[data-theme="dark"] .pdp-review-card{background:#1a2e1f;border-color:#2d4a35}
+.pdp-rv-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.pdp-rv-user{display:flex;align-items:center;gap:8px}
+.pdp-rv-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0}
+.pdp-rv-name{font-weight:700;font-size:.88rem;color:var(--green-dark)}
+.pdp-rv-date{font-size:.72rem;color:var(--text-muted)}
+.pdp-rv-text{font-size:.85rem;color:var(--text-muted);line-height:1.65}
+/* Order box (right sticky) */
+.pdp-order-box{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:22px;position:sticky;top:70px;box-shadow:var(--shadow-lg)}
+[data-theme="dark"] .pdp-order-box{background:#1a2e1f;border-color:#2d4a35}
+.pdp-ob-price{font-size:2rem;font-weight:800;color:var(--orange);margin-bottom:4px}
+.pdp-ob-stock{font-size:.82rem;font-weight:600;margin-bottom:16px}
+.pdp-weight-label{font-size:.85rem;font-weight:700;color:var(--green-dark);margin-bottom:8px}
+.pdp-weight-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.pdp-w-btn{padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;text-align:center;line-height:1.3}
+.pdp-w-btn:hover{border-color:var(--green-mid);background:var(--green-pale)}
+.pdp-w-btn.active{border-color:var(--green-mid);background:var(--green-mid);color:#fff}
+.pdp-w-kg{font-size:.95rem;font-weight:800;display:block}
+.pdp-w-price{font-size:.73rem;display:block;opacity:.85}
+.pdp-w-btn.active .pdp-w-price{color:#c8f5de}
+.pdp-ob-btn-cart{width:100%;padding:14px;background:var(--green-dark);color:#fff;border:none;border-radius:25px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.pdp-ob-btn-cart:hover{background:var(--green-mid);transform:translateY(-2px)}
+.pdp-ob-btn-buy{width:100%;padding:14px;background:var(--orange);color:#fff;border:none;border-radius:25px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.pdp-ob-btn-buy:hover{background:#c05500;transform:translateY(-2px)}
+.pdp-ob-btn-out{width:100%;padding:14px;background:#f0f0f0;color:#aaa;border:none;border-radius:25px;font-size:1rem;font-weight:700;cursor:not-allowed;font-family:'Hind Siliguri',sans-serif;margin-bottom:14px;text-align:center}
+.pdp-delivery-info{background:var(--green-pale);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px;display:flex;gap:10px;align-items:center;font-size:.82rem}
+[data-theme="dark"] .pdp-delivery-info{background:#1a3523}
+.pdp-guarantees{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pdp-g-item{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-muted);font-weight:600}
+/* Mobile bottom bar */
+#pdp-mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;z-index:2600;background:#fff;border-top:1.5px solid var(--border);padding:10px 16px;box-shadow:0 -4px 20px rgba(0,0,0,.12)}
+[data-theme="dark"] #pdp-mobile-bar{background:#1a2e1f;border-color:#2d4a35}
+#pdp-mobile-bar .mb-inner{display:flex;align-items:center;gap:10px}
+#pdp-mobile-bar .mb-price{font-size:1.3rem;font-weight:800;color:var(--orange);flex:1}
+@media(max-width:860px){
+  .pdp-grid{grid-template-columns:1fr}
+  .pdp-order-box{display:none}
+  #pdp-mobile-bar{display:block}
+  .pdp-inner{padding-bottom:80px}
+}
+@media(max-width:480px){
+  .pdp-name{font-size:1.4rem}
+  .pdp-price{font-size:1.8rem}
+  .pdp-features-grid{grid-template-columns:1fr}
+  .pdp-weight-grid{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -2054,11 +2144,41 @@ button,a[role="button"]{-webkit-tap-highlight-color:transparent;user-select:none
         <div class="contact-item"><div class="contact-icon"><i class="fab fa-whatsapp"></i></div><div><strong>WhatsApp</strong><br><span style="color:var(--text-muted)">+৮৮০ ১৩০৫-১৪৪৩৫৬</span></div></div>
       </div>
       <div class="contact-form">
-        <h3>বার্তা পাঠান</h3>
-        <div class="form-group"><label>আপনার নাম</label><input class="form-control" placeholder="নাম লিখুন"></div>
-        <div class="form-group"><label>ইমেইল</label><input class="form-control" type="email" placeholder="ইমেইল লিখুন"></div>
-        <div class="form-group"><label>বার্তা</label><textarea class="form-control" rows="4" placeholder="আপনার বার্তা লিখুন..."></textarea></div>
-        <button class="btn-submit" onclick="showToast('বার্তা পাঠানো হয়েছে! ✅','success')">বার্তা পাঠান</button>
+        <h3>📩 বার্তা পাঠান</h3>
+        <div class="form-group">
+          <label>আপনার নাম <span style="color:#e74c3c">*</span></label>
+          <input class="form-control" id="contact-name" placeholder="আপনার পূর্ণ নাম লিখুন">
+        </div>
+        <div class="form-group">
+          <label>মোবাইল নম্বর <span style="color:#e74c3c">*</span></label>
+          <input class="form-control" id="contact-phone" type="tel" placeholder="01XXXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>ইমেইল <span style="color:#888">(ঐচ্ছিক)</span></label>
+          <input class="form-control" id="contact-email" type="email" placeholder="example@email.com">
+        </div>
+        <div class="form-group">
+          <label>বিষয় <span style="color:#e74c3c">*</span></label>
+          <select class="form-control" id="contact-subject">
+            <option value="">— বিষয় বেছে নিন —</option>
+            <option value="অর্ডার সংক্রান্ত">🛒 অর্ডার সংক্রান্ত</option>
+            <option value="ডেলিভারি সংক্রান্ত">🚚 ডেলিভারি সংক্রান্ত</option>
+            <option value="পণ্যের মান সংক্রান্ত">🥭 পণ্যের মান সংক্রান্ত</option>
+            <option value="রিটার্ন/রিফান্ড">↩️ রিটার্ন/রিফান্ড</option>
+            <option value="পেমেন্ট সংক্রান্ত">💳 পেমেন্ট সংক্রান্ত</option>
+            <option value="অন্যান্য">💬 অন্যান্য</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>বার্তা <span style="color:#e74c3c">*</span></label>
+          <textarea class="form-control" id="contact-message" rows="5" placeholder="আপনার বার্তা বিস্তারিত লিখুন..."></textarea>
+        </div>
+        <button class="btn-submit" id="contact-submit-btn" onclick="submitContactMessage()">
+          <i class="fas fa-paper-plane"></i> বার্তা পাঠান
+        </button>
+        <div id="contact-success" style="display:none;margin-top:14px;background:#d4edda;border:1px solid #c3e6cb;border-radius:8px;padding:14px;color:#155724;font-size:.88rem">
+          ✅ আপনার বার্তা সফলভাবে পাঠানো হয়েছে! আমরা শীঘ্রই যোগাযোগ করব।
+        </div>
       </div>
     </div>
   </div>
@@ -2352,6 +2472,42 @@ button,a[role="button"]{-webkit-tap-highlight-color:transparent;user-select:none
 <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="উপরে যান">
   <i class="fas fa-chevron-up"></i>
 </button>
+
+<!-- PRODUCT DETAIL PAGE -->
+<div id="product-detail-page">
+  <!-- Top bar -->
+  <div class="pdp-topbar">
+    <button class="pdp-back-btn" onclick="closeProductDetail()" title="ফিরে যান">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <span class="pdp-topbar-title" id="pdp-topbar-title">পণ্যের বিবরণ</span>
+    <div style="display:flex;gap:8px">
+      <button class="pdp-topbar-btn" id="pdp-wishlist-btn" onclick="pdpToggleWishlist()" title="উইশলিস্ট"><i class="far fa-heart"></i></button>
+      <button class="pdp-topbar-btn" onclick="pdpShare()" title="শেয়ার করুন"><i class="fas fa-share-alt"></i></button>
+      <button class="pdp-topbar-btn" onclick="toggleCart()" title="কার্ট দেখুন" style="position:relative">
+        <i class="fas fa-shopping-cart"></i>
+        <span id="pdp-cart-badge" style="position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;width:16px;height:16px;border-radius:50%;font-size:.6rem;display:none;align-items:center;justify-content:center;font-weight:700"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="pdp-inner" id="pdp-inner">
+    <!-- Filled by openProductDetail() -->
+  </div>
+
+  <!-- Mobile bottom order bar -->
+  <div id="pdp-mobile-bar" style="display:none">
+    <div class="mb-inner">
+      <div>
+        <div class="mb-price" id="pdp-mb-price">৳০</div>
+        <div style="font-size:.72rem;color:var(--text-muted)" id="pdp-mb-stock"></div>
+      </div>
+      <button class="pdp-ob-btn-cart" id="pdp-mb-cart-btn" style="flex:1;margin:0;padding:12px" onclick="pdpAddToCart()"><i class="fas fa-cart-plus"></i> কার্টে যোগ</button>
+      <button class="pdp-ob-btn-buy" id="pdp-mb-buy-btn" style="flex:1;margin:0;padding:12px" onclick="pdpBuyNow()"><i class="fas fa-bolt"></i> কিনুন</button>
+    </div>
+  </div>
+</div>
 
 <!-- FOOTER -->
 <footer>
@@ -2743,6 +2899,7 @@ button,a[role="button"]{-webkit-tap-highlight-color:transparent;user-select:none
       <div class="admin-nav-section-label">মার্কেটিং</div>
       <button class="admin-nav-item" onclick="showAdminTab('coupons')" data-label="কুপন ব্যবস্থাপনা"><i class="fas fa-ticket-alt"></i><span class="admin-nav-label">কুপন ব্যবস্থাপনা</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('reviews')" data-label="রিভিউ ব্যবস্থাপনা"><i class="fas fa-star"></i><span class="admin-nav-label">রিভিউ ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('messages')" data-label="বার্তাসমূহ"><i class="fas fa-envelope"></i><span class="admin-nav-label">বার্তাসমূহ <span id="msg-badge" style="background:#e74c3c;color:#fff;font-size:.65rem;padding:1px 6px;border-radius:10px;display:none">0</span></span></button>
       <button class="admin-nav-item" onclick="showAdminTab('flashsale')" data-label="ফ্ল্যাশ সেল"><i class="fas fa-bolt"></i><span class="admin-nav-label">ফ্ল্যাশ সেল</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('bulk')" data-label="বাল্ক অর্ডার"><i class="fas fa-boxes"></i><span class="admin-nav-label">বাল্ক অর্ডার</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('newsletter')" data-label="নিউজলেটার"><i class="fas fa-envelope"></i><span class="admin-nav-label">নিউজলেটার</span></button>
@@ -2896,7 +3053,7 @@ function renderProducts(){
       const qClass={premium:'premium',standard:'standard',economy:'economy'};
       const urgentStock=p.stock>0&&p.stock<=8;
       return `<div class="product-card">
-        <div class="product-img-wrap">
+        <div class="product-img-wrap" style="cursor:pointer" onclick="openProductDetail(${p.id})" title="পণ্যের বিবরণ দেখুন">
           ${imgHtml}
           ${p.discount>0?`<div class="discount-badge">${p.discount}% ছাড়!</div>`:''}
           <div class="quality-badge ${qClass[p.quality]||'standard'}">${qMap[p.quality]||p.quality}</div>
@@ -8722,6 +8879,589 @@ function getOrderActionBtns(order){
 }
 
 // ============================================================
+// CONTACT MESSAGES
+// ============================================================
+function getMessages(){
+  return JSON.parse(localStorage.getItem('amb_messages')||'[]');
+}
+function saveMessages(msgs){
+  localStorage.setItem('amb_messages',JSON.stringify(msgs));
+}
+function submitContactMessage(){
+  const name=(document.getElementById('contact-name')?.value||'').trim();
+  const phone=(document.getElementById('contact-phone')?.value||'').trim();
+  const email=(document.getElementById('contact-email')?.value||'').trim();
+  const subject=document.getElementById('contact-subject')?.value||'';
+  const message=(document.getElementById('contact-message')?.value||'').trim();
+
+  // Validate
+  if(!name){showToast('নাম লিখুন','error');document.getElementById('contact-name')?.focus();return;}
+  if(!phone||!/^(\+880|0)?1[3-9]\d{8}$/.test(phone.replace(/\s/g,''))){
+    showToast('সঠিক মোবাইল নম্বর দিন','error');document.getElementById('contact-phone')?.focus();return;
+  }
+  if(!subject){showToast('বিষয় বেছে নিন','error');document.getElementById('contact-subject')?.focus();return;}
+  if(!message||message.length<5){showToast('বার্তা লিখুন','error');document.getElementById('contact-message')?.focus();return;}
+
+  // Rate limit — max 3 messages per hour
+  const msgs=getMessages();
+  const hourAgo=Date.now()-3600000;
+  const recentFromPhone=msgs.filter(m=>m.phone===phone&&m.date>hourAgo).length;
+  if(recentFromPhone>=3){showToast('অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন','error');return;}
+
+  // Save message
+  const msg={
+    id:'MSG-'+Date.now(),
+    name,phone,email,subject,message,
+    date:Date.now(),
+    status:'unread',
+    reply:''
+  };
+  msgs.unshift(msg);
+  saveMessages(msgs);
+
+  // Admin notification
+  addNotification(`📩 নতুন বার্তা — ${name}`,`${subject}: ${message.slice(0,60)}...`);
+  updateMsgBadge();
+
+  // Broadcast to other tabs
+  if(window._ambBC) window._ambBC.postMessage({type:'new_message',msg});
+
+  // Show success
+  const btn=document.getElementById('contact-submit-btn');
+  const success=document.getElementById('contact-success');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fas fa-check"></i> পাঠানো হয়েছে!';}
+  if(success) success.style.display='block';
+
+  // Clear form
+  ['contact-name','contact-phone','contact-email','contact-message'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  const sel=document.getElementById('contact-subject');
+  if(sel) sel.selectedIndex=0;
+
+  showToast('✅ বার্তা সফলভাবে পাঠানো হয়েছে!','success');
+
+  // Re-enable after 30s
+  setTimeout(()=>{
+    if(btn){btn.disabled=false;btn.innerHTML='<i class="fas fa-paper-plane"></i> বার্তা পাঠান';}
+    if(success) success.style.display='none';
+  },30000);
+}
+
+function updateMsgBadge(){
+  const msgs=getMessages();
+  const unread=msgs.filter(m=>m.status==='unread').length;
+  const badge=document.getElementById('msg-badge');
+  if(badge){
+    badge.textContent=unread;
+    badge.style.display=unread>0?'inline':'none';
+  }
+}
+
+// ── ADMIN MESSAGES TAB ──
+function renderAdminMessages(){
+  const msgs=getMessages();
+  // Mark all as read when admin opens
+  const updated=msgs.map(m=>({...m,status:'read'}));
+  saveMessages(updated);
+  updateMsgBadge();
+
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h3>📩 বার্তাসমূহ (${msgs.length}টি)</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn-add" onclick="exportMessagesCSV()"><i class="fas fa-download"></i> CSV</button>
+          <button class="btn-danger" onclick="clearMessages()"><i class="fas fa-trash"></i> সব মুছুন</button>
+        </div>
+      </div>
+      ${msgs.length===0?`<div class="no-data" style="padding:40px;text-align:center">
+        <div style="font-size:3rem;margin-bottom:10px">📭</div>
+        <div>কোনো বার্তা নেই</div>
+      </div>`:
+      msgs.map((m,i)=>`
+        <div style="background:#fff;border:1.5px solid ${m.status==='unread'?'var(--green-mid)':'var(--border)'};border-radius:var(--radius-sm);padding:16px;margin-bottom:12px;${m.status==='unread'?'box-shadow:0 2px 12px rgba(45,106,79,.15)':''}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${(m.name||'?').slice(0,1)}</div>
+              <div>
+                <div style="font-weight:700;font-size:.95rem;color:var(--green-dark)">${m.name}</div>
+                <div style="font-size:.78rem;color:var(--text-muted);margin-top:2px">
+                  📞 <a href="tel:${m.phone}" style="color:var(--green-mid)">${m.phone}</a>
+                  ${m.email?` · ✉️ ${m.email}`:''}
+                </div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:.75rem;color:var(--text-muted)">${new Date(m.date).toLocaleString('en-GB')}</div>
+              ${m.status==='unread'?`<span style="background:var(--green-mid);color:#fff;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:3px;display:inline-block">নতুন</span>`:''}
+            </div>
+          </div>
+          <div style="background:var(--green-pale);border-radius:6px;padding:8px 12px;margin-bottom:10px">
+            <div style="font-size:.75rem;font-weight:700;color:var(--green-dark);margin-bottom:3px">📌 ${m.subject||'সাধারণ বার্তা'}</div>
+          </div>
+          <div style="font-size:.88rem;color:var(--text);line-height:1.7;margin-bottom:12px;padding:10px;background:var(--bg);border-radius:6px;border-left:3px solid var(--green-light)">${m.message}</div>
+          ${m.reply?`<div style="font-size:.85rem;color:var(--green-dark);background:#e8f5e9;border-radius:6px;padding:10px;margin-bottom:10px;border-left:3px solid var(--green-mid)">
+            <strong>✅ আমাদের উত্তর:</strong> ${m.reply}
+          </div>`:''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <a href="tel:${m.phone}" class="btn-sm btn-primary" style="text-decoration:none"><i class="fas fa-phone"></i> কল করুন</a>
+            <a href="https://wa.me/880${m.phone.replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;text-decoration:none"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+            ${m.email?`<a href="mailto:${m.email}" class="btn-sm" style="background:#1877f2;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;text-decoration:none"><i class="fas fa-envelope"></i> ইমেইল</a>`:''}
+            <button class="btn-sm" onclick="showReplyBox('${m.id}')" style="background:var(--green-pale);color:var(--green-dark);border:1px solid var(--green-light);padding:6px 12px;border-radius:6px;font-size:.78rem;cursor:pointer"><i class="fas fa-reply"></i> উত্তর দিন</button>
+            <button class="btn-sm btn-danger" onclick="deleteMessage('${m.id}')" style="margin-left:auto"><i class="fas fa-trash"></i></button>
+          </div>
+          <!-- Reply box -->
+          <div id="reply-box-${m.id}" style="display:none;margin-top:10px">
+            <textarea class="form-control" id="reply-text-${m.id}" rows="3" placeholder="${m.name}-কে উত্তর লিখুন..." style="margin-bottom:8px"></textarea>
+            <div style="display:flex;gap:8px">
+              <button class="btn-sm btn-primary" onclick="sendReply('${m.id}')"><i class="fas fa-paper-plane"></i> উত্তর সেভ করুন</button>
+              <button class="btn-sm" onclick="document.getElementById('reply-box-${m.id}').style.display='none'" style="background:var(--border);border:none;padding:6px 12px;border-radius:6px;cursor:pointer">বাতিল</button>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function showReplyBox(msgId){
+  const box=document.getElementById(`reply-box-${msgId}`);
+  if(box) box.style.display=box.style.display==='none'?'block':'none';
+}
+
+function sendReply(msgId){
+  const text=document.getElementById(`reply-text-${msgId}`)?.value.trim();
+  if(!text){showToast('উত্তর লিখুন','error');return;}
+  const msgs=getMessages();
+  const msg=msgs.find(m=>m.id===msgId);
+  if(msg){msg.reply=text;msg.repliedAt=Date.now();}
+  saveMessages(msgs);
+  logActivity(`📩 বার্তায় উত্তর দেওয়া হয়েছে — ${msg?.name||''}`, '📩');
+  showToast('উত্তর সেভ হয়েছে ✅');
+  renderAdminMessages();
+}
+
+function deleteMessage(msgId){
+  if(!confirm('এই বার্তাটি মুছে ফেলবেন?')) return;
+  const msgs=getMessages().filter(m=>m.id!==msgId);
+  saveMessages(msgs);
+  updateMsgBadge();
+  renderAdminMessages();
+  showToast('বার্তা মুছে ফেলা হয়েছে');
+}
+
+function clearMessages(){
+  if(!confirm('সব বার্তা মুছে ফেলবেন?')) return;
+  saveMessages([]);
+  updateMsgBadge();
+  renderAdminMessages();
+}
+
+function exportMessagesCSV(){
+  const msgs=getMessages();
+  if(!msgs.length){showToast('কোনো বার্তা নেই','error');return;}
+  const rows=[['তারিখ','নাম','ফোন','ইমেইল','বিষয়','বার্তা','উত্তর']];
+  msgs.forEach(m=>rows.push([
+    new Date(m.date).toLocaleString('en-GB'),
+    m.name,m.phone,m.email||'',m.subject||'',m.message,m.reply||''
+  ]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='messages.csv';a.click();
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+
+// ── Extend showAdminTab for messages ──
+const _prevShowAdminTabMsg=showAdminTab;
+showAdminTab=function(tab){
+  if(tab==='messages'){
+    currentAdminTab=tab;
+    sessionStorage.setItem('amb_admin_tab',tab);
+    document.querySelectorAll('.admin-nav-item').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-item').forEach(b=>{
+      if(b.getAttribute('onclick')===`showAdminTab('messages')`) b.classList.add('active');
+    });
+    const titleEl=document.getElementById('admin-page-title');
+    if(titleEl) titleEl.textContent='📩 বার্তাসমূহ';
+    renderAdminMessages();
+  } else {
+    _prevShowAdminTabMsg(tab);
+  }
+};
+
+// ============================================================
+// PRODUCT DETAIL PAGE
+// ============================================================
+let currentPDP=null;
+let pdpWeight=1;
+
+function openProductDetail(pid){
+  pid=Number(pid);
+  const p=getProducts().find(x=>Number(x.id)===pid);
+  if(!p) return;
+  currentPDP=p;
+  pdpWeight=1;
+
+  // Track recently viewed
+  addRecentlyViewed(pid);
+
+  // Topbar
+  document.getElementById('pdp-topbar-title').textContent=p.name;
+
+  // Wishlist btn
+  const wBtn=document.getElementById('pdp-wishlist-btn');
+  if(wBtn){
+    wBtn.classList.toggle('wishlisted',isWishlisted(pid));
+    wBtn.innerHTML=isWishlisted(pid)?'<i class="fas fa-heart"></i>':'<i class="far fa-heart"></i>';
+  }
+
+  // Cart badge
+  updatePDPCartBadge();
+
+  // Data
+  const fp=getDiscountedPrice(p);
+  const stats=getProductRatingStats(pid);
+  const reviews=JSON.parse(localStorage.getItem(`amb_reviews_${pid}`)||
+    localStorage.getItem('amb_reviews')||'[]').filter(r=>r.productId===pid||r.pid===pid);
+  const qa=getProductQA(pid);
+  const urgentStock=p.stock>0&&p.stock<=8;
+  const wTiers=getWholesaleTiers();
+
+  const starsHtml=(n,sz='1rem')=>{
+    const full=Math.round(n);
+    return `<span style="color:#f4a40a;font-size:${sz}">${'★'.repeat(full)}<span style="color:#ddd">${'★'.repeat(5-full)}</span></span>`;
+  };
+
+  const qualityBadge={premium:'pdp-badge-premium',standard:'pdp-badge-standard',economy:'pdp-badge-economy'};
+  const qualityLabel={premium:'Premium ⭐',standard:'Standard',economy:'Economy'};
+
+  // Weight buttons
+  const weightBtns=[1,2,5,10].filter(w=>w<=p.stock||p.stock<=0).concat(p.stock<=0?[]:[] );
+  const wBtnsHtml=(prefix)=>[1,2,5,10].map(w=>`
+    <button class="pdp-w-btn${w===1?' active':''}" id="${prefix}wb-${w}" onclick="setPDPWeight(${w},'${prefix}')">
+      <span class="pdp-w-kg">${w} কেজি</span>
+      <span class="pdp-w-price">৳${fp*w}</span>
+    </button>`).join('');
+
+  // Reviews HTML
+  const reviewsHtml=reviews.length?reviews.slice(0,5).map(r=>`
+    <div class="pdp-review-card">
+      <div class="pdp-rv-header">
+        <div class="pdp-rv-user">
+          <div class="pdp-rv-avatar">${(r.userName||r.user||'অ').slice(0,1)}</div>
+          <div>
+            <div class="pdp-rv-name">${r.userName||r.user||'গ্রাহক'}</div>
+            <div class="pdp-rv-date">${new Date(r.date||r.createdAt||Date.now()).toLocaleDateString('en-GB')}</div>
+          </div>
+        </div>
+        <div>${starsHtml(r.rating||r.stars||5,'0.9rem')}</div>
+      </div>
+      <div class="pdp-rv-text">${r.text||r.comment||''}</div>
+    </div>`).join('')
+    :`<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:.88rem">
+        <div style="font-size:2.5rem;margin-bottom:8px">⭐</div>
+        এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!
+      </div>`;
+
+  // Q&A HTML
+  const qaHtml=qa.length?qa.slice(0,5).map(item=>`
+    <div class="pdp-qa-item">
+      <div class="pdp-qa-q">❓ ${item.q}</div>
+      ${item.a?`<div class="pdp-qa-a">💬 ${item.a}</div>`
+        :`<div style="font-size:.75rem;color:#aaa;padding:4px 12px">⏳ উত্তরের অপেক্ষায়...</div>`}
+      <div style="font-size:.7rem;color:var(--text-muted);margin-top:4px">${item.user} · ${new Date(item.date).toLocaleDateString('en-GB')}</div>
+    </div>`).join('')
+    :`<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:.85rem">কোনো প্রশ্ন নেই। প্রথম প্রশ্ন করুন!</div>`;
+
+  // Wholesale tip
+  const wTip=wTiers.length?`<div class="pdp-wholesale-tip">🏷️ ${wTiers[0].min}+ কেজিতে ${wTiers[0].disc}% পাইকারি ছাড় পাবেন</div>`:'';
+
+  // Delivery estimate
+  const est=estimateDelivery('');
+
+  document.getElementById('pdp-inner').innerHTML=`
+    <!-- Image -->
+    <div class="pdp-img-wrap">
+      ${p.image?`<img src="${p.image}" alt="${p.name}" loading="lazy">`:`<div class="pdp-img-emoji">🥭</div>`}
+      ${p.discount>0?`<div class="pdp-discount-ribbon">🏷️ ${p.discount}% ছাড়</div>`:''}
+      <div class="pdp-stock-ribbon" style="color:${p.stock<=0?'#e74c3c':p.stock<=8?'#f4a40a':'var(--green-mid)'}">
+        ${p.stock<=0?'❌ স্টক শেষ':p.stock<=8?`⚡ মাত্র ${p.stock} কেজি`:(`✅ স্টক আছে · ${p.stock} কেজি`)}
+      </div>
+    </div>
+
+    <div class="pdp-grid">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- Badges -->
+        <div class="pdp-badges-row">
+          <span class="pdp-badge ${qualityBadge[p.quality]||'pdp-badge-standard'}">${qualityLabel[p.quality]||p.quality}</span>
+          <span class="pdp-badge" style="background:var(--green-pale);color:var(--green-dark)">🌿 কেমিক্যালমুক্ত</span>
+          <span class="pdp-badge" style="background:#e8f4fd;color:#1565c0">🚚 ৪৮ঘন্টায় ডেলিভারি</span>
+          ${p.discount>0?`<span class="pdp-badge pdp-badge-premium">🔥 অফার চলছে</span>`:''}
+        </div>
+
+        <!-- Name -->
+        <h1 class="pdp-name">${p.name}</h1>
+        <div class="pdp-origin-row">
+          <i class="fas fa-map-marker-alt" style="color:var(--green-mid)"></i>
+          <span>${p.origin}</span>
+          <span style="color:var(--border)">•</span>
+          <span>সরাসরি বাগান থেকে</span>
+        </div>
+
+        <!-- Rating -->
+        <div class="pdp-rating-row">
+          ${stats.count?`
+            ${starsHtml(stats.avg,'1.1rem')}
+            <span style="font-weight:800;color:#f4a40a">${stats.avg}</span>
+            <span style="color:var(--text-muted);font-size:.85rem">(${stats.count}টি রিভিউ)</span>
+          `:'<span style="color:#aaa;font-size:.85rem">এখনো রেটিং নেই</span>'}
+          <button onclick="openReviewModal(${p.id})" style="background:none;border:1px solid var(--border);color:var(--green-mid);padding:4px 12px;border-radius:15px;font-size:.78rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif">✍️ রিভিউ দিন</button>
+        </div>
+
+        <!-- Price Box -->
+        <div class="pdp-price-box">
+          <div class="pdp-price-row">
+            <span class="pdp-price">৳${fp}<span style="font-size:1rem;font-weight:500;color:var(--text-muted)">/কেজি</span></span>
+            ${p.discount>0?`<span class="pdp-old-price">৳${p.price}</span>
+            <span class="pdp-saving-tag">৳${p.price-fp} সাশ্রয়!</span>`:''}
+          </div>
+          ${wTip}
+          <div style="font-size:.78rem;color:var(--text-muted);margin-top:6px">💡 পরিমাণ বাড়ালে আরও সাশ্রয় হবে</div>
+        </div>
+
+        <!-- Description -->
+        <div class="pdp-desc-box">
+          <strong style="color:var(--green-dark);display:block;margin-bottom:8px">📝 পণ্যের বিবরণ</strong>
+          ${p.desc||`${p.name} — রাজশাহী/চাঁপাইনবাবগঞ্জের সেরা বাগান থেকে সংগ্রহ করা তাজা, পুষ্টিকর ও সুস্বাদু আম। প্রতিটি আম যত্নের সাথে বাছাই করা হয় এবং সরাসরি আপনার কাছে পৌঁছে দেওয়া হয়।`}
+        </div>
+
+        <!-- Features -->
+        <div class="pdp-features-grid">
+          <div class="pdp-feat-item"><div class="pdp-feat-icon">🌿</div><div><div class="pdp-feat-title">কেমিক্যাল মুক্ত</div><div class="pdp-feat-sub">সম্পূর্ণ প্রাকৃতিক</div></div></div>
+          <div class="pdp-feat-item"><div class="pdp-feat-icon">🚚</div><div><div class="pdp-feat-title">দ্রুত ডেলিভারি</div><div class="pdp-feat-sub">${est.date} এর মধ্যে</div></div></div>
+          <div class="pdp-feat-item"><div class="pdp-feat-icon">↩️</div><div><div class="pdp-feat-title">৭ দিনের রিটার্ন</div><div class="pdp-feat-sub">কোনো প্রশ্ন ছাড়াই</div></div></div>
+          <div class="pdp-feat-item"><div class="pdp-feat-icon">🏷️</div><div><div class="pdp-feat-title">সেরা দাম গ্যারান্টি</div><div class="pdp-feat-sub">বাজারের চেয়ে কম</div></div></div>
+          <div class="pdp-feat-item"><div class="pdp-feat-icon">📦</div><div><div class="pdp-feat-title">নিরাপদ প্যাকেজিং</div><div class="pdp-feat-sub">ক্ষতিমুক্ত ডেলিভারি</div></div></div>
+          <div class="pdp-feat-item"><div class="pdp-feat-icon">⭐</div><div><div class="pdp-feat-title">${qualityLabel[p.quality]||'Standard'} মান</div><div class="pdp-feat-sub">বিশেষজ্ঞ দ্বারা বাছাই</div></div></div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div style="margin-bottom:24px">
+          <div class="pdp-section-hd">⭐ গ্রাহকদের রিভিউ
+            <span style="font-size:.8rem;color:var(--text-muted);font-weight:500;margin-left:auto">${reviews.length}টি রিভিউ</span>
+          </div>
+          ${reviewsHtml}
+          ${reviews.length>5?`<button onclick="openReviewModal(${p.id})" style="width:100%;padding:10px;background:none;border:1.5px solid var(--border);color:var(--green-mid);border-radius:25px;font-family:'Hind Siliguri',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:8px">সব রিভিউ দেখুন (${reviews.length}টি)</button>`:''}
+        </div>
+
+        <!-- Q&A Section -->
+        <div style="margin-bottom:24px">
+          <div class="pdp-section-hd">💬 প্রশ্ন ও উত্তর
+            <span style="font-size:.8rem;color:var(--text-muted);font-weight:500;margin-left:auto">${qa.length}টি প্রশ্ন</span>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:14px">
+            <input class="pdp-qa-input" id="pdp-qa-inp" placeholder="আপনার প্রশ্ন লিখুন..." style="flex:1;padding:10px 16px;border:1.5px solid var(--border);border-radius:25px;font-size:.85rem;font-family:'Hind Siliguri',sans-serif;outline:none;background:var(--bg);color:var(--text)">
+            <button onclick="pdpSubmitQuestion(${p.id})" style="background:var(--green-dark);color:#fff;border:none;padding:10px 18px;border-radius:25px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Hind Siliguri',sans-serif">পাঠান</button>
+          </div>
+          ${qaHtml}
+        </div>
+
+        <!-- Related Products -->
+        <div id="pdp-related" style="margin-bottom:24px"></div>
+      </div>
+
+      <!-- RIGHT COLUMN — Order Box -->
+      <div class="pdp-order-box">
+        <div class="pdp-ob-price" id="pdp-ob-price">৳${fp}/কেজি</div>
+        <div class="pdp-ob-stock" style="color:${p.stock<=0?'#e74c3c':p.stock<=8?'#f4a40a':'var(--green-mid)'}">
+          ${p.stock<=0?'❌ স্টক শেষ':p.stock<=8?`⚡ মাত্র ${p.stock} কেজি বাকি!`:`✅ স্টক আছে · ${p.stock} কেজি`}
+        </div>
+
+        ${p.stock>0?`
+        <div class="pdp-weight-label">পরিমাণ বেছে নিন:</div>
+        <div class="pdp-weight-grid">${wBtnsHtml('ob-')}</div>
+
+        <button class="pdp-ob-btn-cart" onclick="pdpAddToCart()">
+          <i class="fas fa-cart-plus"></i> কার্টে যোগ করুন
+        </button>
+        <button class="pdp-ob-btn-buy" onclick="pdpBuyNow()">
+          <i class="fas fa-bolt"></i> এখনই কিনুন
+        </button>
+        `:`<div class="pdp-ob-btn-out">❌ স্টক শেষ</div>
+        <button class="btn-notify-me" style="width:100%;margin-bottom:14px" onclick="showNotifyInput(${p.id})">🔔 স্টক এলে জানান</button>`}
+
+        <div class="pdp-delivery-info">
+          <span style="font-size:1.6rem">🚚</span>
+          <div>
+            <div style="font-weight:700;color:var(--green-dark);font-size:.85rem">আনুমানিক ডেলিভারি: ${est.date}</div>
+            <div style="font-size:.75rem;color:var(--text-muted)">সারা বাংলাদেশে ডেলিভারি</div>
+          </div>
+        </div>
+
+        <div class="pdp-guarantees">
+          <div class="pdp-g-item">✅ আসল পণ্য গ্যারান্টি</div>
+          <div class="pdp-g-item">↩️ ৭ দিনের রিটার্ন</div>
+          <div class="pdp-g-item">🔒 নিরাপদ পেমেন্ট</div>
+          <div class="pdp-g-item">📦 নিরাপদ প্যাকেজিং</div>
+        </div>
+
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:8px;font-weight:600">শেয়ার করুন:</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-social btn-social-wa" onclick="shareWhatsApp(${p.id})" style="flex:1"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+            <button class="btn-social btn-social-fb" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(window.location.href),'_blank')" style="flex:1"><i class="fab fa-facebook-f"></i> Facebook</button>
+            <button class="btn-social btn-social-copy" onclick="shareLink(${p.id})" style="flex:1"><i class="fas fa-link"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Mobile bar
+  const mBar=document.getElementById('pdp-mobile-bar');
+  const mbPrice=document.getElementById('pdp-mb-price');
+  const mbStock=document.getElementById('pdp-mb-stock');
+  if(mBar){
+    mBar.style.display='block';
+    if(mbPrice) mbPrice.textContent=`৳${fp}/কেজি`;
+    if(mbStock) mbStock.textContent=p.stock>0?`স্টক: ${p.stock} কেজি`:'স্টক নেই';
+  }
+
+  // Load related products
+  setTimeout(()=>{
+    const prods=getProducts();
+    const related=prods.filter(x=>Number(x.id)!==pid&&(x.origin===p.origin||x.quality===p.quality)&&x.stock>0).slice(0,4);
+    const relEl=document.getElementById('pdp-related');
+    if(relEl&&related.length){
+      relEl.innerHTML=`<div class="pdp-section-hd">🔗 একই ধরনের পণ্য</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">
+          ${related.map(rp=>`<div class="related-card" onclick="openProductDetail(${rp.id})">
+            <div class="related-card-img">${rp.image?`<img src="${rp.image}" alt="${rp.name}" loading="lazy">`:'🥭'}</div>
+            <div class="related-card-body">
+              <div class="related-card-name">${rp.name}</div>
+              <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">${rp.origin}</div>
+              <div class="related-card-price">৳${getDiscountedPrice(rp)}/কেজি</div>
+            </div>
+          </div>`).join('')}
+        </div>`;
+    }
+  },300);
+
+  // Open page with animation
+  document.getElementById('product-detail-page').classList.add('open');
+  document.body.style.overflow='hidden';
+  window.scrollTo(0,0);
+}
+
+function closeProductDetail(){
+  document.getElementById('product-detail-page').classList.remove('open');
+  document.body.style.overflow='';
+  const mBar=document.getElementById('pdp-mobile-bar');
+  if(mBar) mBar.style.display='none';
+  currentPDP=null;
+}
+
+function setPDPWeight(w,prefix){
+  pdpWeight=w;
+  // Update all weight buttons for this prefix
+  [1,2,5,10].forEach(bw=>{
+    const btn=document.getElementById(`${prefix}wb-${bw}`);
+    if(btn) btn.classList.toggle('active',bw===w);
+  });
+  // Sync both ob- and mb- selectors
+  const otherPrefix=prefix==='ob-'?'mb-':'ob-';
+  [1,2,5,10].forEach(bw=>{
+    const btn=document.getElementById(`${otherPrefix}wb-${bw}`);
+    if(btn) btn.classList.toggle('active',bw===w);
+  });
+  // Update prices
+  if(currentPDP){
+    const fp=getDiscountedPrice(currentPDP);
+    const total=fp*w;
+    const priceEl=document.getElementById('pdp-ob-price');
+    if(priceEl) priceEl.textContent=`৳${total} (${w}কেজি)`;
+    const mbPrice=document.getElementById('pdp-mb-price');
+    if(mbPrice) mbPrice.textContent=`৳${total} · ${w}কেজি`;
+    // Also update productWeights for addToCart
+    if(currentPDP) productWeights[currentPDP.id]=w;
+  }
+}
+
+function pdpAddToCart(){
+  if(!currentPDP) return;
+  productWeights[currentPDP.id]=pdpWeight;
+  addToCart(currentPDP.id);
+  updatePDPCartBadge();
+}
+
+function pdpBuyNow(){
+  if(!currentPDP) return;
+  productWeights[currentPDP.id]=pdpWeight;
+  buyNow(currentPDP.id);
+}
+
+function pdpToggleWishlist(){
+  if(!currentPDP) return;
+  const btn=document.getElementById('pdp-wishlist-btn');
+  const wishlisted=isWishlisted(currentPDP.id);
+  // Toggle wishlist
+  const wishlist=JSON.parse(localStorage.getItem('amb_wishlist')||'[]');
+  if(wishlisted){
+    const idx=wishlist.indexOf(Number(currentPDP.id));
+    if(idx>-1) wishlist.splice(idx,1);
+    showToast('উইশলিস্ট থেকে সরানো হয়েছে');
+  } else {
+    wishlist.push(Number(currentPDP.id));
+    showToast('উইশলিস্টে যোগ হয়েছে ❤️');
+  }
+  localStorage.setItem('amb_wishlist',JSON.stringify(wishlist));
+  updateWishlistCount();
+  if(btn){
+    btn.classList.toggle('wishlisted',!wishlisted);
+    btn.innerHTML=!wishlisted?'<i class="fas fa-heart"></i>':'<i class="far fa-heart"></i>';
+  }
+}
+
+function pdpShare(){
+  if(!currentPDP) return;
+  shareLink(currentPDP.id);
+}
+
+function pdpSubmitQuestion(pid){
+  const inp=document.getElementById('pdp-qa-inp');
+  if(!inp||!inp.value.trim()){showToast('প্রশ্ন লিখুন','error');return;}
+  const u=getCurrentUser();
+  if(!u){showToast('প্রশ্ন করতে লগইন করুন','warning');openModal('login-modal');return;}
+  const qa=getProductQA(pid);
+  qa.push({q:inp.value.trim(),a:'',user:u.name,date:Date.now(),answered:false});
+  saveProductQA(pid,qa);
+  inp.value='';
+  addNotification(`❓ নতুন প্রশ্ন — ${currentPDP?.name||'পণ্য'}`,`${u.name}: ${qa[qa.length-1].q.slice(0,50)}`);
+  showToast('প্রশ্ন পাঠানো হয়েছে! শীঘ্রই উত্তর দেওয়া হবে ✅');
+  // Re-render
+  openProductDetail(pid);
+}
+
+function updatePDPCartBadge(){
+  const badge=document.getElementById('pdp-cart-badge');
+  if(!badge) return;
+  const cart=getMyCart();
+  const total=cart.reduce((s,i)=>s+(i.qty||1),0);
+  if(total>0){
+    badge.textContent=total;
+    badge.style.display='flex';
+  } else {
+    badge.style.display='none';
+  }
+}
+
+// Close on back button (mobile)
+window.addEventListener('popstate',()=>{
+  const page=document.getElementById('product-detail-page');
+  if(page&&page.classList.contains('open')) closeProductDetail();
+});
+
+// ============================================================
 // INIT (Final)
 // ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
@@ -8749,6 +9489,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   updateCompareBar();
   updateNotifDot();
   updateFreeDeliveryBar();
+  updateMsgBadge();
   initTypewriter();
   initParticles();
   initLiveTicker();
