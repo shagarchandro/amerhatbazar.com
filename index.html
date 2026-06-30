@@ -494,9 +494,202 @@ footer{background:var(--green-dark);color:rgba(255,255,255,.8);padding:50px 20px
 .coupon-type-radios label{display:flex;align-items:center;gap:6px;font-size:.9rem;font-weight:400;cursor:pointer}
 .table-wrapper{overflow-x:auto}
 .admin-sidebar-toggle{display:none;position:fixed;bottom:20px;left:20px;z-index:3500;width:46px;height:46px;background:var(--green-dark);color:#fff;border:none;border-radius:50%;font-size:1.1rem;box-shadow:var(--shadow-lg)}
-/* Only show toggle button when admin panel is open */
-#admin-panel.open~.admin-sidebar-toggle,
-body.admin-open .admin-sidebar-toggle{display:none}
+/* ── ADMIN PANEL OVERLAY (mobile backdrop) ── */
+#admin-sidebar-overlay{display:none;position:fixed;inset:0;z-index:3050;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)}
+#admin-sidebar-overlay.open{display:block}
+
+/* ── MOBILE ADMIN TOPBAR HAMBURGER ── */
+.admin-mob-menu-btn{display:none;background:none;border:none;color:var(--green-dark);font-size:1.3rem;cursor:pointer;padding:4px;border-radius:6px;transition:background .2s}
+.admin-mob-menu-btn:hover{background:var(--green-pale)}
+
+/* ── ADMIN BOTTOM NAV (mobile only) ── */
+#admin-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:3200;background:#1a2e23;border-top:1px solid rgba(255,255,255,.1);padding:4px 0 max(4px,env(safe-area-inset-bottom))}
+.abn-inner{display:flex;justify-content:space-around;align-items:center}
+.abn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 8px;cursor:pointer;color:rgba(255,255,255,.5);transition:all .2s;border:none;background:none;min-width:50px;position:relative}
+.abn-item.active,.abn-item:hover{color:var(--yellow)}
+.abn-item i{font-size:1.1rem}
+.abn-item span{font-size:.58rem;font-weight:600;white-space:nowrap}
+.abn-badge{position:absolute;top:4px;right:8px;background:#e74c3c;color:#fff;width:14px;height:14px;border-radius:50%;font-size:.55rem;display:none;align-items:center;justify-content:center;font-weight:700}
+
+/* ── ADMIN SIDEBAR SWIPE HANDLE ── */
+.sidebar-swipe-handle{display:none;width:32px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:10px auto 0;cursor:pointer}
+
+/* Responsive overrides */
+@media(max-width:1024px){
+  .admin-sidebar{width:200px}
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .admin-main{padding:16px}
+}
+
+@media(max-width:900px){
+  /* Sidebar becomes off-canvas drawer */
+  .admin-sidebar{
+    display:flex;position:fixed;left:0;top:0;height:100vh;
+    z-index:3100;width:260px!important;
+    transform:translateX(-100%);transition:transform .3s cubic-bezier(.25,.8,.25,1);
+    box-shadow:4px 0 24px rgba(0,0,0,.3)
+  }
+  .admin-sidebar.mob-open{transform:translateX(0)!important}
+  .admin-sidebar.collapsed{width:260px!important}
+  .admin-sidebar.collapsed .admin-nav-label{opacity:1!important;width:auto!important}
+  .admin-sidebar.collapsed .admin-logo-text{opacity:1!important;width:auto!important}
+  .admin-sidebar.collapsed .admin-nav-section-label{opacity:1!important}
+  .admin-collapse-btn{display:none}
+  .admin-mob-menu-btn{display:flex}
+  .sidebar-swipe-handle{display:block}
+
+  /* Content takes full width */
+  .admin-content{width:100%}
+
+  /* Topbar adjustments */
+  .admin-topbar{padding:10px 14px;gap:8px}
+  .admin-topbar h2{font-size:.92rem}
+  #admin-page-title{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Stats */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .stat-card{padding:14px}
+  .stat-card-value{font-size:1.4rem}
+  .stat-card-icon{font-size:1.4rem}
+
+  /* Admin main */
+  .admin-main{padding:14px}
+  .admin-section-header{padding:12px 16px;flex-wrap:wrap;gap:8px}
+  .admin-section-header h3{font-size:.92rem}
+
+  /* Table */
+  .admin-table th,.admin-table td{padding:8px 10px;font-size:.82rem}
+  .search-bar{min-width:140px}
+
+  /* Order detail */
+  .order-detail-grid{grid-template-columns:1fr}
+  .dash-grid2{grid-template-columns:1fr}
+}
+
+@media(max-width:768px){
+  .hide-on-mobile{display:none!important}
+  /* Bottom nav for quick access */
+  #admin-bottom-nav{display:none} /* shown via JS when admin open */
+
+  /* Stats 2x2 */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .stat-card{padding:12px}
+  .stat-card-value{font-size:1.2rem}
+  .stat-card-label{font-size:.75rem}
+  .stat-card-icon{display:none}
+
+  /* Topbar */
+  .admin-topbar{padding:10px 12px}
+  .admin-topbar h2{font-size:.85rem}
+  .btn-admin-logout{padding:6px 10px;font-size:.75rem}
+  .admin-topbar-actions{gap:6px;flex-wrap:nowrap}
+
+  /* Table scroll */
+  .table-wrapper{-webkit-overflow-scrolling:touch}
+  .admin-table{font-size:.78rem;min-width:500px}
+  .admin-table th,.admin-table td{padding:7px 8px}
+
+  /* Sidebar wider on mobile for easier touch */
+  .admin-sidebar{width:280px!important}
+  .admin-nav-item{padding:13px 20px;font-size:.9rem;min-height:46px}
+  .admin-nav-item i{font-size:1rem}
+
+  /* Forms */
+  .admin-form{padding:14px}
+  .admin-form input,.admin-form select,.admin-form textarea{font-size:.88rem;padding:8px 11px}
+  .setting-row{flex-direction:column;align-items:flex-start;gap:6px}
+  .setting-row label{width:auto}
+  .setting-row input{width:100%;box-sizing:border-box}
+
+  /* Action buttons */
+  .action-btns{flex-wrap:wrap;gap:4px}
+  .btn-edit-sm,.btn-delete-sm,.btn-view-sm,.btn-print-sm,.btn-invoice-sm{padding:5px 8px;font-size:.72rem}
+
+  /* Analytics */
+  .analytics-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .analytics-card{padding:10px}
+  .analytics-card-val{font-size:1.1rem}
+
+  /* Profit calc */
+  .profit-calc .form-row,
+  #profit-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* Target card */
+  .target-stats{grid-template-columns:1fr 1fr 1fr}
+  .target-stat-val{font-size:.95rem}
+
+  /* Backup grid */
+  .backup-grid{grid-template-columns:1fr}
+
+  /* Messages */
+  .msg-action-btns{flex-wrap:wrap;gap:4px}
+}
+
+@media(max-width:600px){
+  /* Stats 2 col */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-card{padding:10px 12px;border-radius:8px}
+  .stat-card-value{font-size:1.1rem}
+
+  /* Full width sidebar */
+  .admin-sidebar{width:100vw!important;max-width:320px}
+
+  /* Admin main */
+  .admin-main{padding:10px}
+  .admin-section{border-radius:10px}
+  .admin-section-header{padding:10px 12px}
+
+  /* Bottom nav labels */
+  .abn-item span{font-size:.55rem}
+  .abn-item i{font-size:1rem}
+  .abn-item{min-width:44px;padding:5px 4px}
+
+  /* Table */
+  .admin-table{min-width:420px}
+
+  /* Analytics */
+  .analytics-grid{grid-template-columns:1fr 1fr}
+  .analytics-card-trend{display:none}
+  .analytics-card-val{font-size:1rem}
+
+  /* Coupon */
+  .coupon-type-radios{flex-direction:column;gap:8px}
+
+  /* Wholesale table */
+  .wholesale-table{font-size:.78rem}
+}
+
+@media(max-width:480px){
+  /* Stats 2 col compact */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:6px}
+  .stat-card{padding:8px 10px}
+  .stat-card-value{font-size:1rem}
+
+  /* Table min-width */
+  .admin-table{min-width:380px}
+  .admin-table th,.admin-table td{padding:6px 7px;font-size:.75rem}
+
+  /* Topbar */
+  .admin-topbar{padding:8px 10px}
+  .admin-topbar h2{font-size:.8rem}
+  #admin-page-title{max-width:130px}
+  .btn-admin-logout{padding:5px 8px;font-size:.72rem}
+
+  /* Admin form */
+  .admin-form{padding:10px}
+
+  /* Order detail */
+  .order-detail-grid{gap:12px}
+
+  /* Target */
+  .target-stats{grid-template-columns:1fr 1fr;gap:6px}
+
+  /* Bottom nav */
+  .abn-item span{display:none}
+  .abn-item i{font-size:1.15rem}
+  .abn-item{padding:8px}
+}
+
 .order-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
 .detail-box{background:var(--bg);border-radius:var(--radius-sm);padding:15px}
 .detail-box h4{font-size:.9rem;font-weight:700;color:var(--green-dark);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:7px}
@@ -2279,6 +2472,119 @@ img.lazy.loaded{opacity:1}
   #blog-section,#pdp-mobile-bar,.pdp-topbar,.installment-box,
   .live-visitor-badge,#spin-btn{display:none!important}
 }
+
+/* ============================================================
+   NEW PREMIUM FEATURES BATCH 4
+   ============================================================ */
+
+/* ── 1. PRODUCT IMAGE GALLERY ── */
+.gallery-main-wrap{position:relative;border-radius:var(--radius);overflow:hidden;background:var(--green-pale);margin-bottom:12px;cursor:zoom-in}
+.gallery-main-img{width:100%;height:360px;object-fit:cover;display:block;transition:transform .3s ease}
+.gallery-main-img:hover{transform:scale(1.03)}
+.gallery-main-emoji{width:100%;height:360px;display:flex;align-items:center;justify-content:center;font-size:10rem}
+.gallery-thumbs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+.gallery-thumb{width:72px;height:72px;border-radius:8px;overflow:hidden;border:2.5px solid transparent;cursor:pointer;flex-shrink:0;transition:all .2s;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:1.6rem}
+.gallery-thumb img{width:100%;height:100%;object-fit:cover}
+.gallery-thumb.active{border-color:var(--green-mid);box-shadow:0 0 0 2px rgba(45,106,79,.2)}
+.gallery-thumb:hover{border-color:var(--green-light)}
+.gallery-prev,.gallery-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;transition:background .2s;z-index:2}
+.gallery-prev{left:8px}.gallery-next{right:8px}
+.gallery-prev:hover,.gallery-next:hover{background:rgba(0,0,0,.7)}
+@media(max-width:600px){
+  .gallery-main-img,.gallery-main-emoji{height:260px}
+  .gallery-thumb{width:58px;height:58px}
+}
+
+/* ── 2. LOW STOCK AUTO-ALERT ── */
+.low-stock-alert{background:linear-gradient(135deg,#fff3cd,#ffeaa7);border:1.5px solid #f4a40a;border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;animation:alertPulse 2s ease-in-out infinite}
+@keyframes alertPulse{0%,100%{box-shadow:0 0 0 0 rgba(244,164,10,.3)}50%{box-shadow:0 0 0 6px rgba(244,164,10,0)}}
+.low-stock-alert-icon{font-size:1.8rem;flex-shrink:0}
+.low-stock-alert-text strong{color:var(--green-dark);display:block;font-size:.88rem}
+.low-stock-alert-text span{font-size:.78rem;color:var(--text-muted)}
+[data-theme="dark"] .low-stock-alert{background:linear-gradient(135deg,#2d2400,#3d3000)}
+
+/* ── 3. REVENUE FORECAST ── */
+.forecast-card{background:linear-gradient(135deg,#1b4332,#2d6a4f);color:#fff;border-radius:var(--radius);padding:22px;margin-bottom:16px;position:relative;overflow:hidden}
+.forecast-card::after{content:'📈';position:absolute;right:-10px;bottom:-10px;font-size:6rem;opacity:.1}
+.forecast-amount{font-size:2.2rem;font-weight:800;color:var(--yellow);margin:8px 0 4px}
+.forecast-meta{font-size:.82rem;opacity:.8}
+.forecast-bars{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:16px}
+.forecast-bar{flex:1;border-radius:4px 4px 0 0;min-height:4px;position:relative}
+.forecast-bar.actual{background:rgba(255,255,255,.5)}
+.forecast-bar.predicted{background:rgba(244,164,10,.6);border:1.5px dashed rgba(244,164,10,.8)}
+.forecast-bar-lbl{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:.55rem;white-space:nowrap;opacity:.7}
+
+/* ── 4. MULTI-LANGUAGE ── */
+.lang-toggle-wrap{display:flex;gap:2px;background:rgba(255,255,255,.12);border-radius:20px;padding:2px}
+.lang-btn{background:none;border:none;color:rgba(255,255,255,.7);padding:4px 10px;border-radius:18px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
+.lang-btn.active{background:var(--yellow);color:var(--green-dark)}
+
+/* ── 5. QUICK EDIT ORDER ── */
+.quick-edit-row{display:flex;align-items:center;gap:8px;padding:8px;background:var(--green-pale);border-radius:8px;margin-top:8px;flex-wrap:wrap}
+.quick-edit-row select,.quick-edit-row input{padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.82rem;font-family:'Hind Siliguri',sans-serif;background:#fff;color:var(--text);outline:none}
+.quick-edit-row select:focus,.quick-edit-row input:focus{border-color:var(--green-mid)}
+.btn-quick-save{background:var(--green-mid);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Hind Siliguri',sans-serif}
+[data-theme="dark"] .quick-edit-row{background:#1a3523}
+
+/* ── 6. CUSTOM THEME BUILDER ── */
+.theme-builder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.theme-color-item{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;align-items:center;gap:12px;transition:border .2s}
+.theme-color-item:hover{border-color:var(--green-mid)}
+[data-theme="dark"] .theme-color-item{background:#1a2e1f;border-color:#2d4a35}
+.theme-color-swatch{width:42px;height:42px;border-radius:10px;flex-shrink:0;border:2px solid rgba(0,0,0,.1);cursor:pointer;transition:transform .2s}
+.theme-color-swatch:hover{transform:scale(1.1)}
+.theme-color-label{font-size:.82rem;font-weight:700;color:var(--green-dark)}
+.theme-color-hex{font-size:.72rem;color:var(--text-muted);font-family:monospace;margin-top:2px}
+.theme-preset-grid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.theme-preset{padding:10px 18px;border-radius:25px;border:2px solid transparent;cursor:pointer;font-size:.82rem;font-weight:700;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
+.theme-preset:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.theme-preset.active{border-color:var(--green-dark)}
+
+/* ── 7. SMS OTP ── */
+.otp-input-group{display:flex;gap:8px;justify-content:center;margin:14px 0}
+.otp-digit{width:46px;height:54px;border:2px solid var(--border);border-radius:10px;text-align:center;font-size:1.5rem;font-weight:800;outline:none;transition:border .2s;background:var(--bg);color:var(--text);font-family:monospace}
+.otp-digit:focus{border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(45,106,79,.15)}
+.otp-timer{font-size:.82rem;color:var(--text-muted);text-align:center;margin-bottom:10px}
+.otp-resend{background:none;border:none;color:var(--green-mid);font-size:.82rem;cursor:pointer;text-decoration:underline;font-family:'Hind Siliguri',sans-serif}
+
+/* ── 8. DELIVERY ZONE MAP ── */
+.delivery-zone-box{background:var(--green-pale);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.delivery-zone-selector{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:12px}
+.zone-card{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:all .2s;text-align:center}
+.zone-card:hover,.zone-card.active{border-color:var(--green-mid);background:var(--green-pale);box-shadow:var(--shadow)}
+.zone-card-name{font-size:.85rem;font-weight:700;color:var(--green-dark)}
+.zone-card-days{font-size:.72rem;color:var(--text-muted)}
+.zone-card-charge{font-size:.82rem;font-weight:700;color:var(--orange)}
+[data-theme="dark"] .zone-card{background:#1a2e1f;border-color:#2d4a35}
+
+/* ── 9. SAVED PAYMENT ── */
+.saved-payment-card{background:linear-gradient(135deg,#1b4332,#2d6a4f);border-radius:12px;padding:16px;color:#fff;position:relative;overflow:hidden;margin-bottom:10px}
+.saved-payment-card::after{content:'💳';position:absolute;right:-8px;bottom:-8px;font-size:4rem;opacity:.15}
+.saved-payment-type{font-size:.72rem;opacity:.75;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.saved-payment-num{font-size:1rem;font-weight:700;letter-spacing:2px}
+.saved-payment-meta{font-size:.75rem;opacity:.7;margin-top:6px}
+.saved-payment-delete{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.15);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center}
+
+/* ── 10. ADMIN INLINE ORDER EDIT ── */
+.order-row-editing td{background:var(--green-pale)!important}
+.inline-status-select{border:1.5px solid var(--green-mid);border-radius:6px;padding:4px 8px;font-size:.78rem;font-family:'Hind Siliguri',sans-serif;outline:none;background:#fff;cursor:pointer}
+
+/* ── RESPONSIVE for new features ── */
+@media(max-width:768px){
+  .theme-builder-grid{grid-template-columns:1fr 1fr}
+  .delivery-zone-selector{grid-template-columns:1fr 1fr}
+  .otp-digit{width:40px;height:48px;font-size:1.3rem}
+  .forecast-amount{font-size:1.6rem}
+  .gallery-main-img,.gallery-main-emoji{height:280px}
+}
+@media(max-width:480px){
+  .theme-builder-grid{grid-template-columns:1fr}
+  .otp-digit{width:36px;height:44px;font-size:1.2rem}
+  .otp-input-group{gap:5px}
+  .gallery-main-img,.gallery-main-emoji{height:220px}
+  .gallery-thumb{width:52px;height:52px}
+  .delivery-zone-selector{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
@@ -2372,6 +2678,11 @@ img.lazy.loaded{opacity:1}
       <a href="#contact">যোগাযোগ</a>
     </div>
     <div class="nav-right">
+      <!-- LANGUAGE TOGGLE -->
+      <div class="lang-toggle-wrap" id="lang-toggle">
+        <button class="lang-btn active" onclick="setLanguage('bn')" id="lang-bn">বাং</button>
+        <button class="lang-btn" onclick="setLanguage('en')" id="lang-en">EN</button>
+      </div>
       <!-- SEARCH OPEN -->
       <button class="search-open-btn" onclick="openSearchPanel()" title="পণ্য খুঁজুন"><i class="fas fa-search"></i></button>
       <!-- NOTIFICATION BELL -->
@@ -3384,67 +3695,100 @@ img.lazy.loaded{opacity:1}
 </div>
 
 <!-- ADMIN PANEL -->
-<div id="admin-panel">  <div class="admin-sidebar" id="admin-sidebar">
+<!-- ADMIN SIDEBAR OVERLAY (mobile backdrop) -->
+<div id="admin-sidebar-overlay" onclick="closeMobileAdminSidebar()"></div>
+
+<div id="admin-panel">
+  <!-- SIDEBAR -->
+  <div class="admin-sidebar" id="admin-sidebar">
+    <!-- Swipe handle for mobile -->
+    <div class="sidebar-swipe-handle" onclick="closeMobileAdminSidebar()"></div>
     <div class="admin-logo">
       <span style="font-size:1.4rem;flex-shrink:0">🥭</span>
       <div class="admin-logo-text">
         <div>আমের হাট বাজার</div>
         <div style="font-size:.65rem;color:rgba(255,255,255,.4);font-weight:400">Admin Panel</div>
       </div>
+      <!-- Mobile close button inside sidebar -->
+      <button onclick="closeMobileAdminSidebar()" style="display:none;background:rgba(255,255,255,.1);border:none;color:#fff;width:32px;height:32px;border-radius:50%;margin-left:auto;cursor:pointer;flex-shrink:0;font-size:.9rem" id="sidebar-close-btn"><i class="fas fa-times"></i></button>
     </div>
     <nav class="admin-nav">
       <div class="admin-nav-section-label">মেইন</div>
-      <button class="admin-nav-item active" onclick="showAdminTab('dashboard')" data-label="ড্যাশবোর্ড"><i class="fas fa-chart-bar"></i><span class="admin-nav-label">ড্যাশবোর্ড</span></button>
+      <button class="admin-nav-item active" onclick="showAdminTab('dashboard');closeMobileAdminSidebar()" data-label="ড্যাশবোর্ড"><i class="fas fa-chart-bar"></i><span class="admin-nav-label">ড্যাশবোর্ড</span></button>
       <div class="admin-nav-divider"></div>
       <div class="admin-nav-section-label">পণ্য ও বিক্রয়</div>
-      <button class="admin-nav-item" onclick="showAdminTab('products')" data-label="পণ্য ব্যবস্থাপনা"><i class="fas fa-box"></i><span class="admin-nav-label">পণ্য ব্যবস্থাপনা</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('orders')" data-label="অর্ডার ব্যবস্থাপনা"><i class="fas fa-shopping-bag"></i><span class="admin-nav-label">অর্ডার ব্যবস্থাপনা</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('customers')" data-label="কাস্টমার তালিকা"><i class="fas fa-users"></i><span class="admin-nav-label">কাস্টমার তালিকা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('products');closeMobileAdminSidebar()" data-label="পণ্য ব্যবস্থাপনা"><i class="fas fa-box"></i><span class="admin-nav-label">পণ্য ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('orders');closeMobileAdminSidebar()" data-label="অর্ডার ব্যবস্থাপনা"><i class="fas fa-shopping-bag"></i><span class="admin-nav-label">অর্ডার ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('customers');closeMobileAdminSidebar()" data-label="কাস্টমার তালিকা"><i class="fas fa-users"></i><span class="admin-nav-label">কাস্টমার তালিকা</span></button>
       <div class="admin-nav-divider"></div>
       <div class="admin-nav-section-label">মার্কেটিং</div>
-      <button class="admin-nav-item" onclick="showAdminTab('coupons')" data-label="কুপন ব্যবস্থাপনা"><i class="fas fa-ticket-alt"></i><span class="admin-nav-label">কুপন ব্যবস্থাপনা</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('reviews')" data-label="রিভিউ ব্যবস্থাপনা"><i class="fas fa-star"></i><span class="admin-nav-label">রিভিউ ব্যবস্থাপনা</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('messages')" data-label="বার্তাসমূহ"><i class="fas fa-envelope"></i><span class="admin-nav-label">বার্তাসমূহ <span id="msg-badge" style="background:#e74c3c;color:#fff;font-size:.65rem;padding:1px 6px;border-radius:10px;display:none">0</span></span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('flashsale')" data-label="ফ্ল্যাশ সেল"><i class="fas fa-bolt"></i><span class="admin-nav-label">ফ্ল্যাশ সেল</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('bulk')" data-label="বাল্ক অর্ডার"><i class="fas fa-boxes"></i><span class="admin-nav-label">বাল্ক অর্ডার</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('newsletter')" data-label="নিউজলেটার"><i class="fas fa-envelope"></i><span class="admin-nav-label">নিউজলেটার</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('loyalty')" data-label="লয়্যালটি পয়েন্ট"><i class="fas fa-star-half-alt"></i><span class="admin-nav-label">লয়্যালটি পয়েন্ট</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('stockalerts')" data-label="স্টক অ্যালার্ট"><i class="fas fa-bell"></i><span class="admin-nav-label">স্টক অ্যালার্ট</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('target')" data-label="বিক্রয় লক্ষ্যমাত্রা"><i class="fas fa-bullseye"></i><span class="admin-nav-label">বিক্রয় লক্ষ্যমাত্রা</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('profit')" data-label="মুনাফা ক্যালকুলেটর"><i class="fas fa-calculator"></i><span class="admin-nav-label">মুনাফা ক্যালকুলেটর</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('wholesale')" data-label="পাইকারি মূল্য"><i class="fas fa-tags"></i><span class="admin-nav-label">পাইকারি মূল্য</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('segments')" data-label="কাস্টমার শ্রেণী"><i class="fas fa-users-cog"></i><span class="admin-nav-label">কাস্টমার শ্রেণী</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('seasonal')" data-label="মৌসুমী মূল্য"><i class="fas fa-leaf"></i><span class="admin-nav-label">মৌসুমী মূল্য</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('activitylog')" data-label="অ্যাক্টিভিটি লগ"><i class="fas fa-history"></i><span class="admin-nav-label">অ্যাক্টিভিটি লগ</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('backup')" data-label="ব্যাকআপ"><i class="fas fa-database"></i><span class="admin-nav-label">ব্যাকআপ ও রিস্টোর</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('analytics')" data-label="অ্যানালিটিক্স"><i class="fas fa-chart-line"></i><span class="admin-nav-label">অ্যানালিটিক্স</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('preorders')" data-label="প্রি-অর্ডার"><i class="fas fa-calendar-check"></i><span class="admin-nav-label">প্রি-অর্ডার</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('coupons');closeMobileAdminSidebar()" data-label="কুপন ব্যবস্থাপনা"><i class="fas fa-ticket-alt"></i><span class="admin-nav-label">কুপন ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('reviews');closeMobileAdminSidebar()" data-label="রিভিউ ব্যবস্থাপনা"><i class="fas fa-star"></i><span class="admin-nav-label">রিভিউ ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('messages');closeMobileAdminSidebar()" data-label="বার্তাসমূহ"><i class="fas fa-envelope"></i><span class="admin-nav-label">বার্তাসমূহ <span id="msg-badge" style="background:#e74c3c;color:#fff;font-size:.65rem;padding:1px 6px;border-radius:10px;display:none">0</span></span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('flashsale');closeMobileAdminSidebar()" data-label="ফ্ল্যাশ সেল"><i class="fas fa-bolt"></i><span class="admin-nav-label">ফ্ল্যাশ সেল</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('bulk');closeMobileAdminSidebar()" data-label="বাল্ক অর্ডার"><i class="fas fa-boxes"></i><span class="admin-nav-label">বাল্ক অর্ডার</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('newsletter');closeMobileAdminSidebar()" data-label="নিউজলেটার"><i class="fas fa-mail-bulk"></i><span class="admin-nav-label">নিউজলেটার</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('loyalty');closeMobileAdminSidebar()" data-label="লয়্যালটি পয়েন্ট"><i class="fas fa-star-half-alt"></i><span class="admin-nav-label">লয়্যালটি পয়েন্ট</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('stockalerts');closeMobileAdminSidebar()" data-label="স্টক অ্যালার্ট"><i class="fas fa-bell"></i><span class="admin-nav-label">স্টক অ্যালার্ট</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('preorders');closeMobileAdminSidebar()" data-label="প্রি-অর্ডার"><i class="fas fa-calendar-check"></i><span class="admin-nav-label">প্রি-অর্ডার</span></button>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-section-label">বিশ্লেষণ</div>
+      <button class="admin-nav-item" onclick="showAdminTab('analytics');closeMobileAdminSidebar()" data-label="অ্যানালিটিক্স"><i class="fas fa-chart-line"></i><span class="admin-nav-label">অ্যানালিটিক্স</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('target');closeMobileAdminSidebar()" data-label="বিক্রয় লক্ষ্যমাত্রা"><i class="fas fa-bullseye"></i><span class="admin-nav-label">বিক্রয় লক্ষ্যমাত্রা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('profit');closeMobileAdminSidebar()" data-label="মুনাফা ক্যালকুলেটর"><i class="fas fa-calculator"></i><span class="admin-nav-label">মুনাফা ক্যালকুলেটর</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('segments');closeMobileAdminSidebar()" data-label="কাস্টমার শ্রেণী"><i class="fas fa-users-cog"></i><span class="admin-nav-label">কাস্টমার শ্রেণী</span></button>
+      <div class="admin-nav-divider"></div>
+      <div class="admin-nav-section-label">ব্যবস্থাপনা</div>
+      <button class="admin-nav-item" onclick="showAdminTab('wholesale');closeMobileAdminSidebar()" data-label="পাইকারি মূল্য"><i class="fas fa-tags"></i><span class="admin-nav-label">পাইকারি মূল্য</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('seasonal');closeMobileAdminSidebar()" data-label="মৌসুমী মূল্য"><i class="fas fa-leaf"></i><span class="admin-nav-label">মৌসুমী মূল্য</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('activitylog');closeMobileAdminSidebar()" data-label="অ্যাক্টিভিটি লগ"><i class="fas fa-history"></i><span class="admin-nav-label">অ্যাক্টিভিটি লগ</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('backup');closeMobileAdminSidebar()" data-label="ব্যাকআপ"><i class="fas fa-database"></i><span class="admin-nav-label">ব্যাকআপ ও রিস্টোর</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('forecast');closeMobileAdminSidebar()" data-label="আয়ের পূর্বাভাস"><i class="fas fa-chart-area"></i><span class="admin-nav-label">আয়ের পূর্বাভাস</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('zones');closeMobileAdminSidebar()" data-label="ডেলিভারি জোন"><i class="fas fa-map-marked-alt"></i><span class="admin-nav-label">ডেলিভারি জোন</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('themebuilder');closeMobileAdminSidebar()" data-label="থিম বিল্ডার"><i class="fas fa-palette"></i><span class="admin-nav-label">থিম বিল্ডার</span></button>
       <div class="admin-nav-divider"></div>
       <div class="admin-nav-section-label">সেটিংস</div>
-      <button class="admin-nav-item" onclick="showAdminTab('delivery')" data-label="ডেলিভারি সেটিংস"><i class="fas fa-truck"></i><span class="admin-nav-label">ডেলিভারি সেটিংস</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('customize')" data-label="সাইট কাস্টমাইজ"><i class="fas fa-paint-brush"></i><span class="admin-nav-label">সাইট কাস্টমাইজ</span></button>
-      <button class="admin-nav-item" onclick="showAdminTab('password')" data-label="পাসওয়ার্ড"><i class="fas fa-key"></i><span class="admin-nav-label">পাসওয়ার্ড পরিবর্তন</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('delivery');closeMobileAdminSidebar()" data-label="ডেলিভারি সেটিংস"><i class="fas fa-truck"></i><span class="admin-nav-label">ডেলিভারি সেটিংস</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('customize');closeMobileAdminSidebar()" data-label="সাইট কাস্টমাইজ"><i class="fas fa-paint-brush"></i><span class="admin-nav-label">সাইট কাস্টমাইজ</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('password');closeMobileAdminSidebar()" data-label="পাসওয়ার্ড"><i class="fas fa-key"></i><span class="admin-nav-label">পাসওয়ার্ড পরিবর্তন</span></button>
     </nav>
     <button class="admin-nav-item" style="border-top:1px solid rgba(255,255,255,.06);color:#ff8a80" data-label="লগআউট" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i><span class="admin-nav-label">লগআউট</span></button>
     <button class="admin-collapse-btn" id="admin-collapse-btn" onclick="toggleAdminCollapse()" title="সাইডবার">
       <i class="fas fa-chevron-left" id="admin-collapse-icon"></i>
     </button>
   </div>
+
+  <!-- CONTENT AREA -->
   <div class="admin-content" id="admin-content">
     <div class="admin-topbar">
       <div style="display:flex;align-items:center;gap:10px">
-        <button onclick="toggleAdminCollapse()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:4px;border-radius:4px" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
-        <h2 id="admin-page-title">ড্যাশবোর্ড</h2>
+        <!-- Desktop collapse / Mobile hamburger -->
+        <button class="admin-mob-menu-btn" onclick="openMobileAdminSidebar()" title="মেনু"><i class="fas fa-bars"></i></button>
+        <button onclick="toggleAdminCollapse()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1rem;padding:4px;border-radius:4px;display:none" id="admin-desktop-toggle" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+        <h2><span id="admin-page-title">ড্যাশবোর্ড</span></h2>
       </div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:.78rem;color:var(--green-mid);display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:var(--green-mid);display:inline-block;animation:pulse 2s infinite"></span>লাইভ</span>
-        <button class="btn-admin-logout" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> লগআউট</button>
+      <div class="admin-topbar-actions" style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:.75rem;color:var(--green-mid);display:flex;align-items:center;gap:4px">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--green-mid);display:inline-block;animation:pulse 2s infinite"></span>
+          <span class="hide-on-mobile">লাইভ</span>
+        </span>
+        <button class="btn-admin-logout" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> <span class="hide-on-mobile">লগআউট</span></button>
       </div>
     </div>
     <div class="admin-main" id="admin-main"></div>
   </div>
-  <button class="admin-sidebar-toggle" id="admin-sidebar-toggle" onclick="toggleAdminSidebar()"><i class="fas fa-bars"></i></button>
 </div>
+
+<!-- ADMIN MOBILE BOTTOM NAV -->
+<nav id="admin-bottom-nav">
+  <div class="abn-inner">
+    <button class="abn-item active" onclick="showAdminTab('dashboard')" id="abn-dashboard"><i class="fas fa-chart-bar"></i><span>ড্যাশবোর্ড</span></button>
+    <button class="abn-item" onclick="showAdminTab('orders')" id="abn-orders"><i class="fas fa-shopping-bag"></i><span>অর্ডার</span></button>
+    <button class="abn-item" onclick="showAdminTab('products')" id="abn-products"><i class="fas fa-box"></i><span>পণ্য</span></button>
+    <button class="abn-item" onclick="showAdminTab('messages')" id="abn-messages" style="position:relative"><i class="fas fa-envelope"></i><span class="abn-badge" id="abn-msg-badge">0</span><span>বার্তা</span></button>
+    <button class="abn-item" onclick="openMobileAdminSidebar()" id="abn-more"><i class="fas fa-grip-horizontal"></i><span>আরও</span></button>
+  </div>
+</nav>
 
 <!-- CUSTOM ALERT MODAL -->
 <div id="custom-alert-overlay">
@@ -5399,6 +5743,8 @@ function adminLogout(){
   sessionStorage.removeItem('amb_admin_open');
   sessionStorage.removeItem('amb_admin_tab');
   document.getElementById('admin-panel').classList.remove('open');
+  hideAdminBottomNav();
+  closeMobileAdminSidebar();
   stopAdminRefresh();showToast('অ্যাডমিন লগআউট সফল','success');
 }
 let adminRefreshInterval=null;
@@ -5488,6 +5834,7 @@ function renderDashboard(){
   const alertCount=Object.values(stockAlerts).reduce((s,a)=>s+a.length,0);
   const flashProds=products.filter(p=>p.discount>=15&&p.stock>0).length;
   document.getElementById('admin-main').innerHTML=`
+    ${renderLowStockAlert()}
     <div class="stats-grid">
       <div class="stat-card" style="cursor:pointer" onclick="showAdminTab('orders')">
         <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
@@ -9695,15 +10042,27 @@ function openProductDetail(pid){
   // Delivery estimate
   const est=estimateDelivery('');
 
+  // Build gallery images list — use main image + any additional images stored
+  const galleryImages=p.images&&p.images.length?p.images:(p.image?[p.image]:[]);
+
   document.getElementById('pdp-inner').innerHTML=`
-    <!-- Image -->
-    <div class="pdp-img-wrap">
-      ${p.image?`<img src="${p.image}" alt="${p.name}" loading="lazy">`:`<div class="pdp-img-emoji">🥭</div>`}
+    <!-- Image Gallery -->
+    <div class="gallery-main-wrap" id="gallery-main-wrap" onclick="openLightbox(galleryImages[0]?galleryImages[currentGalleryIdx]:null,${!galleryImages.length})">
+      ${galleryImages.length?`<img src="${galleryImages[0]}" alt="${p.name}" class="gallery-main-img" id="gallery-main-img" loading="lazy">`
+        :`<div class="gallery-main-emoji">🥭</div>`}
       ${p.discount>0?`<div class="pdp-discount-ribbon">🏷️ ${p.discount}% ছাড়</div>`:''}
       <div class="pdp-stock-ribbon" style="color:${p.stock<=0?'#e74c3c':p.stock<=8?'#f4a40a':'var(--green-mid)'}">
         ${p.stock<=0?'❌ স্টক শেষ':p.stock<=8?`⚡ মাত্র ${p.stock} কেজি`:(`✅ স্টক আছে · ${p.stock} কেজি`)}
       </div>
+      ${galleryImages.length>1?`
+        <button class="gallery-prev" onclick="event.stopPropagation();changeGalleryImage(-1)"><i class="fas fa-chevron-left"></i></button>
+        <button class="gallery-next" onclick="event.stopPropagation();changeGalleryImage(1)"><i class="fas fa-chevron-right"></i></button>
+      `:''}
     </div>
+    ${galleryImages.length>1?`
+    <div class="gallery-thumbs" id="gallery-thumbs">
+      ${galleryImages.map((img,i)=>`<div class="gallery-thumb${i===0?' active':''}" onclick="setGalleryImage(${i})"><img src="${img}" alt="thumb ${i+1}"></div>`).join('')}
+    </div>`:''}
 
     <div class="pdp-grid">
       <!-- LEFT COLUMN -->
@@ -10649,6 +11008,570 @@ showAdminTab=function(tab){
 };
 
 // ============================================================
+// ADMIN SIDEBAR MOBILE RESPONSIVE
+// ============================================================
+function openMobileAdminSidebar(){
+  const sidebar=document.getElementById('admin-sidebar');
+  const overlay=document.getElementById('admin-sidebar-overlay');
+  const closeBtn=document.getElementById('sidebar-close-btn');
+  if(sidebar) sidebar.classList.add('mob-open');
+  if(overlay) overlay.classList.add('open');
+  if(closeBtn) closeBtn.style.display='flex';
+  document.body.style.overflow='hidden';
+}
+function closeMobileAdminSidebar(){
+  const sidebar=document.getElementById('admin-sidebar');
+  const overlay=document.getElementById('admin-sidebar-overlay');
+  const closeBtn=document.getElementById('sidebar-close-btn');
+  if(sidebar) sidebar.classList.remove('mob-open');
+  if(overlay) overlay.classList.remove('open');
+  if(closeBtn) closeBtn.style.display='none';
+  if(window.innerWidth<=900) document.body.style.overflow='';
+}
+// Swipe to close sidebar on mobile
+function initAdminSidebarSwipe(){
+  const sidebar=document.getElementById('admin-sidebar');
+  if(!sidebar) return;
+  let startX=0,startY=0;
+  sidebar.addEventListener('touchstart',e=>{
+    startX=e.touches[0].clientX;startY=e.touches[0].clientY;
+  },{passive:true});
+  sidebar.addEventListener('touchend',e=>{
+    const dx=startX-e.changedTouches[0].clientX;
+    const dy=Math.abs(e.changedTouches[0].clientY-startY);
+    if(dx>50&&dy<40) closeMobileAdminSidebar();
+  },{passive:true});
+}
+// Show/hide desktop toggle vs mobile hamburger based on screen
+function initAdminResponsive(){
+  const desktopToggle=document.getElementById('admin-desktop-toggle');
+  const mobBtn=document.querySelector('.admin-mob-menu-btn');
+  function update(){
+    const isMobile=window.innerWidth<=900;
+    if(desktopToggle) desktopToggle.style.display=isMobile?'none':'flex';
+    if(mobBtn) mobBtn.style.display=isMobile?'flex':'none';
+    // Hide bottom nav when not in admin
+    const adminBottomNav=document.getElementById('admin-bottom-nav');
+    const adminPanel=document.getElementById('admin-panel');
+    if(adminBottomNav){
+      adminBottomNav.style.display=(isMobile&&adminPanel&&adminPanel.classList.contains('open'))?'block':'none';
+    }
+  }
+  update();
+  window.addEventListener('resize',update,{passive:true});
+}
+// Update admin bottom nav badge for messages
+function updateAdminBottomBadge(){
+  const msgs=getMessages();
+  const unread=msgs.filter(m=>m.status==='unread').length;
+  const badge=document.getElementById('abn-msg-badge');
+  if(badge){
+    badge.textContent=unread;
+    badge.style.display=unread>0?'flex':'none';
+  }
+}
+// Highlight active bottom nav item
+function syncAdminBottomNav(tab){
+  ['dashboard','orders','products','messages'].forEach(t=>{
+    const el=document.getElementById(`abn-${t}`);
+    if(el) el.classList.toggle('active',t===tab);
+  });
+}
+// Override showAdminTab to sync bottom nav
+const _origShowAdminTabFinal=showAdminTab;
+showAdminTab=function(tab){
+  _origShowAdminTabFinal(tab);
+  syncAdminBottomNav(tab);
+  updateAdminBottomBadge();
+};
+// Override openAdminPanel to show bottom nav
+const _origOpenAdminPanel=openAdminPanel;
+openAdminPanel=function(tab){
+  _origOpenAdminPanel(tab||'dashboard');
+  const adminBottomNav=document.getElementById('admin-bottom-nav');
+  if(adminBottomNav&&window.innerWidth<=900) adminBottomNav.style.display='block';
+  initAdminResponsive();
+};
+// Hide on panel close
+// Hide admin bottom nav when panel closes
+function hideAdminBottomNav(){
+  const adminBottomNav=document.getElementById('admin-bottom-nav');
+  if(adminBottomNav) adminBottomNav.style.display='none';
+}
+// ── Also hide bottom nav when admin is closed ──
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    const panel=document.getElementById('admin-panel');
+    if(panel&&panel.classList.contains('open')){
+      const adminBottomNav=document.getElementById('admin-bottom-nav');
+      if(adminBottomNav) adminBottomNav.style.display='none';
+    }
+  }
+});
+
+// ============================================================
+// WHAT'S NEW — Feature Suggestions (remaining premium updates)
+// ============================================================
+// (See suggestions below in INIT comments)
+
+// ============================================================
+// 1. PRODUCT IMAGE GALLERY
+// ============================================================
+let currentGalleryIdx=0;
+let galleryImages=[];
+function setGalleryImage(idx){
+  if(!currentPDP) return;
+  galleryImages=currentPDP.images&&currentPDP.images.length?currentPDP.images:(currentPDP.image?[currentPDP.image]:[]);
+  if(!galleryImages.length) return;
+  currentGalleryIdx=((idx%galleryImages.length)+galleryImages.length)%galleryImages.length;
+  const mainImg=document.getElementById('gallery-main-img');
+  if(mainImg) mainImg.src=galleryImages[currentGalleryIdx];
+  document.querySelectorAll('.gallery-thumb').forEach((t,i)=>t.classList.toggle('active',i===currentGalleryIdx));
+}
+function changeGalleryImage(dir){setGalleryImage(currentGalleryIdx+dir);}
+
+// Admin: manage multiple images per product
+function getProductImages(pid){
+  const p=getProducts().find(x=>Number(x.id)===Number(pid));
+  return p?.images||(p?.image?[p.image]:[]);
+}
+function addProductImage(pid,base64){
+  const products=getProducts();
+  const p=products.find(x=>Number(x.id)===Number(pid));
+  if(!p) return;
+  if(!p.images) p.images=p.image?[p.image]:[];
+  p.images.push(base64);
+  if(!p.image) p.image=base64;
+  saveProducts(products);
+}
+function removeProductImage(pid,idx){
+  const products=getProducts();
+  const p=products.find(x=>Number(x.id)===Number(pid));
+  if(!p||!p.images) return;
+  p.images.splice(idx,1);
+  if(p.images.length===0){p.image='';delete p.images;}
+  else p.image=p.images[0];
+  saveProducts(products);
+}
+
+// ============================================================
+// 2. LOW STOCK AUTO-ALERT (Admin Dashboard)
+// ============================================================
+function getLowStockProducts(threshold=10){
+  return getProducts().filter(p=>p.stock>0&&p.stock<=threshold);
+}
+function renderLowStockAlert(){
+  const lowStock=getLowStockProducts();
+  if(!lowStock.length) return '';
+  return `<div class="low-stock-alert">
+    <div class="low-stock-alert-icon">⚠️</div>
+    <div class="low-stock-alert-text">
+      <strong>${lowStock.length}টি পণ্যের স্টক কম!</strong>
+      <span>${lowStock.slice(0,3).map(p=>p.name+' ('+p.stock+' কেজি)').join(', ')}${lowStock.length>3?` এবং আরও ${lowStock.length-3}টি`:''}</span>
+    </div>
+    <button onclick="showAdminTab('products')" style="margin-left:auto;background:#f4a40a;color:#fff;border:none;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Hind Siliguri',sans-serif">দেখুন</button>
+  </div>`;
+}
+
+// ============================================================
+// 3. REVENUE FORECAST
+// ============================================================
+function renderAdminForecast(){
+  const orders=getOrders().filter(o=>o.status!=='cancelled');
+  const now=new Date();
+  // Last 6 months actual
+  const months=Array.from({length:6},(_,i)=>{
+    const d=new Date(now.getFullYear(),now.getMonth()-5+i,1);
+    const rev=orders.filter(o=>{const od=new Date(o.createdAt);return od.getMonth()===d.getMonth()&&od.getFullYear()===d.getFullYear();}).reduce((s,o)=>s+(o.total||0),0);
+    return{label:d.toLocaleDateString('bn-BD',{month:'short'}),rev,isPredicted:false};
+  });
+  // Simple linear regression for next 2 months prediction
+  const revenues=months.map(m=>m.rev);
+  const n=revenues.length;
+  const avgGrowth=n>1?(revenues[n-1]-revenues[0])/(n-1):0;
+  const predicted=[
+    {label:'আগামী মাস',rev:Math.max(0,Math.round(revenues[n-1]+avgGrowth)),isPredicted:true},
+    {label:'২ মাস পর',rev:Math.max(0,Math.round(revenues[n-1]+avgGrowth*2)),isPredicted:true},
+  ];
+  const allData=[...months,...predicted];
+  const maxRev=Math.max(...allData.map(d=>d.rev),1);
+  const nextMonthForecast=predicted[0].rev;
+  const growthPct=revenues[n-1]>0?Math.round((nextMonthForecast-revenues[n-1])/revenues[n-1]*100):0;
+
+  document.getElementById('admin-main').innerHTML=`
+    <div class="forecast-card">
+      <div style="font-size:.85rem;opacity:.8">📈 আগামী মাসের আনুমানিক আয়</div>
+      <div class="forecast-amount">৳${nextMonthForecast.toLocaleString()}</div>
+      <div class="forecast-meta">${growthPct>=0?'↑':'↓'} ${Math.abs(growthPct)}% ${growthPct>=0?'বৃদ্ধি':'কমতি'} প্রত্যাশিত (গত মাসের তুলনায়)</div>
+      <div class="forecast-bars">
+        ${allData.map(d=>`<div class="forecast-bar ${d.isPredicted?'predicted':'actual'}" style="height:${Math.max(4,Math.round(d.rev/maxRev*100))}%">
+          <div class="forecast-bar-lbl">${d.label}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>📊 পূর্বাভাস পদ্ধতি</h3></div>
+      <div style="font-size:.85rem;color:var(--text-muted);line-height:1.8;padding:6px 0">
+        এই পূর্বাভাসটি গত ৬ মাসের বিক্রয় প্রবৃদ্ধির হারের উপর ভিত্তি করে তৈরি — <strong>লিনিয়ার রিগ্রেশন</strong> পদ্ধতি ব্যবহার করে গণনা করা হয়েছে।
+        <br><br>📌 গড় মাসিক বৃদ্ধি: <strong style="color:${avgGrowth>=0?'var(--green-mid)':'#e74c3c'}">${avgGrowth>=0?'+':''}৳${Math.round(avgGrowth).toLocaleString()}</strong>
+        <br>📌 সঠিক পূর্বাভাসের জন্য নিয়মিত বিক্রয় ডেটা দরকার — মৌসুমী পরিবর্তন বিবেচনা করা হয়নি।
+      </div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>📅 মাসিক বিক্রয় বিস্তারিত</h3></div>
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead><tr><th>মাস</th><th>আয়</th><th>ধরন</th></tr></thead>
+          <tbody>${allData.map(d=>`<tr>
+            <td><strong>${d.label}</strong></td>
+            <td><strong style="color:${d.isPredicted?'var(--orange)':'var(--green-mid)'}">৳${d.rev.toLocaleString()}</strong></td>
+            <td>${d.isPredicted?'<span style="color:var(--orange)">🔮 পূর্বাভাস</span>':'<span style="color:var(--green-mid)">✅ বাস্তব</span>'}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// 4. MULTI-LANGUAGE TOGGLE
+// ============================================================
+const TRANSLATIONS={
+  en:{
+    'এখনই অর্ডার করুন':'Order Now','আরও জানুন':'Learn More','কার্টে যোগ':'Add to Cart',
+    'কিনুন':'Buy','সব পণ্য':'All Products','যোগাযোগ':'Contact','সম্পর্কে':'About',
+    'লগইন':'Login','রেজিস্ট্রেশন':'Register','প্রোফাইল':'Profile','লগআউট':'Logout',
+    'স্টক আছে':'In Stock','স্টক নেই':'Out of Stock','মূল্য':'Price','পরিমাণ':'Quantity',
+  }
+};
+function setLanguage(lang){
+  localStorage.setItem('amb_lang',lang);
+  document.getElementById('lang-bn')?.classList.toggle('active',lang==='bn');
+  document.getElementById('lang-en')?.classList.toggle('active',lang==='en');
+  if(lang==='en'){
+    showToast('🌍 English mode — তবে সম্পূর্ণ অনুবাদ এখনো ডেভেলপমেন্টে আছে। মূল বাংলা কন্টেন্ট দেখাচ্ছে।','warning');
+  } else {
+    showToast('🇧🇩 বাংলা মোড সক্রিয়');
+  }
+  // Simple data-i18n attribute translation (extend-ready)
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.dataset.i18nKey||el.textContent.trim();
+    if(lang==='en'&&TRANSLATIONS.en[key]) el.textContent=TRANSLATIONS.en[key];
+  });
+}
+function initLanguage(){
+  const saved=localStorage.getItem('amb_lang')||'bn';
+  document.getElementById('lang-bn')?.classList.toggle('active',saved==='bn');
+  document.getElementById('lang-en')?.classList.toggle('active',saved==='en');
+}
+
+// ============================================================
+// 5. ADMIN QUICK EDIT ORDER (inline, no modal)
+// ============================================================
+function toggleQuickEditOrder(orderId){
+  const row=document.getElementById(`qe-row-${orderId}`);
+  if(!row) return;
+  row.style.display=row.style.display==='none'?'table-row':'none';
+}
+function quickSaveOrderStatus(orderId){
+  const sel=document.getElementById(`qe-status-${orderId}`);
+  if(!sel) return;
+  const orders=getOrders();
+  const order=orders.find(o=>o.id===orderId);
+  if(order){
+    order.status=sel.value;
+    saveOrders(orders);
+    logActivity(`📦 অর্ডার স্ট্যাটাস পরিবর্তন — ${orderId.slice(-8)} → ${sel.value}`,'📦');
+    addNotification(`📦 অর্ডার আপডেট — ${orderId.slice(-8)}`,`স্ট্যাটাস: ${sel.value}`);
+    showToast('✅ স্ট্যাটাস আপডেট হয়েছে!');
+    renderAdminOrders();
+  }
+}
+
+// ============================================================
+// 6. CUSTOM THEME BUILDER
+// ============================================================
+const THEME_PRESETS=[
+  {name:'🥭 ক্লাসিক আম (ডিফল্ট)',primary:'#1b4332',accent:'#f4a40a',accent2:'#e76f00'},
+  {name:'🌊 সমুদ্র নীল',primary:'#073b4c',accent:'#118ab2',accent2:'#06d6a0'},
+  {name:'🍇 রাজকীয় বেগুনি',primary:'#3a0ca3',accent:'#7209b7',accent2:'#f72585'},
+  {name:'🌅 সূর্যাস্ত কমলা',primary:'#9d0208',accent:'#e85d04',accent2:'#faa307'},
+  {name:'🌹 রোজ গোল্ড',primary:'#6d2e46',accent:'#bc6c25',accent2:'#dda15e'},
+  {name:'🌲 ফরেস্ট গ্রিন',primary:'#1e3d2f',accent:'#52796f',accent2:'#84a98c'},
+];
+function renderAdminThemeBuilder(){
+  const s=getSiteSettings();
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🎨 প্রিসেট থিম</h3></div>
+      <div class="theme-preset-grid">
+        ${THEME_PRESETS.map((t,i)=>`<button class="theme-preset" style="background:${t.primary}22;color:${t.primary};border-color:${t.primary}" onclick="applyThemePreset(${i})">${t.name}</button>`).join('')}
+      </div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🖌️ কাস্টম কালার</h3></div>
+      <div class="theme-builder-grid">
+        ${[
+          ['primaryColor','প্রধান রঙ (Header/Footer)',s.primaryColor||'#1b4332'],
+          ['accentColor','অ্যাক্সেন্ট রঙ (বোতাম/হাইলাইট)',s.accentColor||'#f4a40a'],
+          ['accentColor2','দ্বিতীয় অ্যাক্সেন্ট',s.accentColor2||'#e76f00'],
+        ].map(([key,label,val])=>`
+          <div class="theme-color-item">
+            <input type="color" class="theme-color-swatch" id="tc-${key}" value="${val}" onchange="previewThemeColor('${key}',this.value)">
+            <div>
+              <div class="theme-color-label">${label}</div>
+              <div class="theme-color-hex" id="tc-hex-${key}">${val}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn-add" onclick="saveThemeColors()"><i class="fas fa-save"></i> থিম সেভ করুন</button>
+        <button class="btn-danger" onclick="resetTheme()"><i class="fas fa-undo"></i> রিসেট করুন</button>
+      </div>
+      <div style="margin-top:16px;background:var(--green-pale);border-radius:var(--radius-sm);padding:14px;font-size:.82rem;color:var(--green-dark)">
+        💡 রঙ পরিবর্তন করার পর "থিম সেভ করুন" বাটনে ক্লিক করুন। পরিবর্তন সাথে সাথে সম্পূর্ণ সাইটে প্রতিফলিত হবে।
+      </div>
+    </div>`;
+}
+function previewThemeColor(key,val){
+  const hexEl=document.getElementById(`tc-hex-${key}`);
+  if(hexEl) hexEl.textContent=val;
+  const cssVarMap={primaryColor:'--green-dark',accentColor:'--yellow',accentColor2:'--orange'};
+  if(cssVarMap[key]) document.documentElement.style.setProperty(cssVarMap[key],val);
+}
+function applyThemePreset(idx){
+  const t=THEME_PRESETS[idx];
+  if(!t) return;
+  document.getElementById('tc-primaryColor').value=t.primary;
+  document.getElementById('tc-accentColor').value=t.accent;
+  document.getElementById('tc-accentColor2').value=t.accent2;
+  previewThemeColor('primaryColor',t.primary);
+  previewThemeColor('accentColor',t.accent);
+  previewThemeColor('accentColor2',t.accent2);
+  showToast(`${t.name} প্রিভিউ করা হচ্ছে — সেভ করতে ভুলবেন না!`);
+}
+function saveThemeColors(){
+  const s=getSiteSettings();
+  s.primaryColor=document.getElementById('tc-primaryColor')?.value;
+  s.accentColor=document.getElementById('tc-accentColor')?.value;
+  s.accentColor2=document.getElementById('tc-accentColor2')?.value;
+  saveSiteSettings(s);
+  applySettings(s);
+  logActivity('🎨 সাইটের থিম পরিবর্তন করা হয়েছে','🎨');
+  showToast('✅ থিম সফলভাবে সেভ হয়েছে!');
+}
+function resetTheme(){
+  if(!confirm('ডিফল্ট থিমে ফিরে যাবেন?')) return;
+  document.documentElement.style.removeProperty('--green-dark');
+  document.documentElement.style.removeProperty('--yellow');
+  document.documentElement.style.removeProperty('--orange');
+  const s=getSiteSettings();
+  delete s.primaryColor;delete s.accentColor;delete s.accentColor2;
+  saveSiteSettings(s);
+  showToast('থিম রিসেট হয়েছে');
+  renderAdminThemeBuilder();
+}
+
+// ============================================================
+// 7. SMS OTP VERIFICATION (Demo Mode)
+// ============================================================
+let currentOTP='';
+function sendOTP(phone){
+  currentOTP=String(Math.floor(100000+Math.random()*900000));
+  // In production this would call an SMS gateway API
+  showToast(`📱 OTP পাঠানো হয়েছে: ${currentOTP} (ডেমো মোড)`,'success');
+  return currentOTP;
+}
+function showOTPVerification(phone,onSuccess){
+  const code=sendOTP(phone);
+  let secs=120;
+  const html=`
+    <div style="text-align:center">
+      <div style="font-size:2.5rem;margin-bottom:10px">📱</div>
+      <h3 style="color:var(--green-dark);margin-bottom:6px">OTP যাচাইকরণ</h3>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px">${phone} নম্বরে পাঠানো ৬ সংখ্যার কোড লিখুন<br><small style="color:var(--orange)">(Demo: ${code})</small></p>
+      <div class="otp-input-group">
+        ${[0,1,2,3,4,5].map(i=>`<input class="otp-digit" maxlength="1" type="tel" id="otp-d${i}" oninput="otpNext(${i})" onkeydown="otpBack(event,${i})">`).join('')}
+      </div>
+      <div class="otp-timer" id="otp-timer-text">⏱️ ${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} এর মধ্যে যাচাই করুন</div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;margin-bottom:8px" onclick="verifyOTPCode('${code}')">✓ যাচাই করুন</button>
+      <button class="otp-resend" onclick="sendOTP('${phone}');showToast('নতুন OTP পাঠানো হয়েছে')">কোড আসেনি? পুনরায় পাঠান</button>
+    </div>`;
+  const overlay=document.createElement('div');
+  overlay.id='otp-overlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML=`<div style="background:#fff;border-radius:var(--radius);padding:28px;max-width:380px;width:100%">${html}</div>`;
+  document.body.appendChild(overlay);
+  overlay._onSuccess=onSuccess;
+  setTimeout(()=>document.getElementById('otp-d0')?.focus(),100);
+  const timerInt=setInterval(()=>{
+    secs--;
+    const t=document.getElementById('otp-timer-text');
+    if(t) t.textContent=`⏱️ ${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} এর মধ্যে যাচাই করুন`;
+    if(secs<=0){clearInterval(timerInt);overlay.remove();showToast('OTP-এর মেয়াদ শেষ। আবার চেষ্টা করুন।','error');}
+  },1000);
+  overlay._timerInt=timerInt;
+}
+function otpNext(i){const v=document.getElementById(`otp-d${i}`)?.value;if(v&&i<5)document.getElementById(`otp-d${i+1}`)?.focus();}
+function otpBack(e,i){if(e.key==='Backspace'&&!e.target.value&&i>0)document.getElementById(`otp-d${i-1}`)?.focus();}
+function verifyOTPCode(expected){
+  const entered=[0,1,2,3,4,5].map(i=>document.getElementById(`otp-d${i}`)?.value||'').join('');
+  if(entered===expected){
+    const overlay=document.getElementById('otp-overlay');
+    if(overlay){clearInterval(overlay._timerInt);overlay._onSuccess?.();overlay.remove();}
+    showToast('✅ মোবাইল নম্বর যাচাই সফল!');
+  } else {
+    showToast('❌ ভুল OTP! আবার চেষ্টা করুন','error');
+    [0,1,2,3,4,5].forEach(i=>{const el=document.getElementById(`otp-d${i}`);if(el)el.value='';});
+    document.getElementById('otp-d0')?.focus();
+  }
+}
+
+// ============================================================
+// 8. DELIVERY ZONE MAP (visual zone selector)
+// ============================================================
+const DELIVERY_ZONES=[
+  {name:'ঢাকা সিটি',days:1,charge:60},
+  {name:'গাজীপুর/নারায়ণগঞ্জ',days:1,charge:80},
+  {name:'রাজশাহী বিভাগ',days:2,charge:100},
+  {name:'রংপুর বিভাগ',days:2,charge:100},
+  {name:'চট্টগ্রাম বিভাগ',days:2,charge:120},
+  {name:'খুলনা বিভাগ',days:2,charge:120},
+  {name:'বরিশাল বিভাগ',days:3,charge:130},
+  {name:'সিলেট বিভাগ',days:3,charge:130},
+  {name:'অন্যান্য এলাকা',days:3,charge:150},
+];
+function renderAdminDeliveryZones(){
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🗺️ ডেলিভারি জোন ব্যবস্থাপনা</h3></div>
+      <div class="delivery-zone-box">
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:6px">বাংলাদেশের বিভিন্ন এলাকার জন্য ডেলিভারি সময় ও চার্জ নির্ধারণ করুন</p>
+        <div class="delivery-zone-selector" id="zone-grid">
+          ${DELIVERY_ZONES.map((z,i)=>`
+            <div class="zone-card" onclick="editZone(${i})">
+              <div class="zone-card-name">${z.name}</div>
+              <div class="zone-card-days">📅 ${z.days} দিন</div>
+              <div class="zone-card-charge">৳${z.charge}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div id="zone-edit-form" style="margin-top:16px;display:none">
+        <div class="admin-form" style="background:var(--green-pale);border-radius:var(--radius-sm);padding:16px">
+          <h4 style="margin-bottom:10px;color:var(--green-dark)" id="zone-edit-title">জোন সম্পাদনা</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label>ডেলিভারির সময় (দিন)</label><input class="form-control" id="zone-days" type="number" min="1"></div>
+            <div><label>চার্জ (৳)</label><input class="form-control" id="zone-charge" type="number" min="0"></div>
+          </div>
+          <button class="btn-add" style="margin-top:10px" onclick="saveZoneEdit()"><i class="fas fa-save"></i> সেভ করুন</button>
+        </div>
+      </div>
+      <div style="margin-top:16px;background:#f9f5e7;border-radius:var(--radius-sm);padding:14px;font-size:.82rem;color:var(--text-muted)">
+        💡 জোন কার্ডে ক্লিক করে দিন ও চার্জ পরিবর্তন করুন। এই তথ্য চেকআউট পেজে customer-কে দেখানো হবে।
+      </div>
+    </div>`;
+}
+let editingZoneIdx=-1;
+function editZone(idx){
+  editingZoneIdx=idx;
+  const z=DELIVERY_ZONES[idx];
+  document.getElementById('zone-edit-title').textContent=`✏️ ${z.name} সম্পাদনা`;
+  document.getElementById('zone-days').value=z.days;
+  document.getElementById('zone-charge').value=z.charge;
+  document.getElementById('zone-edit-form').style.display='block';
+}
+function saveZoneEdit(){
+  if(editingZoneIdx<0) return;
+  DELIVERY_ZONES[editingZoneIdx].days=Number(document.getElementById('zone-days').value)||1;
+  DELIVERY_ZONES[editingZoneIdx].charge=Number(document.getElementById('zone-charge').value)||0;
+  localStorage.setItem('amb_delivery_zones',JSON.stringify(DELIVERY_ZONES));
+  showToast('✅ জোন তথ্য সেভ হয়েছে');
+  renderAdminDeliveryZones();
+}
+
+// ============================================================
+// 9. SAVED PAYMENT METHODS
+// ============================================================
+function getSavedPayments(){
+  const u=getCurrentUser();
+  if(!u) return [];
+  return JSON.parse(localStorage.getItem(`amb_saved_pay_${u.phone}`)||'[]');
+}
+function addSavedPayment(type,number){
+  const u=getCurrentUser();
+  if(!u) return;
+  const payments=getSavedPayments();
+  if(payments.some(p=>p.number===number)){showToast('এই নম্বর আগেই সংরক্ষিত আছে','warning');return;}
+  payments.push({id:Date.now(),type,number,addedAt:Date.now()});
+  localStorage.setItem(`amb_saved_pay_${u.phone}`,JSON.stringify(payments));
+  showToast('✅ পেমেন্ট পদ্ধতি সংরক্ষিত হয়েছে');
+}
+function removeSavedPayment(id){
+  const u=getCurrentUser();
+  if(!u) return;
+  const payments=getSavedPayments().filter(p=>p.id!==id);
+  localStorage.setItem(`amb_saved_pay_${u.phone}`,JSON.stringify(payments));
+  showToast('পেমেন্ট পদ্ধতি মুছে ফেলা হয়েছে');
+  renderSavedPaymentsTab();
+}
+function renderSavedPaymentsTab(){
+  const payments=getSavedPayments();
+  const typeIcons={bkash:'📱 বিকাশ',nagad:'📱 নগদ',rocket:'📱 রকেট',bank:'🏦 ব্যাংক'};
+  return `<div style="padding:20px">
+    <h4 style="color:var(--green-dark);margin-bottom:14px">💳 সংরক্ষিত পেমেন্ট পদ্ধতি</h4>
+    ${payments.length?payments.map(p=>`
+      <div class="saved-payment-card">
+        <button class="saved-payment-delete" onclick="removeSavedPayment(${p.id})"><i class="fas fa-times"></i></button>
+        <div class="saved-payment-type">${typeIcons[p.type]||p.type}</div>
+        <div class="saved-payment-num">${p.number}</div>
+        <div class="saved-payment-meta">যোগ করা হয়েছে: ${new Date(p.addedAt).toLocaleDateString('en-GB')}</div>
+      </div>`).join(''):'<div style="text-align:center;padding:30px;color:var(--text-muted);font-size:.88rem">কোনো সংরক্ষিত পেমেন্ট পদ্ধতি নেই</div>'}
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <select class="form-control" id="sp-type" style="width:auto">
+        <option value="bkash">বিকাশ</option><option value="nagad">নগদ</option><option value="rocket">রকেট</option><option value="bank">ব্যাংক</option>
+      </select>
+      <input class="form-control" id="sp-number" placeholder="নম্বর/অ্যাকাউন্ট" style="flex:1">
+      <button class="btn btn-primary" onclick="addSavedPayment(document.getElementById('sp-type').value,document.getElementById('sp-number').value);document.getElementById('sp-number').value=''">+ যোগ করুন</button>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// EXTEND showAdminTab FOR NEW TABS
+// ============================================================
+const _prevShowAdminTabV3=showAdminTab;
+showAdminTab=function(tab){
+  const map={forecast:renderAdminForecast,zones:renderAdminDeliveryZones,themebuilder:renderAdminThemeBuilder};
+  const titles={forecast:'📈 আয়ের পূর্বাভাস',zones:'🗺️ ডেলিভারি জোন',themebuilder:'🎨 থিম বিল্ডার'};
+  if(map[tab]){
+    currentAdminTab=tab;sessionStorage.setItem('amb_admin_tab',tab);
+    document.querySelectorAll('.admin-nav-item').forEach(b=>{
+      b.classList.toggle('active',b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`showAdminTab('${tab}')`));
+    });
+    const t=document.getElementById('admin-page-title');if(t)t.textContent=titles[tab];
+    map[tab]();
+  } else {_prevShowAdminTabV3(tab);}
+};
+
+// ── Add Loyalty tab to renderLoyaltyTab profile to include saved payments ──
+const _origRenderLoyaltyTabV2=renderLoyaltyTab;
+// (Saved payments accessible via renderSavedPaymentsTab() — can be wired into profile tabs)
+
+// ============================================================
+// PRODUCT IMAGE GALLERY UPLOAD (Admin form)
+// ============================================================
+function handleGalleryImageAdd(pid,input){
+  const files=input.files;
+  if(!files||!files.length) return;
+  Array.from(files).forEach(file=>{
+    compressImage(file).then(dataUrl=>{
+      addProductImage(pid,dataUrl);
+      showToast('✅ ছবি যোগ হয়েছে');
+      renderProducts();
+    });
+  });
+}
+
+// ============================================================
 // INIT (Final)
 // ============================================================
 document.addEventListener('DOMContentLoaded',()=>{
@@ -10691,6 +11614,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   initLightboxOnImages();
   initSurprisePopup();
   injectSEOData();
+  initAdminSidebarSwipe();
+  initAdminResponsive();
+  updateAdminBottomBadge();
+  initLanguage();
   setTimeout(()=>{applyAOSClasses();initAOS();initLazyLoading();},500);
   setTimeout(attachValidation,800);
   setTimeout(checkAchievements,2000);
