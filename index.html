@@ -2709,6 +2709,10 @@ img.lazy.loaded{opacity:1}
 /* ── 15. CLICK-TO-CALL WIDGET ── */
 #click-to-call{position:fixed;bottom:215px;right:20px;z-index:1280;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:all .3s;text-decoration:none}
 #click-to-call:hover{transform:scale(1.08)}
+.ctc-tooltip{position:absolute;right:62px;top:50%;transform:translateY(-50%) translateX(8px);background:#1a1a1a;color:#fff;padding:6px 12px;border-radius:8px;font-size:.78rem;white-space:nowrap;opacity:0;pointer-events:none;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
+.ctc-tooltip::after{content:'';position:absolute;left:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-left-color:#1a1a1a}
+#click-to-call:hover .ctc-tooltip{opacity:1;transform:translateY(-50%) translateX(0)}
+@media(hover:none){.ctc-tooltip{display:none}}
 @media(max-width:768px){#click-to-call{bottom:225px;right:12px;width:46px;height:46px;font-size:1.1rem}}
 
 /* ── 16. SUPPORT TICKET ── */
@@ -3212,7 +3216,7 @@ img.lazy.loaded{opacity:1}
 <!-- WA FLOAT -->
 <div id="wa-float">
   <div class="wa-tooltip">WhatsApp-এ অর্ডার করুন</div>
-  <button class="wa-float-btn" onclick="window.open('https://wa.me/8801XXXXXXXXX?text=আমি%20আম%20অর্ডার%20করতে%20চাই','_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
+  <button class="wa-float-btn" onclick="window.open('https://wa.me/8801305144356?text=আমি%20আম%20অর্ডার%20করতে%20চাই','_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>
 </div>
 
 <!-- STICKY CART BAR -->
@@ -3623,7 +3627,7 @@ img.lazy.loaded{opacity:1}
 </div>
 
 <!-- CLICK TO CALL -->
-<a href="tel:+8801305144356" id="click-to-call" title="কল করুন"><i class="fas fa-phone-alt"></i></a>
+<a href="tel:+8801305144356" id="click-to-call" style="position:relative"><i class="fas fa-phone-alt"></i><span class="ctc-tooltip">📞 কল করুন: +880 1305-144356</span></a>
 
 <!-- ADMIN GLOBAL SEARCH (Cmd+K) -->
 <div id="admin-cmdk-overlay" onclick="if(event.target===this)closeAdminCmdK()">
