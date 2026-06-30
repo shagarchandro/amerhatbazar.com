@@ -2585,6 +2585,256 @@ img.lazy.loaded{opacity:1}
   .gallery-thumb{width:52px;height:52px}
   .delivery-zone-selector{grid-template-columns:1fr 1fr}
 }
+
+/* ============================================================
+   NEW PREMIUM FEATURES BATCH 5 — 35 FEATURES
+   ============================================================ */
+
+/* ── 1. VERIFIED BUYER BADGE ── */
+.verified-buyer-badge{display:inline-flex;align-items:center;gap:3px;background:#e3f2fd;color:#1565c0;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px}
+
+/* ── 2. BESTSELLER / STAFF PICK BADGE ── */
+.bestseller-badge{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#ffd700,#f4a40a);color:#7a5000;font-size:.65rem;font-weight:800;padding:4px 10px;border-radius:20px;z-index:3;display:flex;align-items:center;gap:3px;box-shadow:0 2px 8px rgba(244,164,10,.4)}
+.staffpick-badge{position:absolute;top:42px;right:10px;background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;font-size:.62rem;font-weight:700;padding:3px 9px;border-radius:20px;z-index:3}
+
+/* ── 3. LIVE SALES COUNTER ── */
+.live-sales-counter{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:.72rem;color:rgba(255,255,255,.9);margin-top:6px;width:fit-content}
+.lsc-dot{width:6px;height:6px;border-radius:50%;background:#40c057;animation:tickPulse 1.5s infinite}
+.product-sold-today{font-size:.7rem;color:var(--orange);font-weight:700;display:flex;align-items:center;gap:3px;margin-top:4px}
+
+/* ── 4. BUY TOGETHER BUNDLE ── */
+.buy-together-section{background:var(--green-pale);border-radius:var(--radius-sm);padding:16px;margin-top:16px}
+[data-theme="dark"] .buy-together-section{background:#1a3523}
+.bt-title{font-size:.92rem;font-weight:800;color:var(--green-dark);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.bt-items-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bt-item{display:flex;flex-direction:column;align-items:center;gap:4px;width:80px}
+.bt-item-img{width:64px;height:64px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;overflow:hidden;border:1.5px solid var(--border)}
+.bt-item-img img{width:100%;height:100%;object-fit:cover}
+.bt-item-name{font-size:.68rem;text-align:center;color:var(--text-muted);line-height:1.2}
+.bt-plus{font-size:1.4rem;color:var(--text-muted);font-weight:300}
+.bt-summary{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);flex-wrap:wrap;gap:10px}
+.bt-total-price{font-size:1.2rem;font-weight:800;color:var(--orange)}
+.bt-savings{font-size:.75rem;color:var(--green-mid);font-weight:700}
+.btn-bt-addall{background:var(--green-dark);color:#fff;border:none;padding:9px 20px;border-radius:20px;font-size:.85rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s}
+.btn-bt-addall:hover{background:var(--green-mid)}
+
+/* ── 5. CART RESERVATION TIMER ── */
+.cart-reservation-bar{background:linear-gradient(135deg,#fff3cd,#ffeaa7);border:1.5px solid #f4a40a;border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:.82rem}
+[data-theme="dark"] .cart-reservation-bar{background:linear-gradient(135deg,#2d2400,#3d3000)}
+.cr-timer-num{font-weight:800;color:var(--orange);font-family:monospace;font-size:.95rem}
+
+/* ── 6. WHATSAPP ORDER FLOW ── */
+.wa-order-btn{background:#25d366;color:#fff;border:none;padding:11px 20px;border-radius:25px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;transition:all .2s}
+.wa-order-btn:hover{background:#1ebc59;transform:translateY(-2px)}
+
+/* ── 7. ONE-CLICK REORDER ── */
+.one-click-reorder-btn{background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;border:none;padding:8px 16px;border-radius:20px;font-size:.78rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.one-click-reorder-btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(45,106,79,.35)}
+
+/* ── 8. FAQ CHATBOT ── */
+#faq-chatbot-btn{position:fixed;bottom:140px;right:20px;z-index:1290;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(110,72,170,.4);cursor:pointer;transition:all .3s}
+#faq-chatbot-btn:hover{transform:scale(1.08)}
+@media(max-width:768px){#faq-chatbot-btn{bottom:150px;right:12px;width:46px;height:46px;font-size:1.1rem}}
+#faq-chatbot-window{position:fixed;bottom:200px;right:20px;z-index:1295;width:340px;max-width:90vw;height:440px;background:#fff;border-radius:var(--radius);box-shadow:0 12px 40px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden}
+#faq-chatbot-window.open{display:flex}
+[data-theme="dark"] #faq-chatbot-window{background:#1a2e1f}
+@media(max-width:768px){#faq-chatbot-window{bottom:0;right:0;left:0;width:100%;max-width:100%;height:70vh;border-radius:var(--radius) var(--radius) 0 0}}
+.chatbot-header{background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+.chatbot-header-icon{font-size:1.4rem}
+.chatbot-header-title{font-weight:700;font-size:.92rem}
+.chatbot-header-sub{font-size:.7rem;opacity:.8}
+.chatbot-close{margin-left:auto;background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer}
+.chatbot-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.chat-msg{max-width:85%;padding:9px 13px;border-radius:14px;font-size:.83rem;line-height:1.5}
+.chat-msg.bot{background:var(--green-pale);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.user{background:var(--green-dark);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+[data-theme="dark"] .chat-msg.bot{background:#1a3523}
+.chatbot-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.chat-suggest-btn{background:#fff;border:1.5px solid var(--border);color:var(--green-mid);padding:6px 12px;border-radius:16px;font-size:.75rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s}
+.chat-suggest-btn:hover{background:var(--green-pale)}
+[data-theme="dark"] .chat-suggest-btn{background:#1a2e1f}
+.chatbot-input-row{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border)}
+.chatbot-input{flex:1;padding:9px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:.83rem;font-family:'Hind Siliguri',sans-serif;outline:none;background:var(--bg);color:var(--text)}
+.chatbot-send{background:#6e48aa;color:#fff;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0}
+
+/* ── 9. SMART RECOMMENDATIONS ── */
+.smart-rec-section{margin-top:20px}
+.smart-rec-reason{font-size:.72rem;color:var(--text-muted);font-style:italic;margin-bottom:10px}
+
+/* ── 10. ADMIN PACKING CHECKLIST ── */
+.packing-checklist{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-top:10px}
+[data-theme="dark"] .packing-checklist{background:#1a2e1f;border-color:#2d4a35}
+.pc-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.pc-item:last-child{border-bottom:none}
+.pc-checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.pc-checkbox.checked{background:var(--green-mid);border-color:var(--green-mid);color:#fff}
+.pc-label{font-size:.85rem;flex:1}
+.pc-label.checked{text-decoration:line-through;color:var(--text-muted)}
+.pc-progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.pc-progress-fill{height:100%;background:var(--green-mid);border-radius:3px;transition:width .3s ease}
+
+/* ── 11. CATEGORY NAVIGATION ── */
+#category-nav{background:#fff;border-bottom:1px solid var(--border);padding:10px 20px;position:sticky;top:60px;z-index:90;overflow-x:auto;white-space:nowrap}
+[data-theme="dark"] #category-nav{background:#1a2e1f;border-color:#2d4a35}
+.cat-nav-inner{display:inline-flex;gap:8px;max-width:1280px;margin:0 auto}
+.cat-nav-item{padding:7px 16px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg);color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.cat-nav-item:hover{border-color:var(--green-mid);color:var(--green-mid)}
+.cat-nav-item.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark)}
+
+/* ── 12. TAG FILTER ── */
+.tag-filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tag-chip{padding:5px 14px;border-radius:16px;background:var(--green-pale);color:var(--green-dark);font-size:.78rem;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:all .2s}
+.tag-chip:hover{border-color:var(--green-mid)}
+.tag-chip.active{background:var(--green-mid);color:#fff}
+.product-tag-badge{display:inline-flex;align-items:center;gap:3px;background:#e8f5e9;color:var(--green-dark);font-size:.62rem;font-weight:700;padding:2px 7px;border-radius:8px;margin-right:4px;margin-top:4px}
+
+/* ── 13. CUSTOMER PHOTO GALLERY (UGC) ── */
+#ugc-section{padding:50px 20px;background:var(--bg)}
+.ugc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;max-width:1280px;margin:0 auto}
+.ugc-item{aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;position:relative;cursor:pointer;background:var(--green-pale)}
+.ugc-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease}
+.ugc-item:hover img{transform:scale(1.1)}
+.ugc-item-overlay{position:absolute;inset:0;background:linear-gradient(transparent 50%,rgba(0,0,0,.7));display:flex;align-items:flex-end;padding:10px;opacity:0;transition:opacity .3s}
+.ugc-item:hover .ugc-item-overlay{opacity:1}
+.ugc-item-name{color:#fff;font-size:.72rem;font-weight:700}
+
+/* ── 14. TRUST/CERTIFICATION BADGES ── */
+.cert-badges-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;padding:20px;background:#fff;border-top:1px solid var(--border)}
+[data-theme="dark"] .cert-badges-row{background:#1a2e1f;border-color:#2d4a35}
+.cert-badge{display:flex;flex-direction:column;align-items:center;gap:4px;opacity:.85;transition:opacity .2s}
+.cert-badge:hover{opacity:1}
+.cert-badge-icon{font-size:2rem}
+.cert-badge-label{font-size:.68rem;color:var(--text-muted);font-weight:600;text-align:center}
+
+/* ── 15. CLICK-TO-CALL WIDGET ── */
+#click-to-call{position:fixed;bottom:215px;right:20px;z-index:1280;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:all .3s;text-decoration:none}
+#click-to-call:hover{transform:scale(1.08)}
+@media(max-width:768px){#click-to-call{bottom:225px;right:12px;width:46px;height:46px;font-size:1.1rem}}
+
+/* ── 16. SUPPORT TICKET ── */
+.ticket-status{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:10px}
+.ticket-status.open{background:#fff3cd;color:#856404}
+.ticket-status.resolved{background:#d4edda;color:#155724}
+.ticket-status.closed{background:#f0f0f0;color:#888}
+
+/* ── 17. ADMIN TODO LIST ── */
+.admin-todo-item{display:flex;align-items:center;gap:10px;padding:10px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;transition:all .2s}
+[data-theme="dark"] .admin-todo-item{background:#1a2e1f;border-color:#2d4a35}
+.admin-todo-item.completed{opacity:.55}
+.todo-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--green-mid);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.todo-check.checked{background:var(--green-mid);color:#fff}
+.todo-text{flex:1;font-size:.85rem}
+.todo-text.completed{text-decoration:line-through;color:var(--text-muted)}
+.todo-priority{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px}
+.todo-priority.high{background:#ffe8e8;color:#c0392b}
+.todo-priority.medium{background:#fff3cd;color:#856404}
+.todo-priority.low{background:#e8f5e9;color:#2d6a4f}
+.todo-delete-btn{background:none;border:none;color:#ccc;cursor:pointer;font-size:.85rem;padding:4px}
+.todo-delete-btn:hover{color:#e74c3c}
+
+/* ── 18. STAFF ROLE MANAGEMENT ── */
+.staff-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px}
+[data-theme="dark"] .staff-card{background:#1a2e1f;border-color:#2d4a35}
+.staff-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0}
+.staff-role-badge{display:inline-block;padding:3px 10px;border-radius:14px;font-size:.7rem;font-weight:700;margin-top:4px}
+.role-admin{background:#ffe8e8;color:#c0392b}
+.role-manager{background:#fff3cd;color:#856404}
+.role-staff{background:#e8f5e9;color:#2d6a4f}
+
+/* ── 19. INVENTORY BATCH TRACKING ── */
+.batch-row{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--green-mid)}
+.batch-row.expiring-soon{border-left-color:#f4a40a;background:#fff9e6}
+.batch-row.expired{border-left-color:#e74c3c;background:#fff5f5}
+[data-theme="dark"] .batch-row{background:#1a2e1f}
+[data-theme="dark"] .batch-row.expiring-soon{background:#2d2400}
+[data-theme="dark"] .batch-row.expired{background:#2d1414}
+
+/* ── 20. INVOICE NUMBERING ── */
+.invoice-number-display{font-family:monospace;font-weight:800;color:var(--green-dark);font-size:1.1rem;background:var(--green-pale);padding:4px 12px;border-radius:8px;display:inline-block}
+
+/* ── 21. ORDER CALENDAR VIEW ── */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:14px}
+.calendar-day-label{text-align:center;font-size:.72rem;font-weight:700;color:var(--text-muted);padding:6px 0}
+.calendar-cell{aspect-ratio:1;border:1px solid var(--border);border-radius:6px;padding:4px;font-size:.7rem;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;position:relative;background:#fff}
+[data-theme="dark"] .calendar-cell{background:#1a2e1f;border-color:#2d4a35}
+.calendar-cell:hover{border-color:var(--green-mid)}
+.calendar-cell.has-orders{background:var(--green-pale);border-color:var(--green-light)}
+.calendar-cell.today{border-color:var(--orange);border-width:2px}
+.calendar-cell-num{font-weight:700;color:var(--text)}
+.calendar-cell-count{position:absolute;bottom:4px;right:4px;background:var(--green-mid);color:#fff;font-size:.6rem;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.calendar-cell.empty{background:transparent;border:none;cursor:default}
+
+/* ── 22. ADMIN GLOBAL SEARCH (Cmd+K) ── */
+#admin-cmdk-overlay{position:fixed;inset:0;z-index:9970;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding-top:80px}
+#admin-cmdk-overlay.open{display:flex}
+.cmdk-box{background:#fff;border-radius:var(--radius);width:90%;max-width:560px;max-height:70vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+[data-theme="dark"] .cmdk-box{background:#1a2e1f}
+.cmdk-input-row{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.cmdk-input{flex:1;border:none;background:none;font-size:1rem;outline:none;font-family:'Hind Siliguri',sans-serif;color:var(--text)}
+.cmdk-kbd{background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:.7rem;color:var(--text-muted);font-family:monospace}
+.cmdk-results{flex:1;overflow-y:auto;padding:8px}
+.cmdk-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;cursor:pointer;transition:background .15s}
+.cmdk-item:hover,.cmdk-item.selected{background:var(--green-pale)}
+[data-theme="dark"] .cmdk-item:hover,[data-theme="dark"] .cmdk-item.selected{background:#1a3523}
+.cmdk-item-icon{width:32px;height:32px;border-radius:8px;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+[data-theme="dark"] .cmdk-item-icon{background:#1a3523}
+.cmdk-item-text{flex:1}
+.cmdk-item-title{font-size:.85rem;font-weight:700;color:var(--green-dark)}
+.cmdk-item-sub{font-size:.72rem;color:var(--text-muted)}
+.cmdk-item-type{font-size:.65rem;background:var(--border);padding:2px 8px;border-radius:10px;color:var(--text-muted)}
+
+/* ── 23. UNDO ACTION ── */
+.undo-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:12px 18px;border-radius:25px;display:none;align-items:center;gap:14px;z-index:5000;box-shadow:0 6px 20px rgba(0,0,0,.4);font-size:.85rem}
+.undo-toast.show{display:flex}
+.undo-btn{background:var(--yellow);color:#1a1a1a;border:none;padding:5px 14px;border-radius:16px;font-weight:700;font-size:.8rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif}
+
+/* ── 24. COPY ORDER BUTTON ── */
+.copy-order-btn{background:none;border:1px solid var(--border);color:var(--text-muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.78rem;display:inline-flex;align-items:center;justify-content:center;transition:all .2s}
+.copy-order-btn:hover{border-color:var(--green-mid);color:var(--green-mid)}
+
+/* ── 25. ADDRESS AUTOFILL ── */
+.address-suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg);z-index:50;max-height:160px;overflow-y:auto;display:none}
+.address-suggestions.show{display:block}
+[data-theme="dark"] .address-suggestions{background:#1a2e1f;border-color:#2d4a35}
+.address-suggest-item{padding:9px 14px;font-size:.82rem;cursor:pointer;border-bottom:1px solid var(--border)}
+.address-suggest-item:last-child{border-bottom:none}
+.address-suggest-item:hover{background:var(--green-pale)}
+[data-theme="dark"] .address-suggest-item:hover{background:#1a3523}
+
+/* ── 26. BULK PRINT INVOICES ── */
+.bulk-print-checkbox{width:18px;height:18px;cursor:pointer}
+
+/* ── 27. SKELETON PAGE LOAD ── */
+.skel-hero{height:400px;background:linear-gradient(90deg,#1b4332 25%,#2d6a4f 50%,#1b4332 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+
+/* ── 28. MESH GRADIENT BG (subtle) ── */
+.mesh-gradient-bg{position:absolute;inset:0;opacity:.4;background:
+  radial-gradient(circle at 20% 20%,rgba(244,164,10,.15) 0%,transparent 40%),
+  radial-gradient(circle at 80% 80%,rgba(82,183,136,.15) 0%,transparent 40%),
+  radial-gradient(circle at 50% 50%,rgba(231,111,0,.1) 0%,transparent 50%)}
+
+/* Responsive for new features */
+@media(max-width:768px){
+  #category-nav{top:56px;padding:8px 14px}
+  .cat-nav-item{padding:6px 13px;font-size:.78rem}
+  .ugc-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .cert-badges-row{gap:10px;padding:16px}
+  .cert-badge-icon{font-size:1.6rem}
+  .cert-badge-label{font-size:.62rem}
+  .bt-item{width:64px}
+  .bt-item-img{width:52px;height:52px}
+  #faq-chatbot-btn{bottom:148px}
+  #click-to-call{bottom:218px}
+  .cmdk-box{width:95%;max-height:80vh}
+  .calendar-grid{gap:3px}
+  .calendar-cell{font-size:.62rem}
+}
+@media(max-width:480px){
+  .ugc-grid{grid-template-columns:repeat(2,1fr)}
+  .cert-badges-row{flex-wrap:wrap}
+  .bt-items-row{justify-content:center}
+  #faq-chatbot-window{height:80vh}
+}
 </style>
 </head>
 <body>
@@ -2726,6 +2976,12 @@ img.lazy.loaded{opacity:1}
     </div>
   </div>
 </nav>
+
+<!-- CATEGORY NAVIGATION -->
+<div id="category-nav">
+  <div class="cat-nav-inner" id="cat-nav-inner"></div>
+</div>
+
 <div class="mobile-menu" id="mobile-menu">
   <a href="#hero" onclick="closeMobile()">🏠 হোম</a>
   <a href="#products" onclick="closeMobile()">🥭 পণ্যসমূহ</a>
@@ -3325,6 +3581,68 @@ img.lazy.loaded{opacity:1}
   </div>
 </div>
 
+<!-- CUSTOMER PHOTO GALLERY (UGC) -->
+<section id="ugc-section">
+  <div class="section-header aos">
+    <div class="section-badge">📸 গ্রাহকদের তোলা ছবি</div>
+    <h2 class="section-title">আমাদের গ্রাহকদের মুহূর্ত</h2>
+    <p class="section-sub">আমাদের আম নিয়ে গ্রাহকদের শেয়ার করা ছবি</p>
+  </div>
+  <div class="ugc-grid" id="ugc-grid"></div>
+</section>
+
+<!-- TRUST / CERTIFICATION BADGES -->
+<div class="cert-badges-row">
+  <div class="cert-badge"><div class="cert-badge-icon">🌿</div><div class="cert-badge-label">অর্গানিক<br>সার্টিফাইড</div></div>
+  <div class="cert-badge"><div class="cert-badge-icon">🏅</div><div class="cert-badge-label">BSTI<br>অনুমোদিত</div></div>
+  <div class="cert-badge"><div class="cert-badge-icon">✅</div><div class="cert-badge-label">কোয়ালিটি<br>নিশ্চয়তা</div></div>
+  <div class="cert-badge"><div class="cert-badge-icon">🚚</div><div class="cert-badge-label">নিরাপদ<br>ডেলিভারি</div></div>
+  <div class="cert-badge"><div class="cert-badge-icon">🔒</div><div class="cert-badge-label">SSL<br>সিকিউরড</div></div>
+  <div class="cert-badge"><div class="cert-badge-icon">💯</div><div class="cert-badge-label">১০০%<br>সন্তুষ্টি গ্যারান্টি</div></div>
+</div>
+
+<!-- FAQ CHATBOT -->
+<button id="faq-chatbot-btn" onclick="toggleChatbot()" title="সাহায্য প্রয়োজন?"><i class="fas fa-comment-dots"></i></button>
+<div id="faq-chatbot-window">
+  <div class="chatbot-header">
+    <span class="chatbot-header-icon">🤖</span>
+    <div>
+      <div class="chatbot-header-title">আমের হাট সহায়ক</div>
+      <div class="chatbot-header-sub">সাধারণ প্রশ্নের তাৎক্ষণিক উত্তর</div>
+    </div>
+    <button class="chatbot-close" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="chatbot-body" id="chatbot-body">
+    <div class="chat-msg bot">আসসালামু আলাইকুম! 👋 আমি আমের হাট বাজারের সহায়ক বট। কীভাবে সাহায্য করতে পারি?</div>
+  </div>
+  <div class="chatbot-suggestions" id="chatbot-suggestions"></div>
+  <div class="chatbot-input-row">
+    <input class="chatbot-input" id="chatbot-input" placeholder="প্রশ্ন লিখুন..." onkeydown="if(event.key==='Enter')sendChatMessage()">
+    <button class="chatbot-send" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- CLICK TO CALL -->
+<a href="tel:+8801305144356" id="click-to-call" title="কল করুন"><i class="fas fa-phone-alt"></i></a>
+
+<!-- ADMIN GLOBAL SEARCH (Cmd+K) -->
+<div id="admin-cmdk-overlay" onclick="if(event.target===this)closeAdminCmdK()">
+  <div class="cmdk-box">
+    <div class="cmdk-input-row">
+      <i class="fas fa-search" style="color:var(--text-muted)"></i>
+      <input class="cmdk-input" id="cmdk-input" placeholder="অর্ডার, কাস্টমার, পণ্য খুঁজুন..." oninput="runAdminCmdK()" autofocus>
+      <span class="cmdk-kbd">ESC</span>
+    </div>
+    <div class="cmdk-results" id="cmdk-results"></div>
+  </div>
+</div>
+
+<!-- UNDO TOAST -->
+<div class="undo-toast" id="undo-toast">
+  <span id="undo-toast-text">আইটেম মুছে ফেলা হয়েছে</span>
+  <button class="undo-btn" onclick="performUndo()">পূর্বাবস্থায় ফেরান</button>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-grid">
@@ -3747,6 +4065,13 @@ img.lazy.loaded{opacity:1}
       <button class="admin-nav-item" onclick="showAdminTab('zones');closeMobileAdminSidebar()" data-label="ডেলিভারি জোন"><i class="fas fa-map-marked-alt"></i><span class="admin-nav-label">ডেলিভারি জোন</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('themebuilder');closeMobileAdminSidebar()" data-label="থিম বিল্ডার"><i class="fas fa-palette"></i><span class="admin-nav-label">থিম বিল্ডার</span></button>
       <div class="admin-nav-divider"></div>
+      <div class="admin-nav-section-label">ব্যবস্থাপনা টুলস</div>
+      <button class="admin-nav-item" onclick="showAdminTab('todo');closeMobileAdminSidebar()" data-label="কাজের তালিকা"><i class="fas fa-clipboard-list"></i><span class="admin-nav-label">কাজের তালিকা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('staff');closeMobileAdminSidebar()" data-label="স্টাফ ব্যবস্থাপনা"><i class="fas fa-user-tie"></i><span class="admin-nav-label">স্টাফ ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('batches');closeMobileAdminSidebar()" data-label="ব্যাচ ট্র্যাকিং"><i class="fas fa-boxes-stacked"></i><span class="admin-nav-label">ব্যাচ ট্র্যাকিং</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('calendar');closeMobileAdminSidebar()" data-label="অর্ডার ক্যালেন্ডার"><i class="fas fa-calendar-alt"></i><span class="admin-nav-label">অর্ডার ক্যালেন্ডার</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('tickets');closeMobileAdminSidebar()" data-label="সাপোর্ট টিকেট"><i class="fas fa-life-ring"></i><span class="admin-nav-label">সাপোর্ট টিকেট</span></button>
+      <div class="admin-nav-divider"></div>
       <div class="admin-nav-section-label">সেটিংস</div>
       <button class="admin-nav-item" onclick="showAdminTab('delivery');closeMobileAdminSidebar()" data-label="ডেলিভারি সেটিংস"><i class="fas fa-truck"></i><span class="admin-nav-label">ডেলিভারি সেটিংস</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('customize');closeMobileAdminSidebar()" data-label="সাইট কাস্টমাইজ"><i class="fas fa-paint-brush"></i><span class="admin-nav-label">সাইট কাস্টমাইজ</span></button>
@@ -3892,6 +4217,17 @@ function renderProducts(){
   setTimeout(()=>{
     let prods=[...getProducts()];
     if(currentFilter!=='all') prods=prods.filter(p=>p.origin===currentFilter);
+    // Category nav filter
+    if(typeof activeCategoryFilter!=='undefined'&&activeCategoryFilter&&activeCategoryFilter!=='all'){
+      if(activeCategoryFilter==='premium') prods=prods.filter(p=>p.quality==='premium');
+      else if(activeCategoryFilter==='bestseller') prods=prods.filter(p=>getBestsellerIds().includes(Number(p.id)));
+      else if(activeCategoryFilter==='discount') prods=prods.filter(p=>p.discount>0);
+      else prods=prods.filter(p=>p.origin===activeCategoryFilter);
+    }
+    // Tag filter
+    if(typeof activeTagFilter!=='undefined'&&activeTagFilter){
+      prods=prods.filter(p=>getProductTags(p).includes(activeTagFilter));
+    }
     if(currentSort==='price-asc') prods.sort((a,b)=>getDiscountedPrice(a)-getDiscountedPrice(b));
     else if(currentSort==='price-desc') prods.sort((a,b)=>getDiscountedPrice(b)-getDiscountedPrice(a));
     else if(currentSort==='newest') prods.sort((a,b)=>b.createdAt-a.createdAt);
@@ -3903,16 +4239,24 @@ function renderProducts(){
       const qMap={premium:'Premium ⭐',standard:'Standard',economy:'Economy'};
       const qClass={premium:'premium',standard:'standard',economy:'economy'};
       const urgentStock=p.stock>0&&p.stock<=8;
+      const isBestseller=getBestsellerIds().includes(Number(p.id));
+      const isStaffPick=getStaffPickIds().includes(Number(p.id));
+      const soldToday=getProductSoldToday(p.id);
+      const pTags=getProductTags(p);
       return `<div class="product-card">
         <div class="product-img-wrap" style="cursor:pointer" onclick="openProductDetail(${p.id})" title="পণ্যের বিবরণ দেখুন">
           ${imgHtml}
           ${p.discount>0?`<div class="discount-badge">${p.discount}% ছাড়!</div>`:''}
           <div class="quality-badge ${qClass[p.quality]||'standard'}">${qMap[p.quality]||p.quality}</div>
+          ${isBestseller?`<div class="bestseller-badge">🏆 বেস্টসেলার</div>`:''}
+          ${isStaffPick?`<div class="staffpick-badge">⭐ স্টাফ পিক</div>`:''}
           <button class="btn-quick-view" onclick="openQuickView(${p.id})">👁 দ্রুত দেখুন</button>
         </div>
         <div class="product-body">
           <div class="product-name">${p.name}</div>
           <div class="product-origin"><i class="fas fa-map-marker-alt" style="color:var(--green-mid)"></i>${p.origin}</div>
+          ${pTags.length?`<div>${pTags.map(t=>`<span class="product-tag-badge">${t}</span>`).join('')}</div>`:''}
+          ${soldToday>0?`<div class="product-sold-today">🔥 আজ ${soldToday} কেজি বিক্রি হয়েছে</div>`:''}
           <div class="product-price-row">
             ${p.discount>0?`<span class="price-original">৳${p.price}/কেজি</span>`:''}
             <span class="price-final">৳${fp}/কেজি</span>
@@ -9953,6 +10297,694 @@ showAdminTab=function(tab){
 };
 
 // ============================================================
+// 1. VERIFIED BUYER BADGE
+// ============================================================
+function isVerifiedBuyer(userPhone,productId){
+  if(!userPhone) return false;
+  const orders=getOrders();
+  return orders.some(o=>o.userPhone===userPhone&&o.status!=='cancelled'&&(o.items||[]).some(i=>Number(i.id)===Number(productId)));
+}
+
+// ============================================================
+// 2. BESTSELLER / STAFF PICK BADGES
+// ============================================================
+function getBestsellerIds(){
+  const orders=getOrders().filter(o=>o.status!=='cancelled');
+  const counts={};
+  orders.forEach(o=>(o.items||[]).forEach(i=>{counts[i.id]=(counts[i.id]||0)+(i.qty||1);}));
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([id])=>Number(id));
+}
+function getStaffPickIds(){
+  const s=getSiteSettings();
+  return s.staffPicks||[];
+}
+
+// ============================================================
+// 3. LIVE SALES COUNTER
+// ============================================================
+function getProductSoldToday(pid){
+  const today=new Date().toDateString();
+  const orders=getOrders().filter(o=>new Date(o.createdAt).toDateString()===today&&o.status!=='cancelled');
+  let qty=0;
+  orders.forEach(o=>(o.items||[]).forEach(i=>{if(Number(i.id)===Number(pid)) qty+=(i.qty||1);}));
+  return qty;
+}
+function renderTodayTotalSales(){
+  const today=new Date().toDateString();
+  const orders=getOrders().filter(o=>new Date(o.createdAt).toDateString()===today&&o.status!=='cancelled');
+  let totalKg=0;
+  orders.forEach(o=>(o.items||[]).forEach(i=>totalKg+=(i.qty||1)));
+  return totalKg;
+}
+
+// ============================================================
+// 4. BUY TOGETHER BUNDLE
+// ============================================================
+function getBuyTogetherSuggestions(pid){
+  const orders=getOrders().filter(o=>(o.items||[]).some(i=>Number(i.id)===Number(pid)));
+  const coOccur={};
+  orders.forEach(o=>(o.items||[]).forEach(i=>{
+    if(Number(i.id)!==Number(pid)) coOccur[i.id]=(coOccur[i.id]||0)+1;
+  }));
+  const sortedIds=Object.entries(coOccur).sort((a,b)=>b[1]-a[1]).map(([id])=>Number(id));
+  const products=getProducts();
+  let suggestions=sortedIds.map(id=>products.find(p=>Number(p.id)===id)).filter(Boolean);
+  // Fallback: same origin products
+  if(suggestions.length<2){
+    const current=products.find(p=>Number(p.id)===Number(pid));
+    if(current){
+      const sameOrigin=products.filter(p=>Number(p.id)!==Number(pid)&&p.origin===current.origin&&p.stock>0);
+      suggestions=[...suggestions,...sameOrigin].filter((p,i,arr)=>arr.findIndex(x=>x.id===p.id)===i);
+    }
+  }
+  return suggestions.filter(p=>p.stock>0).slice(0,2);
+}
+function renderBuyTogether(pid){
+  const current=getProducts().find(p=>Number(p.id)===Number(pid));
+  if(!current) return '';
+  const suggestions=getBuyTogetherSuggestions(pid);
+  if(!suggestions.length) return '';
+  const allItems=[current,...suggestions];
+  const total=allItems.reduce((s,p)=>s+getDiscountedPrice(p),0);
+  const savings=Math.round(total*0.05); // 5% bundle discount simulated
+  return `<div class="buy-together-section">
+    <div class="bt-title">🛍️ এর সাথে এটিও কিনুন</div>
+    <div class="bt-items-row">
+      ${allItems.map((p,i)=>`
+        ${i>0?'<span class="bt-plus">+</span>':''}
+        <div class="bt-item">
+          <div class="bt-item-img">${p.image?`<img src="${p.image}" alt="${p.name}">`:'🥭'}</div>
+          <div class="bt-item-name">${p.name}</div>
+        </div>`).join('')}
+    </div>
+    <div class="bt-summary">
+      <div>
+        <div class="bt-total-price">৳${total - savings}</div>
+        <div class="bt-savings">💰 ৳${savings} সাশ্রয় বান্ডেলে</div>
+      </div>
+      <button class="btn-bt-addall" onclick="addBundleToCart(${allItems.map(p=>p.id).join(',')})">সব কার্টে যোগ করুন</button>
+    </div>
+  </div>`;
+}
+function addBundleToCart(...ids){
+  ids.forEach(id=>{productWeights[id]=1;addToCart(id);});
+  showToast(`✅ ${ids.length}টি পণ্য কার্টে যোগ হয়েছে!`);
+}
+
+// ============================================================
+// 5. CART RESERVATION TIMER
+// ============================================================
+let cartReservationInterval=null;
+function startCartReservation(){
+  if(!localStorage.getItem('amb_cart_reserved_until')){
+    localStorage.setItem('amb_cart_reserved_until',Date.now()+600000); // 10 min
+  }
+}
+function getCartReservationHTML(){
+  const until=Number(localStorage.getItem('amb_cart_reserved_until')||0);
+  const remaining=until-Date.now();
+  if(remaining<=0) return '';
+  const mins=Math.floor(remaining/60000),secs=Math.floor((remaining%60000)/1000);
+  return `<div class="cart-reservation-bar">
+    <span>⏱️</span><span>আপনার কার্ট সংরক্ষিত আছে — <span class="cr-timer-num" id="cr-timer">${mins}:${String(secs).padStart(2,'0')}</span> এর মধ্যে চেকআউট করুন</span>
+  </div>`;
+}
+function updateCartReservationTimer(){
+  const el=document.getElementById('cr-timer');
+  if(!el) return;
+  const until=Number(localStorage.getItem('amb_cart_reserved_until')||0);
+  const remaining=until-Date.now();
+  if(remaining<=0){localStorage.removeItem('amb_cart_reserved_until');return;}
+  const mins=Math.floor(remaining/60000),secs=Math.floor((remaining%60000)/1000);
+  el.textContent=`${mins}:${String(secs).padStart(2,'0')}`;
+}
+
+// ============================================================
+// 6. WHATSAPP ORDER FLOW
+// ============================================================
+function orderViaWhatsApp(pid){
+  const p=getProducts().find(x=>Number(x.id)===Number(pid));
+  if(!p) return;
+  const qty=getProductWeight(pid);
+  const fp=getDiscountedPrice(p);
+  const msg=`আসসালামু আলাইকুম! আমি অর্ডার করতে চাই:\n\n🥭 ${p.name}\n📍 ${p.origin}\n⚖️ পরিমাণ: ${qty} কেজি\n💰 মূল্য: ৳${fp*qty}\n\nঅনুগ্রহ করে অর্ডার নিশ্চিত করুন।`;
+  window.open(`https://wa.me/8801305144356?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ============================================================
+// 7. ONE-CLICK REORDER (already have reorder(), add UI wrapper)
+// ============================================================
+function getOneClickReorderHTML(orderId){
+  return `<button class="one-click-reorder-btn" onclick="reorder('${orderId}')"><i class="fas fa-redo"></i> আবার অর্ডার করুন</button>`;
+}
+
+// ============================================================
+// 8. FAQ CHATBOT
+// ============================================================
+const CHATBOT_FAQ=[
+  {keywords:['ডেলিভারি','কতদিন','সময়'],answer:'আমরা সাধারণত ৪৮ ঘন্টার মধ্যে ডেলিভারি করি। ঢাকার ভেতরে ১ দিন, বাইরে ২-৩ দিন সময় লাগতে পারে। 🚚'},
+  {keywords:['পেমেন্ট','টাকা','পরিশোধ'],answer:'আমরা bKash, Nagad, Rocket, ব্যাংক ট্রান্সফার এবং ক্যাশ অন ডেলিভারি (COD) গ্রহণ করি। 💳'},
+  {keywords:['রিটার্ন','ফেরত','রিফান্ড'],answer:'পণ্য পাওয়ার ৭ দিনের মধ্যে কোনো সমস্যা থাকলে রিটার্ন/রিফান্ড অনুরোধ করতে পারেন। আমার অর্ডার পেজ থেকে রিকোয়েস্ট করুন। ↩️'},
+  {keywords:['ছাড়','কুপন','অফার'],answer:'আমাদের নিয়মিত ফ্ল্যাশ সেল ও কুপন অফার থাকে! নিউজলেটারে সাবস্ক্রাইব করুন অথবা স্পিন হুইল ঘুরিয়ে বিশেষ ছাড় জিতুন। 🎁'},
+  {keywords:['আম','জাত','ধরন'],answer:'আমাদের কাছে হিমসাগর, ফজলি, ল্যাংড়া, গোপালভোগ, আম্রপালি সহ বিভিন্ন জাতের আম পাওয়া যায়। পণ্য পাতায় দেখুন। 🥭'},
+  {keywords:['দাম','মূল্য','কত'],answer:'প্রতিটি পণ্যের দাম পণ্য কার্ডে দেখানো আছে। পরিমাণ অনুযায়ী (১/২/৫/১০ কেজি) দাম পরিবর্তিত হয়। 💰'},
+  {keywords:['বাল্ক','পাইকারি','বেশি'],answer:'১০ কেজি বা তার বেশি অর্ডারে বিশেষ পাইকারি মূল্য পাবেন! "বাল্ক অর্ডার" ফর্মে যোগাযোগ করুন। 🏢'},
+  {keywords:['যোগাযোগ','ফোন','নম্বর'],answer:'আমাদের হটলাইন: +880 1305-144356 অথবা ইমেইল করুন mbs200361@gmail.com এ। 📞'},
+  {keywords:['স্টক','আছে','available'],answer:'প্রতিটি পণ্য কার্ডে স্টকের পরিমাণ দেখানো আছে। স্টক শেষ হলে "স্টক এলে জানান" বাটনে ক্লিক করুন। 📦'},
+  {keywords:['কেমিক্যাল','অর্গানিক','বিষমুক্ত'],answer:'আমাদের সব আম ১০০% কেমিক্যাল মুক্ত ও প্রাকৃতিকভাবে পাকানো। আমরা মান নিয়ে কোনো আপোষ করি না। 🌿'},
+];
+function toggleChatbot(){
+  const win=document.getElementById('faq-chatbot-window');
+  if(!win) return;
+  win.classList.toggle('open');
+  if(win.classList.contains('open')) renderChatSuggestions();
+}
+function renderChatSuggestions(){
+  const el=document.getElementById('chatbot-suggestions');
+  if(!el) return;
+  const topics=['ডেলিভারি সময়','পেমেন্ট পদ্ধতি','রিটার্ন নীতি','বর্তমান অফার'];
+  el.innerHTML=topics.map(t=>`<button class="chat-suggest-btn" onclick="askChatbot('${t}')">${t}</button>`).join('');
+}
+function askChatbot(q){
+  document.getElementById('chatbot-input').value=q;
+  sendChatMessage();
+}
+function sendChatMessage(){
+  const inp=document.getElementById('chatbot-input');
+  const body=document.getElementById('chatbot-body');
+  if(!inp||!inp.value.trim()||!body) return;
+  const userMsg=inp.value.trim();
+  body.innerHTML+=`<div class="chat-msg user">${userMsg}</div>`;
+  inp.value='';
+  body.scrollTop=body.scrollHeight;
+  setTimeout(()=>{
+    const lower=userMsg.toLowerCase();
+    let matched=CHATBOT_FAQ.find(f=>f.keywords.some(k=>lower.includes(k)));
+    const answer=matched?matched.answer:'দুঃখিত, এই প্রশ্নের উত্তর আমার কাছে নেই। আমাদের হটলাইনে কল করুন: +880 1305-144356 অথবা "বার্তা পাঠান" ফর্মে লিখুন। 📞';
+    body.innerHTML+=`<div class="chat-msg bot">${answer}</div>`;
+    body.scrollTop=body.scrollHeight;
+  },500);
+}
+
+// ============================================================
+// 11. CATEGORY NAVIGATION
+// ============================================================
+let activeCategoryFilter='all';
+function renderCategoryNav(){
+  const products=getProducts();
+  const origins=[...new Set(products.map(p=>p.origin).filter(Boolean))];
+  const nav=document.getElementById('cat-nav-inner');
+  if(!nav) return;
+  nav.innerHTML=`
+    <button class="cat-nav-item active" onclick="filterByCategory('all',this)">🥭 সব পণ্য</button>
+    <button class="cat-nav-item" onclick="filterByCategory('premium',this)">⭐ প্রিমিয়াম</button>
+    <button class="cat-nav-item" onclick="filterByCategory('bestseller',this)">🏆 জনপ্রিয়</button>
+    <button class="cat-nav-item" onclick="filterByCategory('discount',this)">🏷️ ছাড়ে</button>
+    ${origins.map(o=>`<button class="cat-nav-item" onclick="filterByCategory('${o}',this)">📍 ${o}</button>`).join('')}
+  `;
+}
+function filterByCategory(cat,btn){
+  activeCategoryFilter=cat;
+  document.querySelectorAll('.cat-nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderProducts();
+  document.getElementById('products')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ============================================================
+// 12. TAG-BASED FILTERING
+// ============================================================
+const PRODUCT_TAGS=['🌿 অর্গানিক','📦 এক্সপোর্ট কোয়ালিটি','🆕 নতুন স্টক','🔥 জনপ্রিয়'];
+let activeTagFilter=null;
+function getProductTags(p){
+  const tags=[];
+  if(p.quality==='premium') tags.push('🌿 অর্গানিক');
+  if(p.quality==='premium'&&p.stock>20) tags.push('📦 এক্সপোর্ট কোয়ালিটি');
+  if(Date.now()-(p.createdAt||0)<7*86400000) tags.push('🆕 নতুন স্টক');
+  if(getBestsellerIds().includes(Number(p.id))) tags.push('🔥 জনপ্রিয়');
+  return tags;
+}
+function filterByTag(tag){
+  activeTagFilter=activeTagFilter===tag?null:tag;
+  document.querySelectorAll('.tag-chip').forEach(el=>el.classList.toggle('active',el.dataset.tag===activeTagFilter));
+  renderProducts();
+}
+
+// ============================================================
+// 13. CUSTOMER PHOTO GALLERY (UGC)
+// ============================================================
+const UGC_PHOTOS=[
+  {emoji:'🥭',name:'রহিম উদ্দিন'},{emoji:'😋',name:'ফারহানা বেগম'},
+  {emoji:'📦',name:'কামাল হোসেন'},{emoji:'🍽️',name:'সুমাইয়া আক্তার'},
+  {emoji:'👨‍👩‍👧‍👦',name:'তানভীর আহমেদ'},{emoji:'🛍️',name:'নাসরিন জাহান'},
+];
+function renderUGCGallery(){
+  const grid=document.getElementById('ugc-grid');
+  if(!grid) return;
+  grid.innerHTML=UGC_PHOTOS.map(u=>`
+    <div class="ugc-item" onclick="openLightbox('${u.emoji}',true)">
+      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:linear-gradient(135deg,var(--green-pale),#b7e4c7)">${u.emoji}</div>
+      <div class="ugc-item-overlay"><div class="ugc-item-name">${u.name}</div></div>
+    </div>`).join('');
+}
+
+// ============================================================
+// 16. SUPPORT TICKET SYSTEM
+// ============================================================
+function getTickets(){return JSON.parse(localStorage.getItem('amb_tickets')||'[]');}
+function saveTickets(t){localStorage.setItem('amb_tickets',JSON.stringify(t));}
+function createSupportTicket(subject,message,phone,name){
+  const tickets=getTickets();
+  const ticket={id:'TKT-'+Date.now(),subject,message,phone,name,status:'open',createdAt:Date.now(),replies:[]};
+  tickets.unshift(ticket);
+  saveTickets(tickets);
+  addNotification(`🎫 নতুন সাপোর্ট টিকেট — ${subject}`,`${name}: ${message.slice(0,50)}`);
+  return ticket.id;
+}
+function renderAdminTickets(){
+  const tickets=getTickets();
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🎫 সাপোর্ট টিকেট (${tickets.length}টি)</h3></div>
+      ${tickets.length?tickets.map(t=>`
+        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+            <div><strong>${t.subject}</strong><div style="font-size:.75rem;color:var(--text-muted)">${t.name} · ${t.phone}</div></div>
+            <span class="ticket-status ${t.status}">${t.status==='open'?'🟡 খোলা':t.status==='resolved'?'✅ সমাধান':'⚫ বন্ধ'}</span>
+          </div>
+          <div style="font-size:.85rem;color:var(--text);background:var(--bg);padding:10px;border-radius:6px;margin-bottom:8px">${t.message}</div>
+          <div style="display:flex;gap:8px">
+            ${t.status==='open'?`<button class="btn-sm btn-primary" onclick="updateTicketStatus('${t.id}','resolved')"><i class="fas fa-check"></i> সমাধান হয়েছে</button>`:''}
+            <a href="tel:${t.phone}" class="btn-sm" style="background:var(--green-pale);color:var(--green-dark);border:none;padding:6px 12px;border-radius:6px;text-decoration:none;font-size:.78rem"><i class="fas fa-phone"></i> কল করুন</a>
+          </div>
+        </div>`).join(''):'<div class="no-data" style="padding:30px;text-align:center">কোনো টিকেট নেই</div>'}
+    </div>`;
+}
+function updateTicketStatus(id,status){
+  const tickets=getTickets();
+  const t=tickets.find(x=>x.id===id);
+  if(t) t.status=status;
+  saveTickets(tickets);
+  showToast('স্ট্যাটাস আপডেট হয়েছে');
+  renderAdminTickets();
+}
+
+// ============================================================
+// 17. ADMIN TODO LIST
+// ============================================================
+function getTodos(){return JSON.parse(localStorage.getItem('amb_admin_todos')||'[]');}
+function saveTodos(t){localStorage.setItem('amb_admin_todos',JSON.stringify(t));}
+function addTodo(){
+  const text=document.getElementById('todo-input')?.value.trim();
+  const priority=document.getElementById('todo-priority')?.value||'medium';
+  if(!text){showToast('কাজের নাম লিখুন','error');return;}
+  const todos=getTodos();
+  todos.unshift({id:Date.now(),text,priority,completed:false,createdAt:Date.now()});
+  saveTodos(todos);
+  document.getElementById('todo-input').value='';
+  renderAdminTodo();
+}
+function toggleTodo(id){
+  const todos=getTodos();
+  const t=todos.find(x=>x.id===id);
+  if(t) t.completed=!t.completed;
+  saveTodos(todos);
+  renderAdminTodo();
+}
+function deleteTodo(id){
+  saveTodos(getTodos().filter(t=>t.id!==id));
+  renderAdminTodo();
+}
+function renderAdminTodo(){
+  const todos=getTodos();
+  const pending=todos.filter(t=>!t.completed).length;
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>📋 কাজের তালিকা (${pending}টি বাকি)</h3></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input class="form-control" id="todo-input" placeholder="নতুন কাজ লিখুন..." onkeydown="if(event.key==='Enter')addTodo()">
+        <select class="form-control" id="todo-priority" style="width:120px">
+          <option value="high">🔴 জরুরি</option>
+          <option value="medium" selected>🟡 মাঝারি</option>
+          <option value="low">🟢 কম</option>
+        </select>
+        <button class="btn-add" onclick="addTodo()"><i class="fas fa-plus"></i> যোগ করুন</button>
+      </div>
+      ${todos.length?todos.map(t=>`
+        <div class="admin-todo-item ${t.completed?'completed':''}">
+          <div class="todo-check ${t.completed?'checked':''}" onclick="toggleTodo(${t.id})">${t.completed?'<i class="fas fa-check"></i>':''}</div>
+          <div class="todo-text ${t.completed?'completed':''}">${t.text}</div>
+          <span class="todo-priority ${t.priority}">${t.priority==='high'?'জরুরি':t.priority==='medium'?'মাঝারি':'কম'}</span>
+          <button class="todo-delete-btn" onclick="deleteTodo(${t.id})"><i class="fas fa-trash"></i></button>
+        </div>`).join(''):'<div class="no-data" style="padding:30px;text-align:center">কোনো কাজ নেই</div>'}
+    </div>`;
+}
+
+// ============================================================
+// 18. STAFF ROLE MANAGEMENT
+// ============================================================
+function getStaff(){return JSON.parse(localStorage.getItem('amb_staff')||'[{"id":1,"name":"মালিক/এডমিন","role":"admin","phone":"01305144356"}]');}
+function saveStaff(s){localStorage.setItem('amb_staff',JSON.stringify(s));}
+function addStaffMember(){
+  const name=document.getElementById('staff-name')?.value.trim();
+  const phone=document.getElementById('staff-phone')?.value.trim();
+  const role=document.getElementById('staff-role')?.value;
+  if(!name||!phone){showToast('নাম ও ফোন নম্বর দিন','error');return;}
+  const staff=getStaff();
+  staff.push({id:Date.now(),name,phone,role});
+  saveStaff(staff);
+  showToast('✅ স্টাফ যোগ হয়েছে');
+  renderAdminStaff();
+}
+function removeStaffMember(id){
+  if(!confirm('এই স্টাফ মুছে ফেলবেন?')) return;
+  saveStaff(getStaff().filter(s=>s.id!==id));
+  renderAdminStaff();
+}
+function renderAdminStaff(){
+  const staff=getStaff();
+  const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ'};
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>👥 স্টাফ ব্যবস্থাপনা (${staff.length}জন)</h3></div>
+      ${staff.map(s=>`
+        <div class="staff-card">
+          <div class="staff-avatar">${s.name.slice(0,1)}</div>
+          <div style="flex:1">
+            <div style="font-weight:700;color:var(--green-dark)">${s.name}</div>
+            <div style="font-size:.78rem;color:var(--text-muted)">${s.phone}</div>
+            <span class="staff-role-badge role-${s.role}">${roleLabels[s.role]||s.role}</span>
+          </div>
+          ${s.id!==1?`<button class="btn-sm btn-danger" onclick="removeStaffMember(${s.id})"><i class="fas fa-trash"></i></button>`:''}
+        </div>`).join('')}
+      <div style="margin-top:16px;padding:16px;background:var(--green-pale);border-radius:var(--radius-sm)">
+        <h4 style="margin-bottom:10px;color:var(--green-dark)">➕ নতুন স্টাফ যোগ করুন</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <input class="form-control" id="staff-name" placeholder="নাম">
+          <input class="form-control" id="staff-phone" placeholder="ফোন নম্বর">
+          <select class="form-control" id="staff-role">
+            <option value="staff">স্টাফ</option><option value="manager">ম্যানেজার</option><option value="admin">অ্যাডমিন</option>
+          </select>
+        </div>
+        <button class="btn-add" style="margin-top:10px" onclick="addStaffMember()"><i class="fas fa-plus"></i> যোগ করুন</button>
+      </div>
+      <div style="margin-top:14px;font-size:.8rem;color:var(--text-muted)">
+        💡 <strong>অ্যাডমিন:</strong> সব অ্যাক্সেস। <strong>ম্যানেজার:</strong> অর্ডার ও পণ্য পরিচালনা। <strong>স্টাফ:</strong> শুধু অর্ডার দেখা ও আপডেট।
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// 19. INVENTORY BATCH TRACKING
+// ============================================================
+function getBatches(){return JSON.parse(localStorage.getItem('amb_batches')||'[]');}
+function saveBatches(b){localStorage.setItem('amb_batches',JSON.stringify(b));}
+function addBatch(){
+  const pid=document.getElementById('batch-product')?.value;
+  const qty=Number(document.getElementById('batch-qty')?.value);
+  const expiry=document.getElementById('batch-expiry')?.value;
+  if(!pid||!qty||!expiry){showToast('সব তথ্য দিন','error');return;}
+  const batches=getBatches();
+  batches.push({id:Date.now(),productId:Number(pid),qty,expiry,addedAt:Date.now()});
+  saveBatches(batches);
+  showToast('✅ ব্যাচ যোগ হয়েছে');
+  renderAdminBatches();
+}
+function deleteBatch(id){
+  saveBatches(getBatches().filter(b=>b.id!==id));
+  renderAdminBatches();
+}
+function renderAdminBatches(){
+  const batches=getBatches();
+  const products=getProducts();
+  const now=Date.now();
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>📦 ইনভেন্টরি ব্যাচ ট্র্যাকিং</h3></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;margin-bottom:16px">
+        <select class="form-control" id="batch-product">${products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+        <input class="form-control" type="number" id="batch-qty" placeholder="পরিমাণ (কেজি)">
+        <input class="form-control" type="date" id="batch-expiry">
+        <button class="btn-add" onclick="addBatch()"><i class="fas fa-plus"></i></button>
+      </div>
+      ${batches.length?batches.map(b=>{
+        const p=products.find(x=>Number(x.id)===b.productId);
+        const daysLeft=Math.ceil((new Date(b.expiry)-now)/86400000);
+        const cls=daysLeft<0?'expired':daysLeft<=3?'expiring-soon':'';
+        return`<div class="batch-row ${cls}">
+          <div style="flex:1"><strong>${p?p.name:'?'}</strong> · ${b.qty} কেজি</div>
+          <div style="font-size:.8rem">${daysLeft<0?'❌ মেয়াদ শেষ':daysLeft<=3?`⚠️ ${daysLeft} দিন বাকি`:`✅ ${daysLeft} দিন বাকি`}</div>
+          <button class="btn-sm btn-danger" onclick="deleteBatch(${b.id})"><i class="fas fa-trash"></i></button>
+        </div>`;
+      }).join(''):'<div class="no-data" style="padding:20px;text-align:center">কোনো ব্যাচ নেই</div>'}
+    </div>`;
+}
+
+// ============================================================
+// 20. AUTO INVOICE NUMBERING
+// ============================================================
+function getNextInvoiceNumber(){
+  let counter=Number(localStorage.getItem('amb_invoice_counter')||1000);
+  counter++;
+  localStorage.setItem('amb_invoice_counter',counter);
+  const year=new Date().getFullYear();
+  return `AHB-${year}-${String(counter).padStart(5,'0')}`;
+}
+
+// ============================================================
+// 21. ORDER CALENDAR VIEW
+// ============================================================
+let calendarMonth=new Date().getMonth();
+let calendarYear=new Date().getFullYear();
+function renderAdminCalendar(){
+  const orders=getOrders();
+  const firstDay=new Date(calendarYear,calendarMonth,1).getDay();
+  const daysInMonth=new Date(calendarYear,calendarMonth+1,0).getDate();
+  const monthName=new Date(calendarYear,calendarMonth).toLocaleDateString('bn-BD',{month:'long',year:'numeric'});
+  const today=new Date();
+
+  const ordersByDay={};
+  orders.forEach(o=>{
+    const d=new Date(o.createdAt);
+    if(d.getMonth()===calendarMonth&&d.getFullYear()===calendarYear){
+      const day=d.getDate();
+      ordersByDay[day]=(ordersByDay[day]||0)+1;
+    }
+  });
+
+  let cells='';
+  for(let i=0;i<firstDay;i++) cells+='<div class="calendar-cell empty"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=today.getDate()===d&&today.getMonth()===calendarMonth&&today.getFullYear()===calendarYear;
+    const count=ordersByDay[d]||0;
+    cells+=`<div class="calendar-cell ${count>0?'has-orders':''} ${isToday?'today':''}" onclick="showDayOrders(${d})">
+      <span class="calendar-cell-num">${d}</span>
+      ${count>0?`<span class="calendar-cell-count">${count}</span>`:''}
+    </div>`;
+  }
+
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h3>🗓️ ${monthName}</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm btn-primary" onclick="changeCalendarMonth(-1)"><i class="fas fa-chevron-left"></i></button>
+          <button class="btn-sm btn-primary" onclick="changeCalendarMonth(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="calendar-grid">
+        ${['র','সো','ম','বু','বৃ','শু','শ'].map(d=>`<div class="calendar-day-label">${d}</div>`).join('')}
+        ${cells}
+      </div>
+      <div id="day-orders-detail" style="margin-top:16px"></div>
+    </div>`;
+}
+function changeCalendarMonth(dir){
+  calendarMonth+=dir;
+  if(calendarMonth<0){calendarMonth=11;calendarYear--;}
+  if(calendarMonth>11){calendarMonth=0;calendarYear++;}
+  renderAdminCalendar();
+}
+function showDayOrders(day){
+  const orders=getOrders().filter(o=>{
+    const d=new Date(o.createdAt);
+    return d.getDate()===day&&d.getMonth()===calendarMonth&&d.getFullYear()===calendarYear;
+  });
+  const el=document.getElementById('day-orders-detail');
+  if(!el) return;
+  if(!orders.length){el.innerHTML='<div class="no-data">এই দিনে কোনো অর্ডার নেই</div>';return;}
+  el.innerHTML=`<h4 style="margin-bottom:10px;color:var(--green-dark)">${day} তারিখের অর্ডার (${orders.length}টি)</h4>
+    <div class="table-wrapper"><table class="admin-table">
+      <thead><tr><th>ID</th><th>কাস্টমার</th><th>মোট</th><th>স্ট্যাটাস</th></tr></thead>
+      <tbody>${orders.map(o=>`<tr style="cursor:pointer" onclick="viewOrderDetail('${o.id}')">
+        <td>${o.id.slice(-8)}</td><td>${o.userName}</td><td>৳${o.total}</td>
+        <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+// ============================================================
+// 22. ADMIN GLOBAL SEARCH (Cmd+K)
+// ============================================================
+function openAdminCmdK(){
+  document.getElementById('admin-cmdk-overlay')?.classList.add('open');
+  setTimeout(()=>document.getElementById('cmdk-input')?.focus(),100);
+}
+function closeAdminCmdK(){
+  document.getElementById('admin-cmdk-overlay')?.classList.remove('open');
+  const inp=document.getElementById('cmdk-input');if(inp)inp.value='';
+  const res=document.getElementById('cmdk-results');if(res)res.innerHTML='';
+}
+function runAdminCmdK(){
+  const q=(document.getElementById('cmdk-input')?.value||'').trim().toLowerCase();
+  const resultsEl=document.getElementById('cmdk-results');
+  if(!resultsEl) return;
+  if(!q){resultsEl.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:.85rem">টাইপ করুন অর্ডার, কাস্টমার বা পণ্য খুঁজতে</div>';return;}
+  const results=[];
+  // Search orders
+  getOrders().forEach(o=>{
+    if(o.id.toLowerCase().includes(q)||o.userName?.toLowerCase().includes(q)||o.userPhone?.includes(q)){
+      results.push({type:'অর্ডার',icon:'🛒',title:o.userName,sub:`${o.id.slice(-8)} · ৳${o.total}`,action:`viewOrderDetail('${o.id}');closeAdminCmdK()`});
+    }
+  });
+  // Search customers
+  getUsers().forEach(u=>{
+    if(u.name?.toLowerCase().includes(q)||u.phone?.includes(q)){
+      results.push({type:'কাস্টমার',icon:'👤',title:u.name,sub:u.phone,action:`showAdminTab('customers');closeAdminCmdK()`});
+    }
+  });
+  // Search products
+  getProducts().forEach(p=>{
+    if(p.name?.toLowerCase().includes(q)||p.origin?.toLowerCase().includes(q)){
+      results.push({type:'পণ্য',icon:'🥭',title:p.name,sub:`${p.origin} · ৳${p.price}`,action:`showAdminTab('products');closeAdminCmdK()`});
+    }
+  });
+  if(!results.length){resultsEl.innerHTML='<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:.85rem">কোনো ফলাফল পাওয়া যায়নি</div>';return;}
+  resultsEl.innerHTML=results.slice(0,12).map(r=>`
+    <div class="cmdk-item" onclick="${r.action}">
+      <div class="cmdk-item-icon">${r.icon}</div>
+      <div class="cmdk-item-text"><div class="cmdk-item-title">${r.title}</div><div class="cmdk-item-sub">${r.sub}</div></div>
+      <span class="cmdk-item-type">${r.type}</span>
+    </div>`).join('');
+}
+
+// ============================================================
+// 23. UNDO LAST ACTION
+// ============================================================
+let lastUndoableAction=null;
+function setUndoableAction(text,undoFn){
+  lastUndoableAction=undoFn;
+  const toast=document.getElementById('undo-toast');
+  const textEl=document.getElementById('undo-toast-text');
+  if(textEl) textEl.textContent=text;
+  if(toast){toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),6000);}
+}
+function performUndo(){
+  if(lastUndoableAction){lastUndoableAction();lastUndoableAction=null;}
+  document.getElementById('undo-toast')?.classList.remove('show');
+  showToast('✅ পূর্বাবস্থায় ফেরানো হয়েছে');
+}
+
+// ============================================================
+// 24. COPY ORDER DETAILS
+// ============================================================
+function copyOrderDetails(orderId){
+  const order=getOrders().find(o=>o.id===orderId);
+  if(!order) return;
+  const text=`অর্ডার: ${order.id}\nকাস্টমার: ${order.userName}\nফোন: ${order.userPhone}\nঠিকানা: ${order.address}\nমোট: ৳${order.total}\nস্ট্যাটাস: ${order.status}`;
+  navigator.clipboard.writeText(text).then(()=>showToast('✅ অর্ডার বিবরণ কপি হয়েছে')).catch(()=>{});
+}
+
+// ============================================================
+// 25. ADDRESS AUTO-FILL
+// ============================================================
+function getSavedAddresses(){
+  const u=getCurrentUser();
+  if(!u) return [];
+  return JSON.parse(localStorage.getItem(`amb_addresses_${u.phone}`)||'[]');
+}
+function saveAddress(address){
+  const u=getCurrentUser();
+  if(!u) return;
+  let addrs=getSavedAddresses();
+  if(!addrs.includes(address)){
+    addrs.unshift(address);
+    addrs=addrs.slice(0,5);
+    localStorage.setItem(`amb_addresses_${u.phone}`,JSON.stringify(addrs));
+  }
+}
+function initAddressAutofill(inputId){
+  const inp=document.getElementById(inputId);
+  if(!inp) return;
+  let wrap=inp.parentElement;
+  if(getComputedStyle(wrap).position==='static') wrap.style.position='relative';
+  const suggBox=document.createElement('div');
+  suggBox.className='address-suggestions';
+  suggBox.id=`${inputId}-suggestions`;
+  wrap.appendChild(suggBox);
+  inp.addEventListener('focus',()=>{
+    const addrs=getSavedAddresses();
+    if(addrs.length){
+      suggBox.innerHTML=addrs.map(a=>`<div class="address-suggest-item" onclick="document.getElementById('${inputId}').value='${a.replace(/'/g,"\\'")}'; document.getElementById('${inputId}-suggestions').classList.remove('show')">📍 ${a}</div>`).join('');
+      suggBox.classList.add('show');
+    }
+  });
+  document.addEventListener('click',e=>{
+    if(!wrap.contains(e.target)) suggBox.classList.remove('show');
+  });
+}
+
+// ============================================================
+// 27. SKELETON PAGE LOAD (extends existing page-loader)
+// ============================================================
+// Already covered by #page-loader
+
+// ============================================================
+// 28. SYSTEM DARK MODE AUTO-DETECT
+// ============================================================
+function initSystemDarkModeDetect(){
+  if(localStorage.getItem('amb_theme')) return; // user already has preference
+  if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){
+    document.documentElement.setAttribute('data-theme','dark');
+    const btn=document.getElementById('dark-toggle-btn');
+    if(btn) btn.innerHTML='<i class="fas fa-sun"></i>';
+  }
+  // Listen for changes
+  if(window.matchMedia){
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',e=>{
+      if(!localStorage.getItem('amb_theme')){
+        document.documentElement.setAttribute('data-theme',e.matches?'dark':'light');
+      }
+    });
+  }
+}
+
+// ── Cmd+K keyboard shortcut ──
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){
+    e.preventDefault();
+    const adminPanel=document.getElementById('admin-panel');
+    if(adminPanel&&adminPanel.classList.contains('open')) openAdminCmdK();
+  }
+  if(e.key==='Escape') closeAdminCmdK();
+});
+
+// ── Extend showAdminTab for batch 4 tabs ──
+const _prevShowAdminTabV4=showAdminTab;
+showAdminTab=function(tab){
+  const map={todo:renderAdminTodo,staff:renderAdminStaff,batches:renderAdminBatches,calendar:renderAdminCalendar,tickets:renderAdminTickets};
+  const titles={todo:'📋 কাজের তালিকা',staff:'👥 স্টাফ ব্যবস্থাপনা',batches:'📦 ব্যাচ ট্র্যাকিং',calendar:'🗓️ অর্ডার ক্যালেন্ডার',tickets:'🎫 সাপোর্ট টিকেট'};
+  if(map[tab]){
+    currentAdminTab=tab;sessionStorage.setItem('amb_admin_tab',tab);
+    document.querySelectorAll('.admin-nav-item').forEach(b=>{
+      b.classList.toggle('active',b.getAttribute('onclick')&&b.getAttribute('onclick').includes(`showAdminTab('${tab}')`));
+    });
+    const t=document.getElementById('admin-page-title');if(t)t.textContent=titles[tab];
+    map[tab]();
+  } else {_prevShowAdminTabV4(tab);}
+};
+
+// ============================================================
 // PRODUCT DETAIL PAGE
 // ============================================================
 let currentPDP=null;
@@ -10142,6 +11174,9 @@ function openProductDetail(pid){
           ${qaHtml}
         </div>
 
+        <!-- Buy Together -->
+        <div id="pdp-buy-together"></div>
+
         <!-- Related Products -->
         <div id="pdp-related" style="margin-bottom:24px"></div>
       </div>
@@ -10220,6 +11255,8 @@ function openProductDetail(pid){
           </div>`).join('')}
         </div>`;
     }
+    const btEl=document.getElementById('pdp-buy-together');
+    if(btEl) btEl.innerHTML=renderBuyTogether(pid);
   },300);
 
   // Open page with animation
@@ -11618,6 +12655,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   initAdminResponsive();
   updateAdminBottomBadge();
   initLanguage();
+  renderCategoryNav();
+  renderUGCGallery();
+  startCartReservation();
+  initSystemDarkModeDetect();
+  setInterval(updateCartReservationTimer,1000);
+  document.getElementById('category-nav').style.display='block';
   setTimeout(()=>{applyAOSClasses();initAOS();initLazyLoading();},500);
   setTimeout(attachValidation,800);
   setTimeout(checkAchievements,2000);
