@@ -2839,6 +2839,15 @@ img.lazy.loaded{opacity:1}
   .bt-items-row{justify-content:center}
   #faq-chatbot-window{height:80vh}
 }
+
+/* ── PASSWORD VISIBILITY TOGGLE (reusable) ── */
+.pw-wrap{position:relative}
+.pw-wrap input[type="password"],.pw-wrap input[type="text"]{padding-right:42px!important;width:100%;box-sizing:border-box}
+.pw-eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:.92rem;cursor:pointer;padding:6px;display:flex;align-items:center;justify-content:center;transition:color .2s}
+.pw-eye-btn:hover{color:var(--green-mid)}
+/* Required field indicator */
+.req-star{color:#e74c3c;font-weight:700;margin-left:2px}
+.form-control:required:invalid,input:required:invalid{box-shadow:none}
 </style>
 </head>
 <body>
@@ -3147,20 +3156,20 @@ img.lazy.loaded{opacity:1}
       <div class="contact-form">
         <h3>📩 বার্তা পাঠান</h3>
         <div class="form-group">
-          <label>আপনার নাম <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" id="contact-name" placeholder="আপনার পূর্ণ নাম লিখুন">
+          <label>আপনার নাম <span class="req-star">*</span></label>
+          <input class="form-control" id="contact-name" placeholder="আপনার পূর্ণ নাম লিখুন" required>
         </div>
         <div class="form-group">
-          <label>মোবাইল নম্বর <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" id="contact-phone" type="tel" placeholder="01XXXXXXXXX">
+          <label>মোবাইল নম্বর <span class="req-star">*</span></label>
+          <input class="form-control" id="contact-phone" type="tel" placeholder="01XXXXXXXXX" required pattern="^(\+880|0)?1[3-9]\d{8}$">
         </div>
         <div class="form-group">
           <label>ইমেইল <span style="color:#888">(ঐচ্ছিক)</span></label>
           <input class="form-control" id="contact-email" type="email" placeholder="example@email.com">
         </div>
         <div class="form-group">
-          <label>বিষয় <span style="color:#e74c3c">*</span></label>
-          <select class="form-control" id="contact-subject">
+          <label>বিষয় <span class="req-star">*</span></label>
+          <select class="form-control" id="contact-subject" required>
             <option value="">— বিষয় বেছে নিন —</option>
             <option value="অর্ডার সংক্রান্ত">🛒 অর্ডার সংক্রান্ত</option>
             <option value="ডেলিভারি সংক্রান্ত">🚚 ডেলিভারি সংক্রান্ত</option>
@@ -3171,8 +3180,8 @@ img.lazy.loaded{opacity:1}
           </select>
         </div>
         <div class="form-group">
-          <label>বার্তা <span style="color:#e74c3c">*</span></label>
-          <textarea class="form-control" id="contact-message" rows="5" placeholder="আপনার বার্তা বিস্তারিত লিখুন..."></textarea>
+          <label>বার্তা <span class="req-star">*</span></label>
+          <textarea class="form-control" id="contact-message" rows="5" placeholder="আপনার বার্তা বিস্তারিত লিখুন..." required minlength="5"></textarea>
         </div>
         <button class="btn-submit" id="contact-submit-btn" onclick="submitContactMessage()">
           <i class="fas fa-paper-plane"></i> বার্তা পাঠান
@@ -3317,8 +3326,8 @@ img.lazy.loaded{opacity:1}
         <div class="gift-card-form">
           <div><label style="font-size:.82rem;font-weight:600;color:var(--text-muted)">প্রেরকের নাম</label>
             <input class="form-control" id="gc-from" placeholder="আপনার নাম" style="margin-top:4px"></div>
-          <div><label style="font-size:.82rem;font-weight:600;color:var(--text-muted)">প্রাপকের নাম</label>
-            <input class="form-control" id="gc-to" placeholder="যাকে দেবেন" style="margin-top:4px"></div>
+          <div><label style="font-size:.82rem;font-weight:600;color:var(--text-muted)">প্রাপকের নাম <span class="req-star">*</span></label>
+            <input class="form-control" id="gc-to" placeholder="যাকে দেবেন" style="margin-top:4px" required></div>
         </div>
         <textarea class="form-control" id="gc-message" rows="3" placeholder="ব্যক্তিগত বার্তা (ঐচ্ছিক)..." style="margin-top:10px"></textarea>
         <button onclick="purchaseGiftCard()" style="width:100%;margin-top:14px;padding:13px;background:var(--green-dark);color:#fff;border:none;border-radius:25px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s">
@@ -3341,7 +3350,7 @@ img.lazy.loaded{opacity:1}
     <h2 class="newsletter-title">নতুন অফার সবার আগে পান!</h2>
     <p class="newsletter-sub">আমাদের নিউজলেটারে সাবস্ক্রাইব করুন এবং এক্সক্লুসিভ ডিসকাউন্ট ও মৌসুমী আপডেট পান।</p>
     <div class="newsletter-form">
-      <input type="tel" class="newsletter-input" id="nl-phone" placeholder="আপনার মোবাইল নম্বর লিখুন">
+      <input type="tel" class="newsletter-input" id="nl-phone" placeholder="আপনার মোবাইল নম্বর লিখুন" required pattern="^(\+880|0)?1[3-9]\d{8}$">
       <button class="btn-newsletter" onclick="subscribeNewsletter()">সাবস্ক্রাইব</button>
     </div>
     <p class="newsletter-privacy">🔒 আপনার তথ্য সম্পূর্ণ নিরাপদ। স্প্যাম করা হবে না।</p>
@@ -3384,13 +3393,13 @@ img.lazy.loaded{opacity:1}
         <div class="bulk-perk">📦 কাস্টম প্যাকেজিং</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <input class="form-control" id="bulk-name" placeholder="প্রতিষ্ঠানের নাম / ব্যক্তির নাম *">
-        <input class="form-control" id="bulk-phone" placeholder="মোবাইল নম্বর *" type="tel">
-        <input class="form-control" id="bulk-qty" placeholder="মোট পরিমাণ (কেজিতে) *" type="number" min="10">
+        <input class="form-control" id="bulk-name" placeholder="প্রতিষ্ঠানের নাম / ব্যক্তির নাম" required>
+        <input class="form-control" id="bulk-phone" placeholder="মোবাইল নম্বর" type="tel" required pattern="^(\+880|0)?1[3-9]\d{8}$">
+        <input class="form-control" id="bulk-qty" placeholder="মোট পরিমাণ (কেজিতে)" type="number" min="10" required>
         <select class="form-control" id="bulk-product">
           <option value="">আমের ধরন বেছে নিন</option>
         </select>
-        <input class="form-control" id="bulk-address" placeholder="ডেলিভারি ঠিকানা *">
+        <input class="form-control" id="bulk-address" placeholder="ডেলিভারি ঠিকানা" required>
         <textarea class="form-control" id="bulk-note" rows="3" placeholder="অতিরিক্ত তথ্য বা বিশেষ অনুরোধ"></textarea>
         <button class="btn btn-primary" onclick="submitBulkOrder()" style="width:100%;padding:13px;font-size:1rem">
           <i class="fas fa-paper-plane"></i> অর্ডার পাঠান
@@ -3921,19 +3930,34 @@ img.lazy.loaded{opacity:1}
       </div>
       <!-- Login Form -->
       <div id="login-form">
-        <div class="form-group"><label>ইমেইল</label><input class="form-control" id="login-email" type="email" placeholder="আপনার ইমেইল"></div>
-        <div class="form-group"><label>পাসওয়ার্ড</label><input class="form-control" id="login-pass" type="password" placeholder="পাসওয়ার্ড"></div>
+        <div class="form-group"><label>ইমেইল <span class="req-star">*</span></label><input class="form-control" id="login-email" type="email" placeholder="আপনার ইমেইল" required></div>
+        <div class="form-group"><label>পাসওয়ার্ড <span class="req-star">*</span></label>
+          <div class="pw-wrap">
+            <input class="form-control" id="login-pass" type="password" placeholder="পাসওয়ার্ড" required>
+            <button type="button" class="pw-eye-btn" onclick="togglePwVis('login-pass',this)"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
         <div id="login-error" class="error-msg"></div>
         <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doLogin()">লগইন করুন</button>
       </div>
       <!-- Register Form -->
       <div id="register-form" style="display:none">
-        <div class="form-group"><label>পূর্ণ নাম</label><input class="form-control" id="reg-name" placeholder="আপনার নাম"></div>
-        <div class="form-group"><label>ইমেইল</label><input class="form-control" id="reg-email" type="email" placeholder="ইমেইল ঠিকানা"></div>
-        <div class="form-group"><label>ফোন নম্বর</label><input class="form-control" id="reg-phone" placeholder="০১XXXXXXXXX"></div>
+        <div class="form-group"><label>পূর্ণ নাম <span class="req-star">*</span></label><input class="form-control" id="reg-name" placeholder="আপনার নাম" required></div>
+        <div class="form-group"><label>ইমেইল <span style="color:var(--text-muted);font-weight:400;font-size:.78rem">(ঐচ্ছিক)</span></label><input class="form-control" id="reg-email" type="email" placeholder="ইমেইল ঠিকানা"></div>
+        <div class="form-group"><label>ফোন নম্বর <span class="req-star">*</span></label><input class="form-control" id="reg-phone" type="tel" placeholder="০১XXXXXXXXX" required pattern="^(\+880|0)?1[3-9]\d{8}$" title="সঠিক বাংলাদেশী মোবাইল নম্বর দিন"></div>
         <div class="form-row">
-          <div class="form-group"><label>পাসওয়ার্ড</label><input class="form-control" id="reg-pass" type="password" placeholder="পাসওয়ার্ড"></div>
-          <div class="form-group"><label>কনফার্ম</label><input class="form-control" id="reg-pass2" type="password" placeholder="পুনরায় লিখুন"></div>
+          <div class="form-group"><label>পাসওয়ার্ড <span class="req-star">*</span></label>
+            <div class="pw-wrap">
+              <input class="form-control" id="reg-pass" type="password" placeholder="পাসওয়ার্ড" required minlength="6">
+              <button type="button" class="pw-eye-btn" onclick="togglePwVis('reg-pass',this)"><i class="fas fa-eye"></i></button>
+            </div>
+          </div>
+          <div class="form-group"><label>কনফার্ম <span class="req-star">*</span></label>
+            <div class="pw-wrap">
+              <input class="form-control" id="reg-pass2" type="password" placeholder="পুনরায় লিখুন" required minlength="6">
+              <button type="button" class="pw-eye-btn" onclick="togglePwVis('reg-pass2',this)"><i class="fas fa-eye"></i></button>
+            </div>
+          </div>
         </div>
         <div id="reg-error" class="error-msg"></div>
         <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doRegister()">রেজিস্ট্রেশন করুন</button>
@@ -3954,7 +3978,12 @@ img.lazy.loaded{opacity:1}
         <strong>ডিফল্ট:</strong> admin@amerbazar.com / admin123
       </div>
       <div class="form-group"><label>অ্যাডমিন ইমেইল</label><input class="form-control" id="admin-email-input" type="email" placeholder="অ্যাডমিন ইমেইল"></div>
-      <div class="form-group"><label>পাসওয়ার্ড</label><input class="form-control" id="admin-pass-input" type="password" placeholder="পাসওয়ার্ড"></div>
+      <div class="form-group"><label>পাসওয়ার্ড <span class="req-star">*</span></label>
+        <div class="pw-wrap">
+          <input class="form-control" id="admin-pass-input" type="password" placeholder="পাসওয়ার্ড" required>
+          <button type="button" class="pw-eye-btn" onclick="togglePwVis('admin-pass-input',this)"><i class="fas fa-eye"></i></button>
+        </div>
+      </div>
       <div id="admin-login-error" class="error-msg"></div>
       <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doAdminLogin()">প্রবেশ করুন</button>
     </div>
@@ -4600,14 +4629,14 @@ function renderCheckoutForm(){
         </div>
       </div>
     </div>
-    <div class="form-group"><label>পূর্ণ নাম *</label><input class="form-control" id="co-name" value="${u.name}" placeholder="আপনার নাম"></div>
+    <div class="form-group"><label>পূর্ণ নাম <span class="req-star">*</span></label><input class="form-control" id="co-name" value="${u.name}" placeholder="আপনার নাম" required></div>
     <div class="form-row">
-      <div class="form-group"><label>ফোন নম্বর *</label><input class="form-control" id="co-phone" value="${u.phone||''}" placeholder="০১XXXXXXXXX"></div>
-      <div class="form-group"><label>বিকল্প ফোন</label><input class="form-control" id="co-phone2" placeholder="ঐচ্ছিক"></div>
+      <div class="form-group"><label>ফোন নম্বর <span class="req-star">*</span></label><input class="form-control" id="co-phone" type="tel" value="${u.phone||''}" placeholder="০১XXXXXXXXX" required pattern="^(\+880|0)?1[3-9]\d{8}$"></div>
+      <div class="form-group"><label>বিকল্প ফোন</label><input class="form-control" id="co-phone2" type="tel" placeholder="ঐচ্ছিক"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>জেলা *</label>
-        <select class="form-control" id="co-district" onchange="updateUpazilaDropdown('co-district','co-upazila');updateCheckoutDelivery()">
+      <div class="form-group"><label>জেলা <span class="req-star">*</span></label>
+        <select class="form-control" id="co-district" required onchange="updateUpazilaDropdown('co-district','co-upazila');updateCheckoutDelivery()">
           <option value="">-- জেলা বেছে নিন --</option>
           ${districtOptions('ঢাকা')}
         </select>
@@ -4618,11 +4647,11 @@ function renderCheckoutForm(){
         </select>
       </div>
     </div>
-    <div class="form-group"><label>গ্রাম / রোড / এলাকা *</label>
-      <input class="form-control" id="co-area" placeholder="গ্রাম, রোড নম্বর, এলাকার নাম">
+    <div class="form-group"><label>গ্রাম / রোড / এলাকা <span class="req-star">*</span></label>
+      <input class="form-control" id="co-area" placeholder="গ্রাম, রোড নম্বর, এলাকার নাম" required>
     </div>
-    <div class="form-group"><label>সম্পূর্ণ ঠিকানা *</label>
-      <textarea class="form-control" id="co-address" rows="2" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রোড, এলাকা, উপজেলা, জেলা"></textarea>
+    <div class="form-group"><label>সম্পূর্ণ ঠিকানা <span class="req-star">*</span></label>
+      <textarea class="form-control" id="co-address" rows="2" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রোড, এলাকা, উপজেলা, জেলা" required></textarea>
     </div>
     <div style="background:var(--green-pale);border-radius:6px;padding:7px 12px;font-size:.78rem;color:var(--green-dark);margin-bottom:8px;display:flex;align-items:center;gap:6px">
       <i class="fas fa-lightbulb" style="color:var(--yellow)"></i>
@@ -4958,14 +4987,14 @@ function renderBuyNowModal(p,u){
       <div style="display:flex;justify-content:space-between;font-size:.82rem;color:var(--text-muted);margin-bottom:14px">
         <span>ডেলিভারি চার্জ:</span><span id="bn-del-preview">${t.delCharge===0?'ফ্রি':'৳'+t.delCharge}</span>
       </div>
-      <div class="form-group" style="margin-bottom:12px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">নাম *</label><input class="form-control" id="bn-name" value="${u.name}"></div>
+      <div class="form-group" style="margin-bottom:12px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">নাম *</label><input class="form-control" id="bn-name" value="${u.name}" required></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">ফোন *</label><input class="form-control" id="bn-phone" value="${u.phone||''}" placeholder="০১XXXXXXXXX"></div>
-        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">বিকল্প ফোন</label><input class="form-control" id="bn-phone2" placeholder="ঐচ্ছিক"></div>
+        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">ফোন *</label><input class="form-control" id="bn-phone" type="tel" value="${u.phone||''}" placeholder="০১XXXXXXXXX" required pattern="^(\+880|0)?1[3-9]\d{8}$"></div>
+        <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">বিকল্প ফোন</label><input class="form-control" id="bn-phone2" type="tel" placeholder="ঐচ্ছিক"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div class="form-group"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">জেলা *</label>
-          <select class="form-control" id="bn-district" onchange="updateUpazilaDropdown('bn-district','bn-upazila');changeBuyNowQty(0)">
+          <select class="form-control" id="bn-district" required onchange="updateUpazilaDropdown('bn-district','bn-upazila');changeBuyNowQty(0)">
             <option value="">-- জেলা --</option>
             ${districtOptions('ঢাকা')}
           </select>
@@ -4976,8 +5005,8 @@ function renderBuyNowModal(p,u){
           </select>
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:8px"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">এলাকা / রোড</label><input class="form-control" id="bn-area" placeholder="গ্রাম, রোড, এলাকা"></div>
-      <div class="form-group" style="margin-bottom:14px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">সম্পূর্ণ ঠিকানা *</label><textarea class="form-control" id="bn-address" rows="2" placeholder="বাড়ি নম্বর, ফ্ল্যাট, রোড, এলাকা, উপজেলা, জেলা"></textarea></div>
+      <div class="form-group" style="margin-bottom:8px"><label style="display:block;font-size:.82rem;font-weight:600;color:var(--green-dark);margin-bottom:4px">এলাকা / রোড <span class="req-star">*</span></label><input class="form-control" id="bn-area" placeholder="গ্রাম, রোড, এলাকা" required></div>
+      <div class="form-group" style="margin-bottom:14px"><label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:5px">সম্পূর্ণ ঠিকানা *</label><textarea class="form-control" id="bn-address" rows="2" placeholder="বাড়ি নম্বর, ফ্ল্যাট, রোড, এলাকা, উপজেলা, জেলা" required></textarea></div>
       <div class="form-group" style="margin-bottom:14px">
         <label style="display:block;font-size:.85rem;font-weight:600;color:var(--green-dark);margin-bottom:8px">পেমেন্ট পদ্ধতি *</label>
         <div class="payment-options" style="grid-template-columns:repeat(3,1fr)" id="bn-payment-options"></div>
@@ -5146,8 +5175,8 @@ function renderEditTab(u){
       ${removeBtn}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="form-group"><label>পূর্ণ নাম *</label><input id="ep-name" value="${u.name}" placeholder="আপনার নাম"></div>
-      <div class="form-group"><label>ফোন নম্বর *</label><input id="ep-phone" value="${u.phone||''}" placeholder="০১XXXXXXXXX"></div>
+      <div class="form-group"><label>পূর্ণ নাম <span class="req-star">*</span></label><input id="ep-name" value="${u.name}" placeholder="আপনার নাম" required></div>
+      <div class="form-group"><label>ফোন নম্বর <span class="req-star">*</span></label><input id="ep-phone" type="tel" value="${u.phone||''}" placeholder="০১XXXXXXXXX" required pattern="^(\+880|0)?1[3-9]\d{8}$"></div>
     </div>
     <div class="form-group"><label>ইমেইল (পরিবর্তনযোগ্য নয়)</label><input value="${u.email}" disabled style="background:#f5f5f5;color:#999;cursor:not-allowed"></div>
     <div id="ep-msg" style="margin-bottom:10px"></div>
@@ -5157,9 +5186,24 @@ function renderEditTab(u){
 
 function renderPwTab(){
   return `<div class="edit-profile-form">
-    <div class="form-group"><label>বর্তমান পাসওয়ার্ড *</label><input type="password" id="up-curr" placeholder="বর্তমান পাসওয়ার্ড"></div>
-    <div class="form-group"><label>নতুন পাসওয়ার্ড *</label><input type="password" id="up-new" placeholder="কমপক্ষে ৬ অক্ষর"></div>
-    <div class="form-group"><label>নিশ্চিত পাসওয়ার্ড *</label><input type="password" id="up-conf" placeholder="পুনরায় লিখুন"></div>
+    <div class="form-group"><label>বর্তমান পাসওয়ার্ড <span class="req-star">*</span></label>
+      <div class="pw-wrap">
+        <input type="password" id="up-curr" placeholder="বর্তমান পাসওয়ার্ড" required>
+        <button type="button" class="pw-eye-btn" onclick="togglePwVis('up-curr',this)"><i class="fas fa-eye"></i></button>
+      </div>
+    </div>
+    <div class="form-group"><label>নতুন পাসওয়ার্ড <span class="req-star">*</span></label>
+      <div class="pw-wrap">
+        <input type="password" id="up-new" placeholder="কমপক্ষে ৬ অক্ষর" required minlength="6">
+        <button type="button" class="pw-eye-btn" onclick="togglePwVis('up-new',this)"><i class="fas fa-eye"></i></button>
+      </div>
+    </div>
+    <div class="form-group"><label>নিশ্চিত পাসওয়ার্ড <span class="req-star">*</span></label>
+      <div class="pw-wrap">
+        <input type="password" id="up-conf" placeholder="পুনরায় লিখুন" required minlength="6">
+        <button type="button" class="pw-eye-btn" onclick="togglePwVis('up-conf',this)"><i class="fas fa-eye"></i></button>
+      </div>
+    </div>
     <div id="up-msg" style="margin-bottom:10px"></div>
     <button class="btn-primary" onclick="saveUserPassword()"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন</button>
   </div>`;
@@ -6869,9 +6913,10 @@ function showProductForm(p=null){
     <div class="admin-form" style="border-bottom:1px solid var(--border);background:var(--bg)">
       <h4 style="margin-bottom:15px;color:var(--green-dark)">${p?'✏️ পণ্য সম্পাদনা':'➕ নতুন পণ্য যোগ করুন'}</h4>
       <div class="form-row">
-        <div class="form-group"><label>পণ্যের নাম *</label><input id="pf-name" value="${p?p.name:''}" placeholder="যেমন: ফজলি আম"></div>
-        <div class="form-group"><label>উৎপত্তি স্থান *</label>
-          <select id="pf-origin">
+        <div class="form-group"><label>পণ্যের নাম <span class="req-star">*</span></label><input id="pf-name" value="${p?p.name:''}" placeholder="যেমন: ফজলি আম" required></div>
+        <div class="form-group"><label>উৎপত্তি স্থান <span class="req-star">*</span></label>
+          <select id="pf-origin" required>
+            <option value="">-- বেছে নিন --</option>
             ${['রাজশাহী','চাঁপাইনবাবগঞ্জ','সাতক্ষীরা','দিনাজপুর','অন্যান্য'].map(o=>`<option ${p&&p.origin===o?'selected':''}>${o}</option>`).join('')}
           </select>
         </div>
@@ -6884,11 +6929,11 @@ function showProductForm(p=null){
             <option value="economy" ${p&&p.quality==='economy'?'selected':''}>Economy</option>
           </select>
         </div>
-        <div class="form-group"><label>মূল মূল্য (৳/কেজি) *</label><input id="pf-price" type="number" value="${p?p.price:''}" placeholder="120"></div>
+        <div class="form-group"><label>মূল মূল্য (৳/কেজি) <span class="req-star">*</span></label><input id="pf-price" type="number" min="1" value="${p?p.price:''}" placeholder="120" required></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>ডিসকাউন্ট (%)</label><input id="pf-discount" type="number" min="0" max="90" value="${p?p.discount:0}" oninput="previewDiscount()" placeholder="0"></div>
-        <div class="form-group"><label>স্টক (কেজি) *</label><input id="pf-stock" type="number" value="${p?p.stock:''}" placeholder="50"></div>
+        <div class="form-group"><label>স্টক (কেজি) <span class="req-star">*</span></label><input id="pf-stock" type="number" min="0" value="${p?p.stock:''}" placeholder="50" required></div>
       </div>
       <div id="pf-discount-preview" class="discount-preview" style="display:none"></div>
       <div class="form-group" style="margin-top:10px">
@@ -7370,7 +7415,12 @@ function renderPasswordChange(){
             </div>
             <div class="form-group"><label>নতুন ইমেইল ঠিকানা *</label><input type="email" id="em-new" placeholder="নতুন ইমেইল দিন"></div>
             <div class="form-group"><label>নতুন ইমেইল নিশ্চিত করুন *</label><input type="email" id="em-confirm" placeholder="পুনরায় ইমেইল লিখুন"></div>
-            <div class="form-group"><label>বর্তমান পাসওয়ার্ড (যাচাইয়ের জন্য) *</label><input type="password" id="em-pass" placeholder="বর্তমান পাসওয়ার্ড"></div>
+            <div class="form-group"><label>বর্তমান পাসওয়ার্ড (যাচাইয়ের জন্য) <span class="req-star">*</span></label>
+              <div class="pw-wrap">
+                <input type="password" id="em-pass" placeholder="বর্তমান পাসওয়ার্ড" required>
+                <button type="button" class="pw-eye-btn" onclick="togglePwVis('em-pass',this)"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
             <div id="em-error" class="error-msg"></div>
             <div id="em-success" class="success-msg"></div>
             <button class="btn-primary" onclick="changeAdminEmail()" style="margin-top:5px"><i class="fas fa-envelope"></i> ইমেইল পরিবর্তন করুন</button>
@@ -7383,19 +7433,24 @@ function renderPasswordChange(){
         <div class="admin-section">
           <div class="admin-section-header"><h3>🔑 পাসওয়ার্ড পরিবর্তন</h3></div>
           <div class="admin-form">
-            <div class="form-group"><label>বর্তমান পাসওয়ার্ড *</label>
-              <div style="position:relative">
-                <input type="password" id="pw-current" placeholder="বর্তমান পাসওয়ার্ড" style="padding-right:40px">
-                <button onclick="togglePwVis('pw-current',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:.9rem"><i class="fas fa-eye"></i></button>
+            <div class="form-group"><label>বর্তমান পাসওয়ার্ড <span class="req-star">*</span></label>
+              <div class="pw-wrap">
+                <input type="password" id="pw-current" placeholder="বর্তমান পাসওয়ার্ড" required>
+                <button type="button" class="pw-eye-btn" onclick="togglePwVis('pw-current',this)"><i class="fas fa-eye"></i></button>
               </div>
             </div>
-            <div class="form-group"><label>নতুন পাসওয়ার্ড *</label>
-              <div style="position:relative">
-                <input type="password" id="pw-new" placeholder="নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" style="padding-right:40px">
-                <button onclick="togglePwVis('pw-new',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:.9rem"><i class="fas fa-eye"></i></button>
+            <div class="form-group"><label>নতুন পাসওয়ার্ড <span class="req-star">*</span></label>
+              <div class="pw-wrap">
+                <input type="password" id="pw-new" placeholder="নতুন পাসওয়ার্ড (কমপক্ষে ৬ অক্ষর)" required minlength="6">
+                <button type="button" class="pw-eye-btn" onclick="togglePwVis('pw-new',this)"><i class="fas fa-eye"></i></button>
               </div>
             </div>
-            <div class="form-group"><label>নিশ্চিত পাসওয়ার্ড *</label><input type="password" id="pw-confirm" placeholder="পুনরায় লিখুন"></div>
+            <div class="form-group"><label>নিশ্চিত পাসওয়ার্ড <span class="req-star">*</span></label>
+              <div class="pw-wrap">
+                <input type="password" id="pw-confirm" placeholder="পুনরায় লিখুন" required minlength="6">
+                <button type="button" class="pw-eye-btn" onclick="togglePwVis('pw-confirm',this)"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
             <div id="pw-strength" style="height:4px;border-radius:2px;margin-top:-8px;margin-bottom:10px;transition:all .3s"></div>
             <div id="pw-error" class="error-msg"></div>
             <div id="pw-success" class="success-msg"></div>
@@ -10684,8 +10739,8 @@ function renderAdminStaff(){
       <div style="margin-top:16px;padding:16px;background:var(--green-pale);border-radius:var(--radius-sm)">
         <h4 style="margin-bottom:10px;color:var(--green-dark)">➕ নতুন স্টাফ যোগ করুন</h4>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <input class="form-control" id="staff-name" placeholder="নাম">
-          <input class="form-control" id="staff-phone" placeholder="ফোন নম্বর">
+          <input class="form-control" id="staff-name" placeholder="নাম" required>
+          <input class="form-control" id="staff-phone" placeholder="ফোন নম্বর" type="tel" required pattern="^(\+880|0)?1[3-9]\d{8}$">
           <select class="form-control" id="staff-role">
             <option value="staff">স্টাফ</option><option value="manager">ম্যানেজার</option><option value="admin">অ্যাডমিন</option>
           </select>
