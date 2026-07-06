@@ -2848,6 +2848,90 @@ img.lazy.loaded{opacity:1}
 /* Required field indicator */
 .req-star{color:#e74c3c;font-weight:700;margin-left:2px}
 .form-control:required:invalid,input:required:invalid{box-shadow:none}
+
+/* ── BATCH 6 CSS ── */
+/* Shimmer on product card */
+.product-card{overflow:hidden;position:relative}
+.product-card::after{content:'';position:absolute;top:-50%;left:-75%;width:50%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);transform:skewX(-20deg);transition:left .7s ease;pointer-events:none;z-index:2}
+.product-card:hover::after{left:125%}
+/* Smooth theme transition */
+body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:background-color .3s ease,color .2s ease,border-color .3s ease}
+/* Hero gradient text */
+.hero-text h1 span{background:linear-gradient(135deg,#ffd700,#f4a40a,#ffd700);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gShift 3s linear infinite}
+@keyframes gShift{0%{background-position:0%}100%{background-position:200%}}
+/* Confetti */
+.confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;animation:cFall 3s ease-in forwards;z-index:99999;pointer-events:none}
+@keyframes cFall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(720deg);opacity:0}}
+/* Quick checkout */
+.quick-checkout-btn{background:linear-gradient(135deg,#e76f00,#f4a40a);color:#fff;border:none;padding:10px 18px;border-radius:20px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:"Hind Siliguri",sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.quick-checkout-btn:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(231,111,0,.4)}
+.quick-checkout-bar{background:linear-gradient(135deg,#fffaf0,#fff3e0);border:1px solid #f4a40a;border-radius:var(--radius-sm);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+[data-theme="dark"] .quick-checkout-bar{background:linear-gradient(135deg,#1a1a00,#2d2400)}
+/* Welcome back */
+#welcome-back-toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-40px);z-index:5000;background:linear-gradient(135deg,#1b4332,#2d6a4f);color:#fff;padding:14px 24px;border-radius:30px;box-shadow:0 8px 30px rgba(27,67,50,.4);display:none;align-items:center;gap:12px;font-weight:600;font-size:.92rem;white-space:nowrap;transition:all .5s cubic-bezier(.34,1.56,.64,1)}
+#welcome-back-toast.show{display:flex;transform:translateX(-50%) translateY(0)}
+.wb-avatar{width:36px;height:36px;border-radius:50%;background:var(--yellow);color:var(--green-dark);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;flex-shrink:0}
+/* Order note */
+.customer-note-box{background:#fffaf0;border:1.5px solid #f4a40a;border-radius:var(--radius-sm);padding:14px;margin-bottom:14px}
+[data-theme="dark"] .customer-note-box{background:#1a1a00;border-color:#5a4000}
+.customer-note-label{font-size:.85rem;font-weight:700;color:var(--green-dark);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.customer-note-input{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.83rem;font-family:"Hind Siliguri",sans-serif;resize:vertical;min-height:60px;outline:none;background:var(--bg);color:var(--text);box-sizing:border-box}
+.customer-note-input:focus{border-color:var(--green-mid)}
+/* Social share */
+.social-share-popup{position:fixed;bottom:80px;right:20px;z-index:2000;background:#fff;border-radius:var(--radius);padding:14px;box-shadow:0 10px 40px rgba(0,0,0,.2);display:none;flex-direction:column;gap:8px;min-width:180px}
+.social-share-popup.open{display:flex}
+[data-theme="dark"] .social-share-popup{background:#1a2e1f}
+.ss-btn{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;border:none;cursor:pointer;font-family:"Hind Siliguri",sans-serif;font-size:.83rem;font-weight:600;color:#fff;width:100%;transition:all .2s}
+.ss-wa{background:#25d366}.ss-fb{background:#1877f2}.ss-copy{background:#6c757d}
+/* Order chat */
+.order-chat-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-top:14px}
+[data-theme="dark"] .order-chat-box{background:#1a2e1f;border-color:#2d4a35}
+.order-chat-header{background:var(--green-dark);color:#fff;padding:10px 14px;font-size:.85rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.order-chat-messages{height:200px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.chat-bubble{max-width:80%;padding:8px 12px;border-radius:12px;font-size:.82rem;line-height:1.5}
+.chat-bubble.admin{background:var(--green-pale);color:var(--text);align-self:flex-start;border-bottom-left-radius:3px}
+.chat-bubble.customer{background:var(--green-dark);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.chat-bubble-time{font-size:.65rem;opacity:.6;margin-top:3px;display:block}
+.order-chat-input-row{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border)}
+.order-chat-input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:20px;font-size:.82rem;font-family:"Hind Siliguri",sans-serif;outline:none;background:var(--bg);color:var(--text)}
+.order-chat-send{background:var(--green-dark);color:#fff;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer}
+/* Pagination */
+.table-pagination{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 0;flex-wrap:wrap}
+.pg-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:"Hind Siliguri",sans-serif}
+.pg-btn:hover{border-color:var(--green-mid);color:var(--green-mid)}
+.pg-btn.active{background:var(--green-dark);color:#fff;border-color:var(--green-dark)}
+.pg-btn:disabled{opacity:.4;cursor:not-allowed}
+.pg-info{font-size:.78rem;color:var(--text-muted);margin:0 4px}
+[data-theme="dark"] .pg-btn{background:#1a2e1f}
+/* Auto-save */
+.autosave-indicator{position:fixed;bottom:74px;left:50%;transform:translateX(-50%);background:rgba(27,67,50,.9);color:#fff;padding:6px 16px;border-radius:20px;font-size:.75rem;z-index:3000;opacity:0;transition:opacity .3s;pointer-events:none}
+.autosave-indicator.show{opacity:1}
+/* Misc new */
+.search-highlight{background:#fff3cd;color:#856404;font-weight:700;border-radius:3px;padding:0 2px}
+.birthday-banner{background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.birthday-coupon-code{font-size:1.3rem;font-weight:800;letter-spacing:3px;background:rgba(255,255,255,.15);padding:8px 18px;border-radius:8px;display:inline-block;cursor:pointer;margin:10px 0;border:1.5px dashed rgba(255,255,255,.4)}
+.expense-item{display:flex;align-items:center;gap:10px;padding:10px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+[data-theme="dark"] .expense-item{background:#1a2e1f;border-color:#2d4a35}
+.expense-category{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.expense-amount{font-weight:800;color:#e74c3c;margin-left:auto}
+.inv-value-card{background:linear-gradient(135deg,#1b4332,#2d6a4f);color:#fff;border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.inv-value-amount{font-size:2.2rem;font-weight:800;color:var(--yellow)}
+.currency-widget{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+[data-theme="dark"] .currency-widget{background:#1a2e1f;border-color:#2d4a35}
+.currency-amount{font-size:1.1rem;font-weight:800;color:var(--green-dark)}
+.notif-template-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px}
+[data-theme="dark"] .notif-template-card{background:#1a2e1f;border-color:#2d4a35}
+.notif-template-preview{background:var(--green-pale);border-radius:8px;padding:10px 14px;font-size:.83rem;color:var(--text);margin-top:8px;line-height:1.6;word-break:break-word}
+[data-theme="dark"] .notif-template-preview{background:#1a3523}
+.daily-chart-wrap{display:flex;align-items:flex-end;gap:4px;height:100px;padding:8px 0}
+.daily-chart-bar{flex:1;border-radius:3px 3px 0 0;min-height:4px;transition:height .6s ease;cursor:pointer}
+.daily-chart-bar:hover{filter:brightness(1.15)}
+.qr-code-box{background:#fff;padding:20px;border-radius:12px;display:inline-block;box-shadow:var(--shadow)}
+@media(max-width:768px){
+  #welcome-back-toast{white-space:normal;max-width:90vw;font-size:.85rem}
+  .social-share-popup{right:10px;bottom:75px}
+  .order-chat-messages{height:160px}
+}
 </style>
 </head>
 <body>
@@ -3913,6 +3997,10 @@ img.lazy.loaded{opacity:1}
     <div id="cart-coupon-msg" style="font-size:.8rem;margin-bottom:8px"></div>
     <div class="cart-totals" id="cart-totals"></div>
     <button class="btn-checkout" onclick="startCheckout()">চেকআউট করুন <i class="fas fa-arrow-right"></i></button>
+    <div class="quick-checkout-bar" id="quick-checkout-bar" style="display:none">
+      <span style="font-size:.82rem;color:var(--text-muted);flex:1">&#9889; সংরক্ষিত ঠিকানায় —</span>
+      <button class="quick-checkout-btn" onclick="quickCheckout()"><i class="fas fa-bolt"></i> ১-ক্লিক অর্ডার</button>
+    </div>
   </div>
 </div>
 
@@ -4652,6 +4740,10 @@ function renderCheckoutForm(){
     </div>
     <div class="form-group"><label>সম্পূর্ণ ঠিকানা <span class="req-star">*</span></label>
       <textarea class="form-control" id="co-address" rows="2" placeholder="বাড়ি/ফ্ল্যাট নম্বর, রোড, এলাকা, উপজেলা, জেলা" required></textarea>
+    </div>
+    <div class="customer-note-box">
+      <div class="customer-note-label"><i class="fas fa-sticky-note" style="color:#f4a40a"></i> অর্ডার নোট <span style="color:#888;font-weight:400;font-size:.75rem">(ঐচ্ছিক)</span></div>
+      <textarea class="customer-note-input" id="co-customer-note" placeholder="বিশেষ নির্দেশনা, পছন্দের ডেলিভারি সময়..."></textarea>
     </div>
     <div style="background:var(--green-pale);border-radius:6px;padding:7px 12px;font-size:.78rem;color:var(--green-dark);margin-bottom:8px;display:flex;align-items:center;gap:6px">
       <i class="fas fa-lightbulb" style="color:var(--yellow)"></i>
@@ -12754,6 +12846,584 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 window.addEventListener('scroll',()=>{sessionStorage.setItem('amb_scroll',Math.round(window.scrollY));},{passive:true});
 if(window.location.hash==='#admin'){setTimeout(()=>openAdminLogin(),500);}
+
+// ============================================================
+// BATCH 6 — ALL NEW FEATURE JS
+// ============================================================
+
+// CONFETTI
+function launchConfetti(){
+  const cols=['#f4a40a','#1b4332','#52b788','#e76f00','#fff','#ffd700','#ff6b6b'];
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left=Math.random()*100+'vw';
+    el.style.top='-20px';
+    el.style.width=(Math.random()*10+5)+'px';
+    el.style.height=(Math.random()*10+5)+'px';
+    el.style.background=cols[Math.floor(Math.random()*cols.length)];
+    el.style.animationDelay=Math.random()*1.5+'s';
+    el.style.animationDuration=(Math.random()*1.5+2)+'s';
+    el.style.borderRadius=Math.random()>.5?'50%':'2px';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4500);
+  }
+}
+
+// QUICK CHECKOUT
+function quickCheckout(){
+  const u=getCurrentUser();
+  if(!u){showToast('লগইন করুন','warning');openModal('login-modal');return;}
+  const cart=getMyCart();
+  if(!cart.length){showToast('কার্ট খালি','error');return;}
+  if(!u.address||!u.phone){showToast('প্রোফাইলে ঠিকানা যোগ করুন','warning');openModal('profile-modal');return;}
+  if(!confirm(u.name+', আপনার সংরক্ষিত ঠিকানায় অর্ডার দেবেন?\n\nঠিকানা: '+u.address+'\nফোন: '+u.phone)) return;
+  const s=getSiteSettings();
+  const subtotal=cart.reduce((sum,i)=>sum+(Number(i.price)||0)*(Number(i.qty)||1),0);
+  const delivery=Number(s.deliveryCharge||60);
+  const order={id:'ORD-'+Date.now(),userPhone:u.phone,userName:u.name,userEmail:u.email||'',
+    phone:u.phone,address:u.address,district:u.district||'',area:u.area||'',
+    upazila:u.upazila||'',items:cart,subtotal,delivery,discount:0,
+    total:subtotal+delivery,payment:'cod',paymentTxn:'',coupon:'',
+    status:'pending',createdAt:Date.now(),note:'Quick Checkout'};
+  const orders=getOrders();orders.unshift(order);saveOrders(orders);
+  saveMyCart([]);updateCartCount();toggleCart();
+  launchConfetti();
+  showToast('✅ অর্ডার সফল! ID: '+order.id.slice(-8),'success');
+  if(window._ambBC) window._ambBC.postMessage({type:'new_order',orderId:order.id});
+  if(typeof checkAchievements==='function') checkAchievements();
+  addNotification('⚡ Quick Order — '+u.name,'৳'+order.total+' · '+cart.length+'টি পণ্য');
+  updateQuickCheckoutBar();
+}
+function updateQuickCheckoutBar(){
+  const u=getCurrentUser();
+  const bar=document.getElementById('quick-checkout-bar');
+  if(bar) bar.style.display=(u&&u.address&&u.phone&&getMyCart().length>0)?'flex':'none';
+}
+
+// WELCOME BACK
+function showWelcomeBack(user){
+  const toast=document.getElementById('welcome-back-toast');
+  const avatar=document.getElementById('wb-avatar');
+  const text=document.getElementById('wb-text');
+  if(!toast||!user) return;
+  if(sessionStorage.getItem('amb_welcomed')) return;
+  sessionStorage.setItem('amb_welcomed','1');
+  const h=new Date().getHours();
+  const gr=h<12?'শুভ সকাল':h<17?'শুভ বিকাল':'শুভ সন্ধ্যা';
+  if(avatar) avatar.textContent=(user.name||'?').slice(0,1).toUpperCase();
+  if(text) text.textContent=gr+', '+user.name+'!';
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),4000);
+}
+
+// BIRTHDAY COUPON
+function checkBirthdayCoupon(){
+  const u=getCurrentUser();
+  if(!u||!u.birthday) return;
+  const today=new Date();
+  const bday=new Date(u.birthday);
+  if(today.getMonth()!==bday.getMonth()||today.getDate()!==bday.getDate()) return;
+  const key='amb_bday_'+u.phone+'_'+today.getFullYear();
+  if(localStorage.getItem(key)) return;
+  const code='BDAY'+today.getFullYear()+u.phone.slice(-4);
+  const coupons=getCoupons();
+  if(!coupons.find(c=>c.code===code)){
+    coupons.push({id:'BDAY_'+Date.now(),code,discount:15,type:'percentage',
+      active:true,used:0,minOrder:0,createdAt:Date.now(),
+      desc:u.name+'-এর জন্মদিন কুপন'});
+    saveCoupons(coupons);
+  }
+  localStorage.setItem(key,'1');
+  addNotification('🎂 জন্মদিনের শুভেচ্ছা, '+u.name+'!','১৫% ছাড়ের কুপন: '+code);
+  showToast('🎂 জন্মদিনের শুভেচ্ছা! কুপন: '+code+' (১৫% ছাড়)','success');
+}
+
+// SOCIAL SHARE
+let _shareURL='',_shareTitle='';
+function openSocialShare(url,title){
+  _shareURL=url||window.location.href;
+  _shareTitle=title||'আমের হাট বাজার';
+  document.getElementById('social-share-popup')?.classList.add('open');
+}
+function closeSocialShare(){
+  document.getElementById('social-share-popup')?.classList.remove('open');
+}
+function socialShare(p){
+  const u=encodeURIComponent(_shareURL);
+  const t=encodeURIComponent(_shareTitle);
+  if(p==='copy'){
+    navigator.clipboard.writeText(_shareURL)
+      .then(()=>showToast('✅ লিংক কপি হয়েছে!'))
+      .catch(()=>{});
+  } else if(p==='wa'){
+    window.open('https://wa.me/?text='+t+'%20'+u,'_blank','width=600,height=400');
+  } else if(p==='fb'){
+    window.open('https://www.facebook.com/sharer/sharer.php?u='+u,'_blank','width=600,height=400');
+  }
+  closeSocialShare();
+}
+function shareLink(pid){
+  const p=getProducts().find(x=>Number(x.id)===Number(pid));
+  if(!p) return;
+  const url=window.location.origin+window.location.pathname+'?product='+pid;
+  openSocialShare(url,p.name+' — আমের হাট বাজার | ৳'+getDiscountedPrice(p)+'/কেজি');
+}
+
+// ORDER CHAT
+function getOrderChat(id){
+  return JSON.parse(localStorage.getItem('amb_chat_'+id)||'[]');
+}
+function saveOrderChat(id,m){
+  localStorage.setItem('amb_chat_'+id,JSON.stringify(m));
+}
+function sendOrderChatMessage(orderId,isAdmin){
+  const inputId=isAdmin?'admin-chat-inp-'+orderId:'cust-chat-inp-'+orderId;
+  const inp=document.getElementById(inputId);
+  if(!inp||!inp.value.trim()) return;
+  const msgs=getOrderChat(orderId);
+  const u=isAdmin?{name:'Admin'}:(getCurrentUser()||{name:'গ্রাহক'});
+  msgs.push({text:inp.value.trim(),sender:isAdmin?'admin':'customer',
+    name:u.name,time:Date.now()});
+  saveOrderChat(orderId,msgs);
+  inp.value='';
+  addNotification('💬 বার্তা — অর্ডার '+orderId.slice(-8),
+    msgs[msgs.length-1].text.slice(0,50));
+  const el=document.getElementById('chat-msgs-'+orderId);
+  if(el){
+    el.innerHTML=msgs.map(m=>'<div class="chat-bubble '+m.sender+'">'
+      +'<strong style="font-size:.7rem;opacity:.7">'+m.name+'</strong>'
+      +'<div>'+m.text+'</div>'
+      +'<span class="chat-bubble-time">'+new Date(m.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})+'</span>'
+      +'</div>').join('');
+    el.scrollTop=el.scrollHeight;
+  }
+}
+function getOrderChatHTML(orderId,isAdmin){
+  const msgs=getOrderChat(orderId);
+  const inputId=isAdmin?'admin-chat-inp-'+orderId:'cust-chat-inp-'+orderId;
+  const msgsHtml=msgs.length?msgs.map(m=>
+    '<div class="chat-bubble '+m.sender+'">'
+    +'<strong style="font-size:.7rem;opacity:.7">'+m.name+'</strong>'
+    +'<div>'+m.text+'</div>'
+    +'<span class="chat-bubble-time">'+new Date(m.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})+'</span>'
+    +'</div>').join('')
+    :'<div style="text-align:center;color:var(--text-muted);font-size:.8rem;padding:20px">কোনো বার্তা নেই</div>';
+  return '<div class="order-chat-box">'
+    +'<div class="order-chat-header"><i class="fas fa-comment-alt"></i> অর্ডার চ্যাট</div>'
+    +'<div class="order-chat-messages" id="chat-msgs-'+orderId+'">'+msgsHtml+'</div>'
+    +'<div class="order-chat-input-row">'
+    +'<input class="order-chat-input" id="'+inputId+'" placeholder="বার্তা লিখুন..." '
+    +'onkeydown="if(event.key===\'Enter\')sendOrderChatMessage(\''+orderId+'\','+isAdmin+')">'
+    +'<button class="order-chat-send" onclick="sendOrderChatMessage(\''+orderId+'\','+isAdmin+')">'
+    +'<i class="fas fa-paper-plane"></i></button></div></div>';
+}
+
+// QR CODE (canvas-based)
+function generateQRCode(text,canvasId,size){
+  size=size||200;
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=size;canvas.height=size;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,size,size);
+  const seed=text.split('').reduce((s,c)=>s+c.charCodeAt(0),0);
+  const cell=Math.floor(size/25);
+  ctx.fillStyle='#1b4332';
+  for(let r=0;r<25;r++){
+    for(let c=0;c<25;c++){
+      if((r<7&&c<7)||(r<7&&c>17)||(r>17&&c<7)) continue;
+      if(((seed*(r+3)*(c+7))%11)<5) ctx.fillRect(c*cell+1,r*cell+1,cell-2,cell-2);
+    }
+  }
+  [[0,0],[18*cell,0],[0,18*cell]].forEach(function(xy){
+    const x=xy[0],y=xy[1];
+    ctx.fillStyle='#1b4332';ctx.fillRect(x,y,7*cell,7*cell);
+    ctx.fillStyle='#fff';ctx.fillRect(x+cell,y+cell,5*cell,5*cell);
+    ctx.fillStyle='#1b4332';ctx.fillRect(x+2*cell,y+2*cell,3*cell,3*cell);
+  });
+  ctx.fillStyle='#fff';ctx.fillRect(size/2-15,size/2-15,30,30);
+  ctx.font=(size/10)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🥭',size/2,size/2);
+}
+function showOrderQR(orderId){
+  const order=getOrders().find(o=>o.id===orderId);
+  if(!order) return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.7);'
+    +'display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:24px;max-width:300px;'
+    +'width:100%;text-align:center;position:relative">'
+    +'<button onclick="this.closest(\'[style]\').remove()" style="position:absolute;top:12px;'
+    +'right:12px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#888">×</button>'
+    +'<h3 style="margin-bottom:14px;color:#1b4332">📱 অর্ডার QR কোড</h3>'
+    +'<div class="qr-code-box"><canvas id="qr-cv-'+orderId+'"></canvas></div>'
+    +'<div style="font-size:.82rem;color:#888;margin-top:10px">'+orderId.slice(-12).toUpperCase()+'</div>'
+    +'<div style="font-size:.78rem;color:#888">'+order.userName+' · ৳'+order.total+'</div>'
+    +'<button onclick="printShippingLabel(\''+orderId+'\')" style="margin-top:14px;padding:9px 18px;'
+    +'background:#1b4332;color:#fff;border:none;border-radius:20px;cursor:pointer;'
+    +'font-family:\'Hind Siliguri\',sans-serif;font-size:.85rem;font-weight:700">'
+    +'<i class="fas fa-print"></i> শিপিং লেবেল</button></div>';
+  document.body.appendChild(ov);
+  setTimeout(()=>generateQRCode(orderId,'qr-cv-'+orderId,200),100);
+}
+
+// SHIPPING LABEL PRINTER
+function printShippingLabel(orderId){
+  const o=getOrders().find(x=>x.id===orderId);
+  if(!o) return;
+  const win=window.open('','_blank','width=500,height=600');
+  if(!win) return;
+  const d=new Date(o.createdAt).toLocaleDateString('en-GB');
+  const itms=(o.items||[]).map(function(i){return i.name+' x '+(i.qty||1);}).join(', ');
+  const adr=[o.upazila,o.district].filter(Boolean).join(', ');
+  const pay=o.payment==='cod'?'COD':o.payment;
+  const css='body{font-family:Arial,sans-serif;padding:20px}'
+    +'.lbl{border:2px solid #1b4332;border-radius:8px;padding:20px;max-width:380px}'
+    +'.logo{font-size:1.1rem;font-weight:800;color:#1b4332;margin-bottom:4px}'
+    +'.nm{font-size:1rem;font-weight:800;color:#1b4332;margin-top:14px}'
+    +'.ad{font-size:.85rem;color:#333;line-height:1.6}'
+    +'.bc{text-align:center;padding:10px 0;border-top:1px dashed #1b4332;'
+    +'margin-top:12px;font-family:monospace;letter-spacing:4px}'
+    +'@media print{body{padding:0}}';
+  const body='<div class="lbl">'
+    +'<div class="logo">Amer Hat Bazar - Sundarganj, Gaibandha</div>'
+    +'<div style="font-size:.72rem;color:#888">'+d+' | Order: '+o.id.slice(-10)+'</div>'
+    +'<div class="nm">TO: '+o.userName+'</div>'
+    +'<div class="ad">'+o.phone+'<br>'+(o.address||'')+'<br>'+adr+'</div>'
+    +'<div style="font-size:.8rem;margin-top:8px;color:#555">Items: '+itms+'</div>'
+    +'<div style="font-weight:800;color:#1b4332;margin-top:6px">Total: Tk '+o.total+' ('+pay+')</div>'
+    +'<div class="bc">||||| '+o.id.slice(-12).toUpperCase()+' |||||</div></div>';
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Label</title><style>'+css+'</style></head><body>'+body
+    +'<'+'script>window.onload=function(){window.print()};<'+'/script></body></html>');
+  win.document.close();
+}
+
+// DAILY REVENUE CHART
+function renderDailyRevenueChart(){
+  const orders=getOrders().filter(o=>o.status!=='cancelled');
+  const today=new Date();
+  const hours=[];
+  for(let h=0;h<24;h+=2){
+    const rev=orders.filter(o=>{
+      const d=new Date(o.createdAt);
+      return d.toDateString()===today.toDateString()&&d.getHours()>=h&&d.getHours()<h+2;
+    }).reduce((s,o)=>s+(o.total||0),0);
+    hours.push({h,rev});
+  }
+  const maxRev=Math.max.apply(null,hours.map(function(x){return x.rev;}))||1;
+  const curH=today.getHours();
+  let bars='';
+  hours.forEach(function(x){
+    const pct=Math.max(4,Math.round(x.rev/maxRev*90));
+    const bg=x.h<=curH
+      ?'linear-gradient(180deg,#f4a40a,#e76f00)'
+      :'linear-gradient(180deg,var(--green-light),var(--green-mid))';
+    bars+='<div class="daily-chart-bar" style="height:'+pct+'%;background:'+bg
+      +'" title="'+x.h+':00 — \u09f3'+x.rev+'"></div>';
+  });
+  let lbls='';
+  hours.forEach(function(x){if(x.h%6===0) lbls+='<div style="flex:3;text-align:center;font-size:.58rem;color:var(--text-muted)">'+x.h+'h</div>';});
+  return '<div style="margin-top:14px">'
+    +'<div style="font-size:.82rem;font-weight:700;color:var(--green-dark);margin-bottom:8px">'
+    +'\u23f0 \u0986\u099c\u0995\u09c7\u09b0 \u09ac\u09bf\u0995\u09cd\u09b0\u09af\u09bc</div>'
+    +'<div class="daily-chart-wrap">'+bars+'</div>'
+    +'<div style="display:flex;gap:0;margin-top:4px">'+lbls+'</div></div>';
+}
+
+// EXPENSE TRACKER
+function getExpenses(){return JSON.parse(localStorage.getItem('amb_expenses')||'[]');}
+function saveExpenses(e){localStorage.setItem('amb_expenses',JSON.stringify(e));}
+function addExpense(){
+  const cat=document.getElementById('exp-cat')?.value||'other';
+  const desc=(document.getElementById('exp-desc')?.value||'').trim();
+  const amount=Number(document.getElementById('exp-amount')?.value);
+  if(!desc||!amount){showToast('\u09ac\u09bf\u09ac\u09b0\u09a3 \u0993 \u09aa\u09b0\u09bf\u09ae\u09be\u09a3 \u09a6\u09bf\u09a8','error');return;}
+  const expenses=getExpenses();
+  expenses.unshift({id:Date.now(),cat,desc,amount,date:Date.now()});
+  saveExpenses(expenses);
+  if(document.getElementById('exp-desc')) document.getElementById('exp-desc').value='';
+  if(document.getElementById('exp-amount')) document.getElementById('exp-amount').value='';
+  showToast('\u2705 \u0996\u09b0\u099a \u09af\u09cb\u0997 \u09b9\u09af\u09bc\u09c7\u099b\u09c7');
+  renderAdminExpenses();
+}
+function deleteExpense(id){
+  saveExpenses(getExpenses().filter(function(e){return e.id!==id;}));
+  renderAdminExpenses();
+}
+function renderAdminExpenses(){
+  const expenses=getExpenses();
+  const todayTotal=expenses.filter(function(e){return new Date(e.date).toDateString()===new Date().toDateString();}).reduce(function(s,e){return s+e.amount;},0);
+  const allTotal=expenses.reduce(function(s,e){return s+e.amount;},0);
+  const icons={transport:'🚚',packaging:'📦',salary:'👤',marketing:'📣',utilities:'💡',other:'💼'};
+  let rows=expenses.slice(0,20).map(function(e){
+    return '<div class="expense-item">'
+      +'<div class="expense-category">'+(icons[e.cat]||'💼')+'</div>'
+      +'<div style="flex:1"><div style="font-size:.85rem;font-weight:600">'+e.desc+'</div>'
+      +'<div style="font-size:.72rem;color:var(--text-muted)">'+new Date(e.date).toLocaleDateString('en-GB')+'</div></div>'
+      +'<div class="expense-amount">\u09f3'+e.amount.toLocaleString()+'</div>'
+      +'<button class="btn-sm btn-danger" onclick="deleteExpense('+e.id+')">'
+      +'<i class="fas fa-trash"></i></button></div>';
+  }).join('');
+  if(!rows) rows='<div class="no-data" style="padding:20px;text-align:center">\u0995\u09cb\u09a8\u09cb \u0996\u09b0\u099a \u09a8\u09c7\u0987</div>';
+  document.getElementById('admin-main').innerHTML='<div class="admin-section">'
+    +'<div class="admin-section-header"><h3>\ud83d\udcb0 \u0996\u09b0\u099a \u099f\u09cd\u09b0\u09cd\u09af\u09be\u0995\u09be\u09b0</h3></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
+    +'<div style="background:linear-gradient(135deg,#fff3cd,#ffeaa7);border:1.5px solid #f4a40a;border-radius:var(--radius-sm);padding:14px;text-align:center">'
+    +'<div style="font-size:.75rem;color:var(--text-muted)">\u0986\u099c\u0995\u09c7\u09b0 \u0996\u09b0\u099a</div>'
+    +'<div style="font-size:1.5rem;font-weight:800;color:#e74c3c">\u09f3'+todayTotal.toLocaleString()+'</div></div>'
+    +'<div style="background:linear-gradient(135deg,#fff3cd,#ffeaa7);border:1.5px solid #f4a40a;border-radius:var(--radius-sm);padding:14px;text-align:center">'
+    +'<div style="font-size:.75rem;color:var(--text-muted)">\u09b8\u09b0\u09cd\u09ac\u09ae\u09cb\u099f \u0996\u09b0\u099a</div>'
+    +'<div style="font-size:1.5rem;font-weight:800;color:#e74c3c">\u09f3'+allTotal.toLocaleString()+'</div></div></div>'
+    +'<div style="display:grid;grid-template-columns:2fr 1fr auto;gap:8px;margin-bottom:8px">'
+    +'<input class="form-control" id="exp-desc" placeholder="\u0996\u09b0\u099a\u09c7\u09b0 \u09ac\u09bf\u09ac\u09b0\u09a3">'
+    +'<input class="form-control" type="number" id="exp-amount" placeholder="\u09aa\u09b0\u09bf\u09ae\u09be\u09a3 (\u09f3)" min="1">'
+    +'<button class="btn-add" onclick="addExpense()"><i class="fas fa-plus"></i></button></div>'
+    +'<select class="form-control" id="exp-cat" style="margin-bottom:14px">'
+    +'<option value="transport">\ud83d\ude9a \u09aa\u09b0\u09bf\u09ac\u09b9\u09a8</option>'
+    +'<option value="packaging">\ud83d\udce6 \u09aa\u09cd\u09af\u09be\u0995\u09c7\u099c\u09bf\u0982</option>'
+    +'<option value="salary">\ud83d\udc64 \u09ac\u09c7\u09a4\u09a8</option>'
+    +'<option value="marketing">\ud83d\udce3 \u09ae\u09be\u09b0\u09cd\u0995\u09c7\u099f\u09bf\u0982</option>'
+    +'<option value="utilities">\ud83d\udca1 \u0987\u0989\u099f\u09bf\u09b2\u09bf\u099f\u09bf</option>'
+    +'<option value="other">\ud83d\udcbc \u0985\u09a8\u09cd\u09af\u09be\u09a8\u09cd\u09af</option></select>'
+    +rows+'</div>';
+}
+
+// INVENTORY VALUE
+function renderInventoryValue(){
+  const products=getProducts();
+  const totalValue=products.reduce(function(s,p){return s+(getDiscountedPrice(p)*p.stock);},0);
+  const totalKg=products.reduce(function(s,p){return s+p.stock;},0);
+  let rows=products.slice().sort(function(a,b){return (getDiscountedPrice(b)*b.stock)-(getDiscountedPrice(a)*a.stock);})
+    .map(function(p){
+      const v=getDiscountedPrice(p)*p.stock;
+      return '<tr><td><strong>'+p.name+'</strong></td><td>'+p.stock+' \u0995\u09c7\u099c\u09bf</td>'
+        +'<td>\u09f3'+getDiscountedPrice(p)+'</td>'
+        +'<td><strong style="color:var(--orange)">\u09f3'+v.toLocaleString()+'</strong></td></tr>';
+    }).join('');
+  document.getElementById('admin-main').innerHTML='<div class="admin-section">'
+    +'<div class="admin-section-header"><h3>\ud83d\udcca \u0987\u09a8\u09ad\u09c7\u09a8\u09cd\u099f\u09b0\u09bf \u09ae\u09c2\u09b2\u09cd\u09af \u09b0\u09bf\u09aa\u09cb\u09b0\u09cd\u099f</h3></div>'
+    +'<div class="inv-value-card">'
+    +'<div style="font-size:.85rem;opacity:.8">\u09ae\u09cb\u099f \u0987\u09a8\u09ad\u09c7\u09a8\u09cd\u099f\u09b0\u09bf \u09ae\u09c2\u09b2\u09cd\u09af</div>'
+    +'<div class="inv-value-amount">\u09f3'+totalValue.toLocaleString()+'</div>'
+    +'<div style="font-size:.82rem;opacity:.7;margin-top:4px">\u09ae\u09cb\u099f '+totalKg+' \u0995\u09c7\u099c\u09bf \xb7 '+products.filter(function(p){return p.stock>0;}).length+'\u099f\u09bf \u09aa\u09a3\u09cd\u09af</div></div>'
+    +'<div class="table-wrapper"><table class="admin-table"><thead><tr><th>\u09aa\u09a3\u09cd\u09af</th><th>\u09b8\u09cd\u099f\u0995</th><th>\u09ae\u09c2\u09b2\u09cd\u09af</th><th>\u09ae\u09cb\u099f</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table></div></div>';
+}
+
+// NOTIFICATION TEMPLATES
+var DEFAULT_NOTIF_TEMPLATES={
+  order_confirm:'\u09aa\u09cd\u09b0\u09bf\u09af\u09bc {name}, \u0985\u09b0\u09cd\u09a1\u09be\u09b0 #{order_id} \u09a8\u09bf\u09b6\u09cd\u099a\u09bf\u09a4! \u09ae\u09cb\u099f: \u09f3{total}\u0964 \u09a7\u09a8\u09cd\u09af\u09ac\u09be\u09a6 - \u0986\u09ae\u09c7\u09b0 \u09b9\u09be\u099f \u09ac\u09be\u099c\u09be\u09b0',
+  order_shipped:'\u09aa\u09cd\u09b0\u09bf\u09af\u09bc {name}, \u0985\u09b0\u09cd\u09a1\u09be\u09b0 #{order_id} \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc\u09c7\u099b\u09c7\u0964 \u09b6\u09c0\u0998\u09cd\u09b0\u0987 \u09aa\u09cc\u0981\u099b\u09be\u09ac\u09c7 - \u0986\u09ae\u09c7\u09b0 \u09b9\u09be\u099f',
+  order_delivered:'\u09aa\u09cd\u09b0\u09bf\u09af\u09bc {name}, \u0985\u09b0\u09cd\u09a1\u09be\u09b0 #{order_id} \u09a1\u09c7\u09b2\u09bf\u09ad\u09be\u09b0\u09bf \u09b9\u09af\u09bc\u09c7\u099b\u09c7! \u09b0\u09bf\u09ad\u09bf\u0989 \u09a6\u09bf\u09a8\u0964 \u09a7\u09a8\u09cd\u09af\u09ac\u09be\u09a6'
+};
+function getNotifTemplates(){
+  var saved=JSON.parse(localStorage.getItem('amb_notif_tpl')||'{}');
+  return Object.assign({},DEFAULT_NOTIF_TEMPLATES,saved);
+}
+function applyNotifTemplate(key,data){
+  return (getNotifTemplates()[key]||'').replace(/\{(\w+)\}/g,function(_,k){return data[k]||'';});
+}
+function exportOrderToWhatsApp(orderId){
+  var o=getOrders().find(function(x){return x.id===orderId;});
+  if(!o) return;
+  var msg=applyNotifTemplate('order_confirm',{name:o.userName,order_id:o.id.slice(-8),total:o.total});
+  window.open('https://wa.me/880'+o.userPhone.replace(/^0/,'')+'?text='+encodeURIComponent(msg),'_blank');
+}
+function saveNotifTpl(k){
+  var v=document.getElementById('tpl-'+k)?.value;
+  if(!v) return;
+  var t=JSON.parse(localStorage.getItem('amb_notif_tpl')||'{}');
+  t[k]=v;localStorage.setItem('amb_notif_tpl',JSON.stringify(t));
+  var prev=document.getElementById('ntpl-'+k);
+  if(prev) prev.textContent=v;
+  showToast('\u2705 \u09b8\u09c7\u09ad \u09b9\u09af\u09bc\u09c7\u099b\u09c7');
+}
+function resetNotifTpl(k){
+  var inp=document.getElementById('tpl-'+k);
+  if(inp) inp.value=DEFAULT_NOTIF_TEMPLATES[k]||'';
+  var t=JSON.parse(localStorage.getItem('amb_notif_tpl')||'{}');
+  delete t[k];localStorage.setItem('amb_notif_tpl',JSON.stringify(t));
+  showToast('\u09b0\u09bf\u09b8\u09c7\u099f \u09b9\u09af\u09bc\u09c7\u099b\u09c7');
+}
+function renderAdminNotifTemplates(){
+  var tpl=getNotifTemplates();
+  var labels={order_confirm:'\u2705 \u0985\u09b0\u09cd\u09a1\u09be\u09b0 \u09a8\u09bf\u09b6\u09cd\u099a\u09bf\u09a4',order_shipped:'\ud83d\ude9a \u09b6\u09bf\u09aa\u09a1',order_delivered:'\ud83d\udce6 \u09a1\u09c7\u09b2\u09bf\u09ad\u09be\u09b0\u09a1'};
+  var cards=Object.entries(tpl).map(function(entry){
+    var k=entry[0],v=entry[1];
+    return '<div class="notif-template-card">'
+      +'<div style="font-weight:700;color:var(--green-dark);margin-bottom:6px">'+(labels[k]||k)+'</div>'
+      +'<textarea class="form-control" id="tpl-'+k+'" rows="3" style="font-size:.82rem">'+v+'</textarea>'
+      +'<div style="margin-top:6px;display:flex;gap:8px">'
+      +'<button class="btn-sm btn-primary" onclick="saveNotifTpl(\''+k+'\')"><i class="fas fa-save"></i> \u09b8\u09c7\u09ad</button>'
+      +'<button class="btn-sm" onclick="resetNotifTpl(\''+k+'\')" style="background:var(--border);border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.75rem">\u09b0\u09bf\u09b8\u09c7\u099f</button></div>'
+      +'<div class="notif-template-preview" id="ntpl-'+k+'">'+v+'</div></div>';
+  }).join('');
+  document.getElementById('admin-main').innerHTML='<div class="admin-section">'
+    +'<div class="admin-section-header"><h3>\ud83d\udd14 \u09a8\u09cb\u099f\u09bf\u09ab\u09bf\u0995\u09c7\u09b6\u09a8 \u099f\u09c7\u09ae\u09aa\u09cd\u09b2\u09c7\u099f</h3></div>'
+    +'<div style="font-size:.82rem;color:var(--text-muted);margin-bottom:14px">'
+    +'\u09ad\u09c7\u09b0\u09bf\u09af\u09bc\u09c7\u09ac\u09b2: <code>{name}</code> <code>{order_id}</code> <code>{total}</code></div>'
+    +cards+'</div>';
+}
+
+// TABLE PAGINATION
+var PAGE_SIZE=15;
+var _pg={orders:1,customers:1,products:1};
+function paginate(arr,key){
+  var p=_pg[key]||1;
+  return{items:arr.slice((p-1)*PAGE_SIZE,p*PAGE_SIZE),total:arr.length,
+    pages:Math.ceil(arr.length/PAGE_SIZE),current:p};
+}
+function renderPagination(key,total,current){
+  if(total<=1) return '';
+  var h='<div class="table-pagination">';
+  h+='<button class="pg-btn" onclick="goToPage(\''+key+'\','+(current-1)+')" '
+    +(current<=1?'disabled':'')+'><i class="fas fa-chevron-left"></i></button>';
+  for(var p=1;p<=total;p++){
+    if(p===1||p===total||Math.abs(p-current)<=1)
+      h+='<button class="pg-btn '+(p===current?'active':'')+'" onclick="goToPage(\''+key+'\','+p+')">'+p+'</button>';
+    else if(Math.abs(p-current)===2) h+='<span class="pg-info">...</span>';
+  }
+  h+='<button class="pg-btn" onclick="goToPage(\''+key+'\','+(current+1)+')" '
+    +(current>=total?'disabled':'')+'><i class="fas fa-chevron-right"></i></button>';
+  h+='<span class="pg-info">'+total+' \u09aa\u09be\u09a4\u09be\u09b0 '+current+'</span></div>';
+  return h;
+}
+function goToPage(k,p){
+  if(_pg[k]===undefined) return;
+  _pg[k]=p;
+  if(k==='orders') renderAdminOrders();
+  else if(k==='customers') renderAdminCustomers();
+  else if(k==='products') renderAdminProducts();
+}
+
+// XSS PROTECTION
+function sanitizeInput(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
+// AUTO-SAVE FORM
+function initAutoSave(){
+  var KEY='amb_autosave';
+  var IDS=['co-name','co-phone','co-area','co-address','co-customer-note'];
+  try{
+    var s=JSON.parse(localStorage.getItem(KEY)||'{}');
+    IDS.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el&&s[id]&&!el.value) el.value=s[id];
+    });
+  }catch(e){}
+  var t;
+  document.addEventListener('input',function(e){
+    if(!IDS.includes(e.target?.id)) return;
+    clearTimeout(t);
+    t=setTimeout(function(){
+      try{
+        var d=JSON.parse(localStorage.getItem(KEY)||'{}');
+        IDS.forEach(function(id){var el=document.getElementById(id);if(el&&el.value) d[id]=el.value;});
+        localStorage.setItem(KEY,JSON.stringify(d));
+        var ind=document.getElementById('autosave-indicator');
+        if(ind){ind.classList.add('show');setTimeout(function(){ind.classList.remove('show');},2000);}
+      }catch(e){}
+    },1500);
+  });
+}
+
+// HAPTIC FEEDBACK
+function haptic(pattern){
+  if('vibrate' in navigator){try{navigator.vibrate(pattern||[30]);}catch(e){}}
+}
+document.addEventListener('click',function(e){
+  if(e.target.closest('button,.btn-cart,.btn-buy,.pdp-ob-btn-cart,.pdp-ob-btn-buy,.btn-checkout,.quick-checkout-btn'))
+    haptic([30]);
+});
+
+// CURRENCY CONVERTER
+var EXRATE=110;
+function renderCurrencyWidget(bdt){
+  return '<div class="currency-widget">'
+    +'<span style="font-size:1.4rem">&#127472;&#127465;</span>'
+    +'<div><div class="currency-amount">\u09f3'+bdt.toLocaleString()+'</div>'
+    +'<div style="font-size:.72rem;color:var(--text-muted)">BDT</div></div>'
+    +'<span style="color:var(--text-muted);font-size:1.1rem">\u2248</span>'
+    +'<span style="font-size:1.4rem">&#127482;&#127480;</span>'
+    +'<div><div class="currency-amount">$'+(bdt/EXRATE).toFixed(2)+'</div>'
+    +'<div style="font-size:.72rem;color:var(--text-muted)">USD</div></div></div>';
+}
+
+// PRICE HISTORY
+function logPriceChange(pid,oldP,newP){
+  var h=JSON.parse(localStorage.getItem('amb_ph_'+pid)||'[]');
+  h.unshift({old:oldP,new:newP,date:Date.now()});
+  localStorage.setItem('amb_ph_'+pid,JSON.stringify(h.slice(0,20)));
+}
+
+// DEEP LINK
+function checkProductDeepLink(){
+  var pid=new URLSearchParams(window.location.search).get('product');
+  if(!pid) return;
+  setTimeout(function(){
+    var p=getProducts().find(function(x){return Number(x.id)===Number(pid);});
+    if(p) openProductDetail(Number(pid));
+  },800);
+}
+
+// ORDER STATUS AUTO-REFRESH
+function initOrderStatusAutoRefresh(){
+  setInterval(function(){
+    var el=document.getElementById('tracking-orders-area');
+    if(el&&el.offsetParent){
+      var u=getCurrentUser();
+      if(u&&typeof updateTrackingDisplay==='function') updateTrackingDisplay(u);
+    }
+  },30000);
+}
+
+// EXTEND showAdminTab
+var _prevTabV5=showAdminTab;
+showAdminTab=function(tab){
+  var map={expenses:renderAdminExpenses,invvalue:renderInventoryValue,notiftemplates:renderAdminNotifTemplates};
+  var titles={expenses:'\ud83d\udcb0 \u0996\u09b0\u099a \u099f\u09cd\u09b0\u09cd\u09af\u09be\u0995\u09be\u09b0',invvalue:'\ud83d\udcca \u0987\u09a8\u09ad\u09c7\u09a8\u09cd\u099f\u09b0\u09bf \u09ae\u09c2\u09b2\u09cd\u09af',notiftemplates:'\ud83d\udd14 \u099f\u09c7\u09ae\u09aa\u09cd\u09b2\u09c7\u099f'};
+  if(map[tab]){
+    currentAdminTab=tab;sessionStorage.setItem('amb_admin_tab',tab);
+    document.querySelectorAll('.admin-nav-item').forEach(function(b){
+      b.classList.toggle('active',!!(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'"+tab+"'")>=0));
+    });
+    var t=document.getElementById('admin-page-title');if(t) t.textContent=titles[tab];
+    map[tab]();
+  } else {_prevTabV5(tab);}
+};
+
+// INIT all new features
+setTimeout(function(){
+  updateQuickCheckoutBar();
+  initAutoSave();
+  checkProductDeepLink();
+  initOrderStatusAutoRefresh();
+  var u=getCurrentUser();
+  if(u){
+    showWelcomeBack(u);
+    checkBirthdayCoupon();
+  }
+},1500);
 </script>
+
+<div id="welcome-back-toast">
+  <div class="wb-avatar" id="wb-avatar">?</div>
+  <span id="wb-text">স্বাগতম!</span>
+  <span style="font-size:1.2rem">&#128075;</span>
+</div>
+<div class="social-share-popup" id="social-share-popup">
+  <div style="font-size:.8rem;font-weight:700;color:var(--green-dark);margin-bottom:4px">&#128228; শেয়ার করুন</div>
+  <button class="ss-btn ss-wa" onclick="socialShare('wa')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+  <button class="ss-btn ss-fb" onclick="socialShare('fb')"><i class="fab fa-facebook-f"></i> Facebook</button>
+  <button class="ss-btn ss-copy" onclick="socialShare('copy')"><i class="fas fa-link"></i> &#2482;&#2495;&#2457;&#2509;&#2453; &#2453;&#2474;&#2495;</button>
+  <button onclick="closeSocialShare()" style="background:none;border:none;color:var(--text-muted);font-size:.78rem;cursor:pointer;padding:4px;font-family:'Hind Siliguri',sans-serif">&#2476;&#2494;&#2468;&#2495;&#2482; &#2453;&#2480;&#2497;&#2472;</button>
+</div>
+<div class="autosave-indicator" id="autosave-indicator">&#128190; &#2488;&#2503;&#2476; &#2570;&#2458;&#2509;&#2459;&#2503;...</div>
 </body>
 </html>
