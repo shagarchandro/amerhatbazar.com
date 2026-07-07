@@ -150,7 +150,8 @@ i.fab,[class*="fa-brands"]{font-family:'Font Awesome 6 Brands' !important;font-w
 .hero-inner{max-width:1280px;margin:0 auto;padding:60px 20px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;position:relative;z-index:2}
 #particles-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5;width:100%;height:100%}
 /* Floating action buttons — always above everything */
-#click-to-call,#faq-chatbot-btn,.wa-float-btn,.wa-float-wrap,#spin-wheel-overlay,#lightbox,#admin-cmdk-overlay{isolation:isolate}
+/* Floating action buttons — always above everything */
+#faq-chatbot-btn,.wa-float-btn,.wa-float-wrap,#spin-wheel-overlay,#lightbox{isolation:isolate}
 .hero-text h1{font-size:3rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:15px}
 .hero-text h1 span{color:var(--yellow)}
 .hero-text p{color:rgba(255,255,255,.8);font-size:1.1rem;margin-bottom:30px;line-height:1.7}
@@ -2708,12 +2709,8 @@ img.lazy.loaded{opacity:1}
 .cert-badge-label{font-size:.68rem;color:var(--text-muted);font-weight:600;text-align:center}
 
 /* ── 15. CLICK-TO-CALL WIDGET ── */
-#click-to-call{position:fixed;bottom:215px;right:20px;z-index:1310;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:all .3s;text-decoration:none;isolation:isolate}
-#click-to-call:hover{transform:scale(1.08)}
-.ctc-tooltip{position:absolute;right:62px;top:50%;transform:translateY(-50%) translateX(8px);background:#1a1a1a;color:#fff;padding:6px 12px;border-radius:8px;font-size:.78rem;white-space:nowrap;opacity:0;pointer-events:none;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
-.ctc-tooltip::after{content:'';position:absolute;left:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-left-color:#1a1a1a}
-#click-to-call:hover .ctc-tooltip{opacity:1;transform:translateY(-50%) translateX(0)}
-@media(hover:none){.ctc-tooltip{display:none}}
+#click-to-call{position:fixed;bottom:215px;right:20px;z-index:1310;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:transform .3s,box-shadow .3s;text-decoration:none}
+#click-to-call:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(21,101,192,.6)}
 @media(max-width:768px){#click-to-call{bottom:225px;right:12px;width:46px;height:46px;font-size:1.1rem}}
 
 /* ── 16. SUPPORT TICKET ── */
@@ -2770,7 +2767,7 @@ img.lazy.loaded{opacity:1}
 .calendar-cell.empty{background:transparent;border:none;cursor:default}
 
 /* ── 22. ADMIN GLOBAL SEARCH (Cmd+K) ── */
-#admin-cmdk-overlay{position:fixed;inset:0;z-index:9970;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding-top:80px}
+#admin-cmdk-overlay{position:fixed;inset:0;z-index:9970;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding-top:80px;isolation:isolate}
 #admin-cmdk-overlay.open{display:flex}
 .cmdk-box{background:#fff;border-radius:var(--radius);width:90%;max-width:560px;max-height:70vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 [data-theme="dark"] .cmdk-box{background:#1a2e1f}
@@ -3724,7 +3721,7 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
 </div>
 
 <!-- CLICK TO CALL -->
-<a href="tel:+8801305144356" id="click-to-call" style="position:relative"><i class="fas fa-phone-alt"></i><span class="ctc-tooltip">📞 কল করুন: +880 1305-144356</span></a>
+<button id="click-to-call" onclick="window.location.href='tel:+8801305144356'" aria-label="কল করুন"><i class="fas fa-phone-alt"></i></button>
 
 <!-- ADMIN GLOBAL SEARCH (Cmd+K) -->
 <div id="admin-cmdk-overlay" onclick="if(event.target===this)closeAdminCmdK()">
@@ -4486,6 +4483,7 @@ function addToCart(pid){
   saveMyCart(cart);
   updateCartCount();
   showToast(`🥭 ${p.name} (${qty} কেজি) কার্টে যোগ হয়েছে!`,'success');
+  if(typeof updateQuickCheckoutBar==='function') updateQuickCheckoutBar();
   const sidebar=document.getElementById('cart-sidebar');
   if(sidebar && sidebar.classList.contains('open')) renderCart();
 }
@@ -4493,6 +4491,7 @@ function removeFromCart(pid){
   pid=Number(pid);
   let cart=getMyCart().filter(i=>Number(i.id)!==pid);
   saveMyCart(cart);updateCartCount();renderCart();
+  if(typeof updateQuickCheckoutBar==='function') updateQuickCheckoutBar();
 }
 function changeQty(pid,delta){
   pid=Number(pid);
@@ -6830,7 +6829,7 @@ function renderCustomizeSettings(){
         <div class="form-group"><label><i class="fab fa-facebook" style="color:#1877f2;width:18px"></i> Facebook</label><input id="cs-fbLink" value="${s.fbLink}" placeholder="https://facebook.com/yourpage"></div>
         <div class="form-group"><label><i class="fab fa-instagram" style="color:#e4405f;width:18px"></i> Instagram</label><input id="cs-igLink" value="${s.igLink}" placeholder="https://instagram.com/yourpage"></div>
         <div class="form-group"><label><i class="fab fa-youtube" style="color:#ff0000;width:18px"></i> YouTube</label><input id="cs-ytLink" value="${s.ytLink}" placeholder="https://youtube.com/yourchannel"></div>
-        <div class="form-group"><label><i class="fab fa-whatsapp" style="color:#25d366;width:18px"></i> WhatsApp</label><input id="cs-waLink" value="${s.waLink}" placeholder="https://wa.me/8801XXXXXXXXX"></div>
+        <div class="form-group"><label><i class="fab fa-whatsapp" style="color:#25d366;width:18px"></i> WhatsApp</label><input id="cs-waLink" value="${s.waLink}" placeholder="https://wa.me/8801305144356"></div>
       </div></div>`,
 
     banner:`
@@ -9273,6 +9272,7 @@ function exportAllData(){
   a.href=URL.createObjectURL(blob);
   a.download=`amer-hat-bazar-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
+  localStorage.setItem('amb_last_backup', new Date().toLocaleString('en-GB'));
   showToast('✅ সম্পূর্ণ ডেটা ব্যাকআপ ডাউনলোড হচ্ছে!');
 }
 function importAllData(){
