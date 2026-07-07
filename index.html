@@ -142,12 +142,15 @@ i.fab,[class*="fa-brands"]{font-family:'Font Awesome 6 Brands' !important;font-w
 .mobile-menu a:hover{background:rgba(255,255,255,.08);color:var(--yellow)}
 
 /* ===== HERO ===== */
-#hero{margin-top:65px;min-height:88vh;background:linear-gradient(135deg,var(--green-dark) 0%,var(--green-mid) 50%,#1a472a 100%);display:flex;align-items:center;position:relative;overflow:hidden}
-.hero-bg-deco{position:absolute;inset:0;pointer-events:none}
-.hero-circle{position:absolute;border-radius:50%;opacity:.06}
+#hero{margin-top:65px;min-height:88vh;background:linear-gradient(135deg,var(--green-dark) 0%,var(--green-mid) 50%,#1a472a 100%);display:flex;align-items:center;position:relative;overflow:hidden;z-index:0;isolation:isolate}
+.hero-bg-deco{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.hero-circle{position:absolute;border-radius:50%;opacity:.06;pointer-events:none;z-index:0}
 .hero-circle-1{width:500px;height:500px;background:var(--yellow);top:-100px;right:-100px}
 .hero-circle-2{width:300px;height:300px;background:#fff;bottom:-80px;left:-60px}
-.hero-inner{max-width:1280px;margin:0 auto;padding:60px 20px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;position:relative;z-index:1}
+.hero-inner{max-width:1280px;margin:0 auto;padding:60px 20px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:60px;position:relative;z-index:2}
+#particles-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5;width:100%;height:100%}
+/* Floating action buttons — always above everything */
+#click-to-call,#faq-chatbot-btn,.wa-float-btn,.wa-float-wrap,#spin-wheel-overlay,#lightbox,#admin-cmdk-overlay{isolation:isolate}
 .hero-text h1{font-size:3rem;font-weight:700;color:#fff;line-height:1.2;margin-bottom:15px}
 .hero-text h1 span{color:var(--yellow)}
 .hero-text p{color:rgba(255,255,255,.8);font-size:1.1rem;margin-bottom:30px;line-height:1.7}
@@ -1810,9 +1813,7 @@ button,a[role="button"]{-webkit-tap-highlight-color:transparent;user-select:none
 @keyframes cursorBlink{0%,100%{border-color:var(--yellow)}50%{border-color:transparent}}
 
 /* ── FLOATING PARTICLES ── */
-#particles-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5}
-#hero{position:relative;overflow:hidden}
-#hero .hero-inner{position:relative;z-index:1}
+/* (particles canvas z-index defined in hero section above) */
 
 /* ── LIVE ORDER TICKER ── */
 #live-ticker{background:rgba(0,0,0,.25);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:25px;padding:6px 16px;display:inline-flex;align-items:center;gap:8px;font-size:.8rem;color:rgba(255,255,255,.9);margin-top:14px}
@@ -2632,7 +2633,7 @@ img.lazy.loaded{opacity:1}
 .one-click-reorder-btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(45,106,79,.35)}
 
 /* ── 8. FAQ CHATBOT ── */
-#faq-chatbot-btn{position:fixed;bottom:140px;right:20px;z-index:1290;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(110,72,170,.4);cursor:pointer;transition:all .3s}
+#faq-chatbot-btn{position:fixed;bottom:140px;right:20px;z-index:1305;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(110,72,170,.4);cursor:pointer;transition:all .3s;isolation:isolate}
 #faq-chatbot-btn:hover{transform:scale(1.08)}
 @media(max-width:768px){#faq-chatbot-btn{bottom:150px;right:12px;width:46px;height:46px;font-size:1.1rem}}
 #faq-chatbot-window{position:fixed;bottom:200px;right:20px;z-index:1295;width:340px;max-width:90vw;height:440px;background:#fff;border-radius:var(--radius);box-shadow:0 12px 40px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden}
@@ -2707,7 +2708,7 @@ img.lazy.loaded{opacity:1}
 .cert-badge-label{font-size:.68rem;color:var(--text-muted);font-weight:600;text-align:center}
 
 /* ── 15. CLICK-TO-CALL WIDGET ── */
-#click-to-call{position:fixed;bottom:215px;right:20px;z-index:1280;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:all .3s;text-decoration:none}
+#click-to-call{position:fixed;bottom:215px;right:20px;z-index:1310;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:all .3s;text-decoration:none;isolation:isolate}
 #click-to-call:hover{transform:scale(1.08)}
 .ctc-tooltip{position:absolute;right:62px;top:50%;transform:translateY(-50%) translateX(8px);background:#1a1a1a;color:#fff;padding:6px 12px;border-radius:8px;font-size:.78rem;white-space:nowrap;opacity:0;pointer-events:none;transition:all .2s;font-family:'Hind Siliguri',sans-serif}
 .ctc-tooltip::after{content:'';position:absolute;left:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-left-color:#1a1a1a}
@@ -3106,8 +3107,11 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
 
 <!-- HERO -->
 <section id="hero">
-  <canvas id="particles-canvas"></canvas>
-  <div class="hero-bg-deco"><div class="hero-circle hero-circle-1"></div><div class="hero-circle hero-circle-2"></div></div>
+  <div class="hero-bg-deco">
+    <canvas id="particles-canvas" style="position:absolute;inset:0;z-index:0;pointer-events:none;width:100%;height:100%"></canvas>
+    <div class="hero-circle hero-circle-1"></div>
+    <div class="hero-circle hero-circle-2"></div>
+  </div>
   <div class="hero-inner">
     <div class="hero-text">
       <div style="display:inline-block;background:rgba(244,164,10,.15);color:var(--yellow);padding:6px 16px;border-radius:20px;font-size:.85rem;font-weight:600;margin-bottom:15px;border:1px solid rgba(244,164,10,.3)">🌿 ১০০% প্রাকৃতিক ও তাজা আম</div>
