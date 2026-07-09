@@ -2956,6 +2956,364 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
 .social-tag.google{background:#fce8e6;color:#c62828}
 .social-tag.facebook{background:#e8f0fe;color:#1565c0}
 .social-tag.email{background:var(--green-pale);color:var(--green-dark)}
+
+/* ============================================================
+   COMPREHENSIVE RESPONSIVE — ALL DEVICES
+   ============================================================ */
+
+/* ── 1280px: Large Desktop ── */
+@media(max-width:1280px){
+  .hero-inner{padding:50px 20px;gap:40px}
+  .blog-grid{grid-template-columns:repeat(3,1fr)}
+  .analytics-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+/* ── 1024px: Tablet Landscape ── */
+@media(max-width:1024px){
+  /* Social login */
+  .btn-social-login{padding:10px 14px;font-size:.85rem}
+  /* OAuth setup modal */
+  #oauth-setup-modal .modal{max-width:500px}
+  /* Customer table */
+  .admin-table th:nth-child(4),.admin-table td:nth-child(4){display:none}
+  /* Staff */
+  .staff-card{padding:12px}
+  /* Calendar */
+  .calendar-grid{gap:3px}
+}
+
+/* ── 900px: Tablet Portrait ── */
+@media(max-width:900px){
+  /* Social login */
+  .social-login-btns{gap:8px}
+  .btn-social-login{padding:10px 12px;font-size:.82rem;gap:10px}
+  /* OAuth modal */
+  #oauth-setup-modal .modal{max-width:95vw}
+  /* Welcome back toast */
+  #welcome-back-toast{top:70px;font-size:.85rem;padding:12px 18px}
+  /* Quick checkout */
+  .quick-checkout-bar{padding:8px 12px}
+  .quick-checkout-btn{padding:8px 14px;font-size:.78rem}
+  /* Todo */
+  .admin-todo-item{padding:8px}
+  /* Staff card */
+  .staff-card{flex-wrap:wrap}
+  /* Forecast */
+  .forecast-card{padding:16px}
+  .forecast-amount{font-size:1.8rem}
+  /* Undo toast */
+  .undo-toast{padding:10px 14px;font-size:.82rem}
+}
+
+/* ── 768px: Mobile ── */
+@media(max-width:768px){
+  /* Social login buttons */
+  .social-login-btns{gap:7px;margin-bottom:12px}
+  .btn-social-login{padding:10px 12px;font-size:.82rem;gap:9px;border-radius:8px}
+  .social-login-divider{font-size:.78rem;margin:10px 0}
+
+  /* OAuth setup modal */
+  #oauth-setup-modal .modal{
+    position:fixed;bottom:0;left:0;right:0;border-radius:var(--radius) var(--radius) 0 0;
+    max-width:100%;margin:0;max-height:90vh;overflow-y:auto
+  }
+  #oauth-setup-modal .modal-body{padding:14px}
+
+  /* Welcome back toast */
+  #welcome-back-toast{
+    top:auto;bottom:80px;left:50%;right:auto;
+    white-space:normal;max-width:88vw;font-size:.82rem;
+    padding:11px 16px;border-radius:20px
+  }
+  .wb-avatar{width:30px;height:30px;font-size:.82rem;flex-shrink:0}
+
+  /* Quick checkout bar */
+  .quick-checkout-bar{flex-direction:column;gap:8px;align-items:stretch;padding:10px 12px}
+  .quick-checkout-btn{justify-content:center;width:100%;padding:10px}
+
+  /* Customer order note */
+  .customer-note-box{padding:10px}
+  .customer-note-input{font-size:.82rem;min-height:52px}
+
+  /* Birthday banner */
+  .birthday-banner{padding:16px}
+  .birthday-coupon-code{font-size:1.1rem;letter-spacing:2px;padding:7px 14px}
+
+  /* Order chat */
+  .order-chat-messages{height:150px}
+  .chat-bubble{font-size:.8rem;padding:7px 10px}
+  .order-chat-input{font-size:.8rem}
+
+  /* Daily chart */
+  .daily-chart-wrap{height:70px}
+  .daily-chart-bar{border-radius:2px 2px 0 0}
+
+  /* Expense tracker */
+  .expense-item{padding:8px}
+  .expense-category{width:32px;height:32px;font-size:1rem}
+
+  /* Inventory value card */
+  .inv-value-card{padding:16px}
+  .inv-value-amount{font-size:1.8rem}
+
+  /* Notification template */
+  .notif-template-card{padding:12px}
+  .notif-template-preview{font-size:.78rem;padding:8px 10px}
+
+  /* Pagination */
+  .table-pagination{gap:4px;padding:10px 0}
+  .pg-btn{width:30px;height:30px;font-size:.78rem}
+  .pg-info{font-size:.72rem}
+
+  /* Currency widget */
+  .currency-widget{gap:8px;padding:10px}
+  .currency-amount{font-size:.95rem}
+
+  /* UGC gallery */
+  .ugc-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .ugc-item-name{font-size:.68rem}
+
+  /* Trust badges */
+  .cert-badges-row{gap:10px;padding:14px}
+  .cert-badge-icon{font-size:1.5rem}
+  .cert-badge-label{font-size:.62rem}
+
+  /* Tag filter */
+  .tag-filter-row{gap:6px}
+  .tag-chip{padding:4px 11px;font-size:.75rem}
+  .product-tag-badge{font-size:.6rem;padding:1px 5px}
+
+  /* Bestseller badge */
+  .bestseller-badge{font-size:.6rem;padding:3px 8px;top:8px;right:8px}
+  .staffpick-badge{font-size:.58rem;top:36px;right:8px}
+  .product-sold-today{font-size:.68rem}
+
+  /* Buy together */
+  .buy-together-section{padding:12px}
+  .bt-title{font-size:.85rem}
+  .bt-items-row{gap:8px}
+  .bt-item{width:62px}
+  .bt-item-img{width:50px;height:50px;font-size:1.5rem}
+  .bt-item-name{font-size:.65rem}
+  .bt-total-price{font-size:1rem}
+  .btn-bt-addall{padding:8px 14px;font-size:.78rem}
+
+  /* Staff management */
+  .staff-card{padding:12px;gap:10px}
+  .staff-avatar{width:40px;height:40px;font-size:.95rem}
+  .staff-role-badge{font-size:.65rem;padding:2px 8px}
+
+  /* Batch tracking */
+  .batch-row{padding:8px;gap:8px;flex-wrap:wrap}
+
+  /* Admin todo */
+  .admin-todo-item{padding:8px;gap:8px}
+  .todo-text{font-size:.82rem}
+  .todo-priority{font-size:.6rem;padding:1px 6px}
+
+  /* Calendar */
+  .calendar-grid{grid-template-columns:repeat(7,1fr);gap:2px}
+  .calendar-day-label{font-size:.65rem;padding:4px 0}
+  .calendar-cell{padding:3px;font-size:.62rem}
+  .calendar-cell-num{font-size:.68rem}
+  .calendar-cell-count{width:14px;height:14px;font-size:.55rem}
+
+  /* Delivery zone */
+  .delivery-zone-selector{grid-template-columns:1fr 1fr;gap:7px}
+  .zone-card{padding:8px}
+  .zone-card-name{font-size:.78rem}
+  .zone-card-days,.zone-card-charge{font-size:.7rem}
+
+  /* Forecast */
+  .forecast-card{padding:14px}
+  .forecast-amount{font-size:1.5rem}
+  .forecast-meta{font-size:.75rem}
+  .forecast-bars{height:60px}
+
+  /* Cmd+K */
+  .cmdk-box{width:95vw;max-height:80vh}
+  .cmdk-input{font-size:.9rem}
+  .cmdk-item{padding:8px 12px;gap:10px}
+  .cmdk-item-title{font-size:.82rem}
+  .cmdk-item-sub{font-size:.7rem}
+
+  /* Low stock alert */
+  .low-stock-alert{padding:10px 12px;gap:10px}
+  .low-stock-alert-icon{font-size:1.5rem}
+  .low-stock-alert-text strong{font-size:.82rem}
+  .low-stock-alert-text span{font-size:.72rem}
+
+  /* Undo toast */
+  .undo-toast{width:90%;left:5%;transform:translateX(0);bottom:80px;padding:10px 14px}
+  .undo-toast.show{display:flex}
+  .undo-btn{padding:4px 12px;font-size:.75rem}
+
+  /* Autosave indicator */
+  .autosave-indicator{bottom:70px;font-size:.72rem;padding:5px 14px}
+
+  /* Social share popup */
+  .social-share-popup{right:8px;bottom:72px;min-width:165px}
+  .ss-btn{padding:8px 12px;font-size:.8rem}
+
+  /* Packing checklist */
+  .pc-item{padding:6px 0}
+  .pc-checkbox{width:20px;height:20px}
+  .pc-label{font-size:.82rem}
+
+  /* Customer table social badges */
+  .admin-table th:nth-child(2),.admin-table td:nth-child(2){display:none}
+}
+
+/* ── 600px: Small Mobile ── */
+@media(max-width:600px){
+  /* Social login */
+  .btn-social-login{padding:9px 10px;font-size:.8rem;gap:8px}
+
+  /* Welcome back toast */
+  #welcome-back-toast{max-width:92vw;padding:10px 14px;font-size:.8rem}
+
+  /* Quick checkout */
+  .quick-checkout-bar{padding:8px 10px}
+  .quick-checkout-btn{font-size:.75rem;padding:9px}
+
+  /* UGC */
+  .ugc-grid{grid-template-columns:repeat(2,1fr);gap:7px}
+
+  /* Trust badges */
+  .cert-badges-row{gap:8px;padding:12px}
+  .cert-badge-icon{font-size:1.3rem}
+
+  /* Pagination */
+  .pg-btn{width:28px;height:28px}
+  .pg-info{display:none}
+
+  /* Buy together */
+  .bt-item{width:55px}
+  .bt-item-img{width:44px;height:44px}
+  .bt-summary{flex-direction:column;align-items:stretch}
+  .btn-bt-addall{width:100%;justify-content:center}
+
+  /* Todo */
+  .todo-priority{display:none}
+  .admin-todo-item{gap:6px}
+
+  /* Calendar */
+  .calendar-cell{padding:2px}
+  .calendar-cell-count{display:none}
+
+  /* Staff card */
+  .staff-card{flex-direction:column;align-items:flex-start;gap:8px}
+  .staff-card>button{align-self:flex-end}
+
+  /* Expense */
+  .expense-item{flex-wrap:wrap}
+
+  /* Daily chart */
+  .daily-chart-wrap{height:55px}
+
+  /* Customer table hide more cols */
+  .admin-table th:nth-child(4),.admin-table td:nth-child(4),
+  .admin-table th:nth-child(5),.admin-table td:nth-child(5){display:none}
+}
+
+/* ── 480px: Small Phone ── */
+@media(max-width:480px){
+  /* Social login modal */
+  #oauth-setup-modal .modal-body{padding:12px}
+
+  /* Welcome back toast */
+  #welcome-back-toast{font-size:.78rem;padding:9px 13px;gap:8px}
+  .wb-avatar{width:26px;height:26px;font-size:.75rem}
+
+  /* Quick checkout button */
+  .quick-checkout-btn{font-size:.72rem;padding:8px}
+
+  /* Birthday banner */
+  .birthday-banner{padding:14px}
+  .birthday-coupon-code{font-size:1rem;letter-spacing:1px}
+
+  /* Inventory value */
+  .inv-value-amount{font-size:1.5rem}
+
+  /* Zone selector */
+  .delivery-zone-selector{grid-template-columns:1fr 1fr}
+
+  /* Forecast */
+  .forecast-amount{font-size:1.3rem}
+
+  /* Buy together */
+  .bt-items-row{flex-wrap:wrap;justify-content:center}
+  .bt-plus{font-size:1.1rem}
+
+  /* Calendar smaller */
+  .calendar-day-label{font-size:.55rem}
+  .calendar-cell-num{font-size:.6rem}
+
+  /* Cmd+K modal */
+  .cmdk-box{max-height:85vh}
+  .cmdk-input-row{padding:12px 14px}
+  .cmdk-item-icon{width:28px;height:28px;font-size:.82rem}
+}
+
+/* ── 380px: Very Small ── */
+@media(max-width:380px){
+  /* Social login */
+  .btn-social-login{font-size:.75rem;padding:8px 9px;gap:7px}
+
+  /* Welcome back */
+  #welcome-back-toast{max-width:96vw;font-size:.75rem;gap:6px}
+
+  /* Quick checkout */
+  .quick-checkout-btn{font-size:.7rem}
+
+  /* Tags */
+  .tag-chip{padding:3px 9px;font-size:.72rem}
+
+  /* Badges */
+  .bestseller-badge{font-size:.58rem;padding:2px 6px}
+
+  /* Buy together */
+  .bt-item{width:50px}
+  .bt-item-img{width:40px;height:40px;font-size:1.3rem}
+  .bt-item-name{font-size:.6rem}
+
+  /* Todo items */
+  .todo-text{font-size:.78rem}
+  .todo-delete-btn{font-size:.75rem;padding:3px}
+
+  /* Pagination */
+  .pg-btn{width:26px;height:26px;font-size:.72rem}
+}
+
+/* ── Landscape Phone ── */
+@media(max-width:900px) and (orientation:landscape){
+  #welcome-back-toast{top:10px;bottom:auto}
+  .quick-checkout-bar{flex-direction:row}
+  .social-login-btns{flex-direction:row;flex-wrap:wrap}
+  .btn-social-login{flex:1;min-width:140px}
+  .order-chat-messages{height:120px}
+  .daily-chart-wrap{height:55px}
+  .forecast-bars{height:50px}
+}
+
+/* ── Touch Device Optimizations ── */
+@media(hover:none){
+  .btn-social-login:hover{transform:none;box-shadow:none}
+  .btn-social-login{min-height:46px}
+  .btn-bt-addall{min-height:44px}
+  .quick-checkout-btn{min-height:44px}
+  .pg-btn{min-height:40px;min-width:40px}
+  .tag-chip{min-height:36px;display:inline-flex;align-items:center}
+  .todo-check{min-width:22px;min-height:22px}
+}
+
+/* ── Print Media ── */
+@media print{
+  .social-login-btns,.btn-social-login,#oauth-setup-modal,
+  #welcome-back-toast,.quick-checkout-bar,.undo-toast,
+  .autosave-indicator,.social-share-popup,#faq-chatbot-btn,
+  #faq-chatbot-window,#click-to-call,.wa-float-wrap{display:none!important}
+}
 </style>
 </head>
 <body>
