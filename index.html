@@ -3314,6 +3314,483 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   .autosave-indicator,.social-share-popup,#faq-chatbot-btn,
   #faq-chatbot-window,#click-to-call,.wa-float-wrap{display:none!important}
 }
+
+/* ============================================================
+   ADMIN PANEL — COMPLETE RESPONSIVE ALL DEVICES
+   ============================================================ */
+
+/* ── 1280px: Large Desktop ── */
+@media(max-width:1280px){
+  .admin-panel{min-height:100vh}
+  .stats-grid{grid-template-columns:repeat(3,1fr)}
+  .dash-grid2{grid-template-columns:1fr 1fr}
+}
+
+/* ── 1100px: Medium Desktop ── */
+@media(max-width:1100px){
+  .admin-sidebar{width:190px}
+  .admin-nav-item{padding:10px 14px;font-size:.82rem}
+  .admin-nav-label{font-size:.82rem}
+  .stats-grid{grid-template-columns:1fr 1fr 1fr}
+  .analytics-grid{grid-template-columns:1fr 1fr}
+  .theme-builder-grid{grid-template-columns:1fr 1fr}
+  .delivery-zone-selector{grid-template-columns:1fr 1fr}
+}
+
+/* ── 1024px: Tablet Landscape / Small Desktop ── */
+@media(max-width:1024px){
+  /* Sidebar slimmer */
+  .admin-sidebar{width:175px}
+  .admin-logo{padding:14px 12px}
+  .admin-nav-item{padding:9px 12px;font-size:.8rem;gap:8px}
+  .admin-nav-item i{font-size:.85rem}
+  /* Content */
+  .admin-main{padding:14px}
+  .admin-section-header{padding:11px 14px}
+  .admin-section-header h3{font-size:.88rem}
+  /* Stats */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .stat-card{padding:14px}
+  .stat-card-value{font-size:1.5rem}
+  /* Tables */
+  .admin-table{font-size:.8rem}
+  .admin-table th,.admin-table td{padding:8px 9px}
+  /* Forms */
+  .form-row{flex-wrap:wrap}
+  /* Topbar */
+  .admin-topbar{padding:10px 14px}
+  #admin-page-title{font-size:.9rem}
+  /* Analytics */
+  .analytics-card-val{font-size:1.4rem}
+  /* Forecast */
+  .forecast-bars{height:70px}
+  /* Calendar */
+  .calendar-grid{gap:3px}
+  .calendar-cell{font-size:.65rem}
+  /* Theme builder */
+  .theme-preset-grid{gap:8px}
+  .theme-preset{padding:8px 14px;font-size:.78rem}
+}
+
+/* ── 900px: Tablet Portrait — Sidebar becomes drawer ── */
+@media(max-width:900px){
+  /* Admin panel full width */
+  #admin-panel{display:block;position:relative}
+  .admin-content{width:100%;min-height:100vh}
+
+  /* Sidebar off-canvas */
+  .admin-sidebar{
+    position:fixed!important;left:0;top:0;height:100vh;
+    width:270px!important;z-index:3100;
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.25,.8,.25,1);
+    box-shadow:4px 0 24px rgba(0,0,0,.35);
+    overflow-y:auto
+  }
+  .admin-sidebar.mob-open{transform:translateX(0)!important}
+  .admin-sidebar.collapsed{width:270px!important;transform:translateX(-100%)}
+  .admin-sidebar.collapsed.mob-open{transform:translateX(0)!important}
+  .admin-sidebar.collapsed .admin-nav-label{opacity:1!important;width:auto!important;display:inline!important}
+  .admin-sidebar.collapsed .admin-logo-text{opacity:1!important;width:auto!important}
+  .admin-sidebar.collapsed .admin-nav-section-label{opacity:1!important}
+  .admin-collapse-btn{display:none!important}
+
+  /* Overlay */
+  #admin-sidebar-overlay{display:none;position:fixed;inset:0;z-index:3050;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)}
+  #admin-sidebar-overlay.open{display:block}
+
+  /* Hamburger visible */
+  .admin-mob-menu-btn{display:flex!important;align-items:center;justify-content:center}
+
+  /* Topbar */
+  .admin-topbar{padding:10px 12px;gap:8px}
+  .admin-topbar h2{font-size:.88rem}
+  #admin-page-title{font-size:.85rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btn-admin-logout{padding:6px 10px;font-size:.75rem}
+
+  /* Stats */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .stat-card{padding:12px}
+  .stat-card-value{font-size:1.3rem}
+  .stat-card-label{font-size:.72rem}
+  .stat-card-icon{font-size:1.3rem}
+
+  /* Main content */
+  .admin-main{padding:12px}
+  .admin-section{border-radius:10px}
+  .admin-section-header{padding:10px 14px;flex-wrap:wrap;gap:8px}
+  .admin-section-header h3{font-size:.85rem}
+
+  /* Tables */
+  .table-wrapper{-webkit-overflow-scrolling:touch}
+  .admin-table{min-width:520px}
+  .admin-table th,.admin-table td{padding:7px 8px;font-size:.78rem}
+
+  /* Action buttons */
+  .action-btns,.btn-edit-sm,.btn-delete-sm,.btn-view-sm{font-size:.72rem;padding:4px 7px}
+
+  /* Order detail */
+  .order-detail-grid{grid-template-columns:1fr}
+  .dash-grid2{grid-template-columns:1fr}
+
+  /* Analytics */
+  .analytics-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .analytics-card{padding:12px}
+  .analytics-card-val{font-size:1.2rem}
+  .analytics-card-lbl{font-size:.72rem}
+  .analytics-card-trend{font-size:.68rem}
+
+  /* Theme builder */
+  .theme-builder-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .theme-color-item{padding:12px;gap:10px}
+
+  /* Staff */
+  .staff-card{padding:12px;gap:10px}
+
+  /* Batch */
+  .batch-row{flex-wrap:wrap;padding:8px;gap:8px}
+
+  /* Todo */
+  .admin-todo-item{padding:8px;gap:8px}
+
+  /* Calendar */
+  .calendar-grid{gap:3px}
+  .calendar-cell{padding:3px;font-size:.62rem}
+  .calendar-day-label{font-size:.62rem}
+
+  /* Target */
+  .target-stats{grid-template-columns:1fr 1fr 1fr}
+  .target-stat-val{font-size:.9rem}
+
+  /* Forecast */
+  .forecast-card{padding:16px}
+  .forecast-amount{font-size:1.6rem}
+  .forecast-bars{height:65px}
+
+  /* Low stock */
+  .low-stock-alert{padding:10px 12px;gap:10px}
+
+  /* Expense */
+  .expense-total-box{padding:12px}
+
+  /* Bottom nav */
+  #admin-bottom-nav{display:none}
+}
+
+/* ── 768px: Mobile — Full responsive ── */
+@media(max-width:768px){
+  /* Wider sidebar drawer on mobile */
+  .admin-sidebar{width:290px!important}
+  .admin-nav-item{padding:13px 18px;font-size:.88rem;min-height:46px}
+  .admin-nav-item i{font-size:.95rem;width:20px}
+  .admin-nav-section-label{padding:8px 18px;font-size:.65rem}
+
+  /* Topbar compact */
+  .admin-topbar{padding:9px 11px}
+  .admin-topbar h2,.admin-topbar-actions .hide-on-mobile{display:none}
+  #admin-page-title{font-size:.82rem;max-width:160px}
+  .btn-admin-logout span{display:none}
+  .btn-admin-logout{padding:7px 10px}
+
+  /* Bottom nav show */
+  #admin-bottom-nav{display:block}
+  .admin-content{padding-bottom:66px}
+
+  /* Stats 2 col */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-card{padding:11px 12px}
+  .stat-card-value{font-size:1.2rem}
+  .stat-card-icon{display:none}
+
+  /* Main */
+  .admin-main{padding:10px}
+  .admin-section-header{padding:9px 12px}
+
+  /* Tables */
+  .admin-table{min-width:460px}
+  .admin-table th,.admin-table td{padding:6px 7px;font-size:.75rem}
+
+  /* Forms */
+  .admin-form{padding:12px}
+  .admin-form input,.admin-form select,.admin-form textarea{font-size:.85rem;padding:8px 11px}
+  .setting-row{flex-direction:column;align-items:flex-start;gap:6px}
+  .setting-row label{width:auto}
+  .setting-row input,.setting-row select{width:100%;box-sizing:border-box}
+  .form-row{grid-template-columns:1fr!important;gap:10px}
+
+  /* Analytics */
+  .analytics-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .analytics-card{padding:10px}
+  .analytics-card-val{font-size:1.1rem}
+  .analytics-card-trend{display:none}
+
+  /* Theme builder */
+  .theme-builder-grid{grid-template-columns:1fr}
+  .theme-color-swatch{width:38px;height:38px}
+  .theme-preset-grid{flex-wrap:wrap;gap:7px}
+  .theme-preset{padding:7px 12px;font-size:.75rem}
+
+  /* Staff */
+  .staff-card{flex-wrap:wrap;padding:10px;gap:8px}
+  .staff-avatar{width:40px;height:40px;font-size:.9rem}
+  .staff-role-badge{font-size:.65rem}
+
+  /* Batch tracking */
+  .batch-row{flex-direction:column;gap:6px;padding:10px}
+  .batch-row>div{width:100%}
+
+  /* Todo */
+  .admin-todo-item{padding:8px 10px}
+  .todo-text{font-size:.82rem}
+  .todo-priority{font-size:.6rem}
+  .todo-delete-btn{font-size:.8rem}
+
+  /* Calendar */
+  .calendar-grid{gap:2px}
+  .calendar-cell{padding:2px;font-size:.6rem;border-radius:4px}
+  .calendar-day-label{font-size:.6rem;padding:4px 0}
+  .calendar-cell-count{width:13px;height:13px;font-size:.52rem;bottom:2px;right:2px}
+  .calendar-cell-num{font-size:.65rem}
+
+  /* Delivery zones */
+  .delivery-zone-selector{grid-template-columns:1fr 1fr;gap:7px}
+  .zone-card{padding:9px}
+  .zone-card-name{font-size:.78rem}
+  .zone-card-days,.zone-card-charge{font-size:.72rem}
+
+  /* Forecast */
+  .forecast-card{padding:14px}
+  .forecast-amount{font-size:1.4rem}
+  .forecast-meta{font-size:.75rem}
+  .forecast-bars{height:55px}
+  .forecast-bar-lbl{font-size:.52rem;bottom:-16px}
+
+  /* Expense */
+  .expense-total-box{padding:11px}
+  .expense-item{padding:8px;gap:8px}
+  .expense-category{width:32px;height:32px;font-size:.95rem}
+  .expense-amount{font-size:.88rem}
+
+  /* Inventory */
+  .inv-value-card{padding:14px}
+  .inv-value-amount{font-size:1.8rem}
+
+  /* Notification templates */
+  .notif-template-card{padding:10px}
+  .notif-template-preview{font-size:.75rem;padding:8px 10px}
+
+  /* Low stock alert */
+  .low-stock-alert{flex-wrap:wrap;padding:10px}
+  .low-stock-alert-icon{font-size:1.5rem}
+  .low-stock-alert-text strong{font-size:.82rem}
+  .low-stock-alert-text span{font-size:.72rem}
+
+  /* Target */
+  .target-stats{grid-template-columns:1fr 1fr;gap:8px}
+  .target-stat-val{font-size:.9rem;font-size:.85rem}
+
+  /* Cmd+K */
+  .cmdk-box{width:96vw;max-height:82vh}
+  #admin-cmdk-overlay{padding-top:40px}
+
+  /* Bottom nav */
+  .abn-inner{padding:0 4px}
+  .abn-item{padding:6px 4px;min-width:46px}
+  .abn-item i{font-size:1rem}
+  .abn-item span{font-size:.56rem}
+  .abn-badge{width:13px;height:13px;font-size:.52rem;top:3px;right:6px}
+}
+
+/* ── 600px: Small Mobile ── */
+@media(max-width:600px){
+  /* Sidebar full width */
+  .admin-sidebar{width:100vw!important;max-width:310px!important}
+
+  /* Topbar */
+  .admin-topbar{padding:8px 10px;gap:6px}
+  #admin-page-title{font-size:.78rem;max-width:130px}
+
+  /* Stats compact */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .stat-card{padding:9px 10px;border-radius:8px}
+  .stat-card-value{font-size:1.1rem}
+  .stat-card-label{font-size:.68rem}
+
+  /* Main */
+  .admin-main{padding:8px}
+  .admin-section{border-radius:8px}
+  .admin-section-header{padding:8px 10px;gap:6px}
+  .admin-section-header h3{font-size:.8rem}
+
+  /* Tables */
+  .admin-table{min-width:400px}
+  .admin-table th,.admin-table td{padding:5px 6px;font-size:.72rem}
+
+  /* Analytics */
+  .analytics-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .analytics-card{padding:9px}
+  .analytics-card-val{font-size:1rem}
+  .analytics-card-lbl{font-size:.68rem}
+
+  /* Staff */
+  .staff-card{flex-direction:column;align-items:flex-start;gap:8px}
+  .staff-card>button.btn-sm{align-self:flex-end}
+
+  /* Expense form grid */
+  .expense-form-grid,#admin-main .admin-section div[style*="grid-template-columns:2fr 1fr auto"]{
+    display:flex;flex-direction:column;gap:8px
+  }
+
+  /* Todo */
+  .admin-todo-item{gap:6px}
+  .todo-priority{display:none}
+
+  /* Calendar */
+  .calendar-cell{min-height:28px}
+  .calendar-cell-num{font-size:.58rem}
+
+  /* Delivery zones */
+  .delivery-zone-selector{grid-template-columns:1fr 1fr}
+  .zone-card{padding:8px}
+  .zone-card-name{font-size:.75rem}
+
+  /* Forecast */
+  .forecast-amount{font-size:1.2rem}
+  .forecast-bars{height:48px}
+
+  /* Notification */
+  .notif-template-card{padding:9px}
+
+  /* Bottom nav */
+  .abn-item span{display:none}
+  .abn-item{padding:8px 6px}
+  .abn-item i{font-size:1.05rem}
+
+  /* Cmd+K */
+  .cmdk-input-row{padding:12px}
+  .cmdk-results{padding:6px}
+  .cmdk-item{padding:8px 10px;gap:8px}
+  .cmdk-item-icon{width:28px;height:28px;font-size:.8rem}
+
+  /* Theme presets wrap */
+  .theme-preset-grid{flex-direction:column}
+  .theme-preset{width:100%;text-align:center}
+}
+
+/* ── 480px: Small Phone ── */
+@media(max-width:480px){
+  /* Stats 2 col tight */
+  .stats-grid{gap:6px}
+  .stat-card{padding:8px 9px}
+  .stat-card-value{font-size:1rem}
+
+  /* Topbar */
+  .admin-topbar{padding:7px 9px}
+  #admin-page-title{max-width:110px;font-size:.75rem}
+
+  /* Tables minimal */
+  .admin-table{min-width:360px}
+  .admin-table th,.admin-table td{padding:5px;font-size:.7rem}
+
+  /* Calendar */
+  .calendar-grid{gap:1px}
+  .calendar-cell{padding:1px;border-radius:3px;min-height:24px}
+  .calendar-cell-num{font-size:.55rem}
+  .calendar-day-label{font-size:.55rem}
+
+  /* Staff */
+  .staff-avatar{width:36px;height:36px;font-size:.82rem}
+
+  /* Forecast */
+  .forecast-amount{font-size:1.1rem}
+  .forecast-bars{height:40px}
+
+  /* Bottom nav */
+  .abn-item{padding:7px 4px}
+  .abn-item i{font-size:.95rem}
+  #admin-bottom-nav{padding:3px 0 max(3px,env(safe-area-inset-bottom))}
+
+  /* Expense total */
+  .expense-total-box{padding:9px}
+
+  /* Inventory */
+  .inv-value-amount{font-size:1.5rem}
+
+  /* Cmd+K */
+  #admin-cmdk-overlay{padding-top:20px}
+  .cmdk-box{max-height:90vh}
+
+  /* Low stock alert */
+  .low-stock-alert{padding:9px 10px}
+  .low-stock-alert-icon{font-size:1.3rem}
+}
+
+/* ── 380px: Very Small Phone ── */
+@media(max-width:380px){
+  /* Stats ultra compact */
+  .stats-grid{gap:5px}
+  .stat-card{padding:7px 8px}
+  .stat-card-value{font-size:.95rem}
+  .stat-card-label{font-size:.65rem}
+
+  /* Topbar */
+  #admin-page-title{max-width:90px;font-size:.72rem}
+
+  /* Tables */
+  .admin-table{min-width:320px}
+  .admin-table th,.admin-table td{padding:4px 5px;font-size:.68rem}
+
+  /* Calendar minimal */
+  .calendar-cell{min-height:20px;padding:1px}
+  .calendar-cell-num{font-size:.52rem}
+  .calendar-day-label{font-size:.52rem}
+
+  /* Bottom nav */
+  .abn-item{min-width:38px;padding:6px 2px}
+  .abn-item i{font-size:.88rem}
+
+  /* Analytics */
+  .analytics-card-val{font-size:.9rem}
+
+  /* Section header */
+  .admin-section-header h3{font-size:.75rem}
+  .btn-add,.btn-danger{font-size:.72rem;padding:5px 9px}
+
+  /* Sidebar */
+  .admin-sidebar{width:100vw!important;max-width:100vw!important}
+  .admin-nav-item{padding:12px 14px;font-size:.85rem}
+}
+
+/* ── Landscape Mobile ── */
+@media(max-width:900px) and (orientation:landscape){
+  .admin-sidebar{height:100vh;overflow-y:auto}
+  .stats-grid{grid-template-columns:repeat(4,1fr)}
+  .analytics-grid{grid-template-columns:repeat(3,1fr)}
+  .admin-main{padding:10px}
+  .calendar-grid{gap:2px}
+  .forecast-bars{height:50px}
+  /* Bottom nav hidden in landscape (more space) */
+  #admin-bottom-nav{display:none!important}
+  .admin-content{padding-bottom:0}
+}
+
+/* ── Admin Print ── */
+@media print{
+  .admin-sidebar,#admin-bottom-nav,.admin-topbar,
+  .admin-sidebar-overlay,.admin-mob-menu-btn,
+  .btn-add,.btn-danger,.btn-edit-sm,.btn-delete-sm,
+  .btn-view-sm,.btn-print-sm,.btn-invoice-sm{display:none!important}
+  .admin-content{width:100%!important;padding:0!important}
+  .admin-main{padding:10px!important}
+  .admin-table{min-width:auto!important}
+  .stats-grid{grid-template-columns:repeat(4,1fr)!important}
+}
+
+/* ── Safe Area (iPhone notch) ── */
+@supports(padding:max(0px)){
+  #admin-bottom-nav{padding-bottom:max(4px,env(safe-area-inset-bottom))}
+  .admin-sidebar{padding-bottom:max(0px,env(safe-area-inset-bottom))}
+}
 </style>
 </head>
 <body>
