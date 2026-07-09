@@ -2930,6 +2930,32 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   .social-share-popup{right:10px;bottom:75px}
   .order-chat-messages{height:160px}
 }
+
+/* ── SOCIAL LOGIN ── */
+.social-login-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--text-muted);font-size:.8rem}
+.social-login-divider::before,.social-login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.social-login-btns{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.btn-social-login{width:100%;padding:11px 16px;border-radius:10px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;gap:12px;font-size:.88rem;font-weight:600;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s;color:#333;position:relative;overflow:hidden}
+.btn-social-login:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.1);border-color:#aaa}
+.btn-social-login:active{transform:translateY(0)}
+.btn-google{border-color:#e0e0e0}
+.btn-google:hover{border-color:#4285f4;background:#f8f9ff}
+.btn-facebook{border-color:#e0e0e0}
+.btn-facebook:hover{border-color:#1877f2;background:#f0f4ff}
+.social-login-icon{width:22px;height:22px;flex-shrink:0}
+.social-login-text{flex:1;text-align:left}
+.social-login-badge{position:absolute;right:12px;font-size:.65rem;background:var(--green-pale);color:var(--green-mid);padding:2px 7px;border-radius:8px;font-weight:700}
+[data-theme="dark"] .btn-social-login{background:#1a2e1f;border-color:#2d4a35;color:#fff}
+[data-theme="dark"] .btn-google:hover{background:#1a2030;border-color:#4285f4}
+[data-theme="dark"] .btn-facebook:hover{background:#1a2038;border-color:#1877f2}
+.oauth-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;color:var(--text-muted);font-size:.85rem}
+.oauth-spinner{width:20px;height:20px;border:2.5px solid var(--border);border-top-color:var(--green-mid);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Social login tag in customer list */
+.social-tag{display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px}
+.social-tag.google{background:#fce8e6;color:#c62828}
+.social-tag.facebook{background:#e8f0fe;color:#1565c0}
+.social-tag.email{background:var(--green-pale);color:var(--green-dark)}
 </style>
 </head>
 <body>
@@ -4019,6 +4045,18 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
       </div>
       <!-- Login Form -->
       <div id="login-form">
+        <!-- Social Login Buttons -->
+        <div class="social-login-btns">
+          <button class="btn-social-login btn-google" onclick="loginWithGoogle()">
+            <svg class="social-login-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span class="social-login-text">Google দিয়ে লগইন করুন</span>
+          </button>
+          <button class="btn-social-login btn-facebook" onclick="loginWithFacebook()">
+            <svg class="social-login-icon" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            <span class="social-login-text">Facebook দিয়ে লগইন করুন</span>
+          </button>
+        </div>
+        <div class="social-login-divider">অথবা ইমেইল দিয়ে</div>
         <div class="form-group"><label>ইমেইল <span class="req-star">*</span></label><input class="form-control" id="login-email" type="email" placeholder="আপনার ইমেইল" required></div>
         <div class="form-group"><label>পাসওয়ার্ড <span class="req-star">*</span></label>
           <div class="pw-wrap">
@@ -4031,6 +4069,18 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
       </div>
       <!-- Register Form -->
       <div id="register-form" style="display:none">
+        <!-- Social Register Buttons -->
+        <div class="social-login-btns">
+          <button class="btn-social-login btn-google" onclick="loginWithGoogle()">
+            <svg class="social-login-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span class="social-login-text">Google দিয়ে রেজিস্ট্রেশন করুন</span>
+          </button>
+          <button class="btn-social-login btn-facebook" onclick="loginWithFacebook()">
+            <svg class="social-login-icon" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            <span class="social-login-text">Facebook দিয়ে রেজিস্ট্রেশন করুন</span>
+          </button>
+        </div>
+        <div class="social-login-divider">অথবা ইমেইল দিয়ে</div>
         <div class="form-group"><label>পূর্ণ নাম <span class="req-star">*</span></label><input class="form-control" id="reg-name" placeholder="আপনার নাম" required></div>
         <div class="form-group"><label>ইমেইল <span style="color:var(--text-muted);font-weight:400;font-size:.78rem">(ঐচ্ছিক)</span></label><input class="form-control" id="reg-email" type="email" placeholder="ইমেইল ঠিকানা"></div>
         <div class="form-group"><label>ফোন নম্বর <span class="req-star">*</span></label><input class="form-control" id="reg-phone" type="tel" placeholder="০১XXXXXXXXX" required pattern="^(\+880|0)?1[3-9]\d{8}$" title="সঠিক বাংলাদেশী মোবাইল নম্বর দিন"></div>
@@ -4052,6 +4102,17 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
         <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doRegister()">রেজিস্ট্রেশন করুন</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- GOOGLE/FACEBOOK OAuth Setup Modal -->
+<div class="modal-overlay" id="oauth-setup-modal" onclick="if(event.target===this)closeModal('oauth-setup-modal')">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3 id="oauth-setup-title">🔑 OAuth সেটআপ</h3>
+      <button class="modal-close" onclick="closeModal('oauth-setup-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="oauth-setup-body"></div>
   </div>
 </div>
 
@@ -4198,6 +4259,7 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
       <button class="admin-nav-item" onclick="showAdminTab('delivery');closeMobileAdminSidebar()" data-label="ডেলিভারি সেটিংস"><i class="fas fa-truck"></i><span class="admin-nav-label">ডেলিভারি সেটিংস</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('customize');closeMobileAdminSidebar()" data-label="সাইট কাস্টমাইজ"><i class="fas fa-paint-brush"></i><span class="admin-nav-label">সাইট কাস্টমাইজ</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('password');closeMobileAdminSidebar()" data-label="পাসওয়ার্ড"><i class="fas fa-key"></i><span class="admin-nav-label">পাসওয়ার্ড পরিবর্তন</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('oauth');closeMobileAdminSidebar()" data-label="Social Login"><i class="fas fa-sign-in-alt"></i><span class="admin-nav-label">Social Login সেটিংস</span></button>
     </nav>
     <button class="admin-nav-item" style="border-top:1px solid rgba(255,255,255,.06);color:#ff8a80" data-label="লগআউট" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i><span class="admin-nav-label">লগআউট</span></button>
     <button class="admin-collapse-btn" id="admin-collapse-btn" onclick="toggleAdminCollapse()" title="সাইডবার">
@@ -7256,15 +7318,17 @@ function viewOrderDetail(id){
 function renderAdminCustomers(){
   const users=getUsers();
   const orders=getOrders();
+  const socialCount=users.filter(u=>u.provider).length;
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
       <div class="admin-section-header">
-        <h3>👥 কাস্টমার তালিকা (${users.length}জন)</h3>
-        <input class="search-bar" placeholder="নাম বা ইমেইল দিয়ে খুঁজুন..." oninput="searchCustomers(this.value)">
+        <h3>👥 কাস্টমার তালিকা (${users.length}জন) ${socialCount>0?`<span style="font-size:.72rem;background:#e8f4fd;color:#1565c0;padding:2px 8px;border-radius:10px;margin-left:6px">${socialCount}জন সোশ্যাল লগইন</span>`:''}
+        </h3>
+        <input class="search-bar" placeholder="নাম, ইমেইল বা ফোন দিয়ে খুঁজুন..." oninput="searchCustomers(this.value)">
       </div>
       <div class="table-wrapper">
         <table class="admin-table">
-          <thead><tr><th>নাম</th><th>ইমেইল</th><th>ফোন</th><th>নিবন্ধনের তারিখ</th><th>মোট অর্ডার</th><th>অ্যাকশন</th></tr></thead>
+          <thead><tr><th>নাম ও প্রোভাইডার</th><th>ইমেইল</th><th>ফোন</th><th>যোগদান</th><th>অর্ডার</th><th>অ্যাকশন</th></tr></thead>
           <tbody id="customers-tbody">${renderCustomerRows(users,orders)}</tbody>
         </table>
       </div>
@@ -7272,23 +7336,43 @@ function renderAdminCustomers(){
 }
 function renderCustomerRows(users,orders){
   if(!users.length) return '<tr><td colspan="6" class="no-data">কোনো কাস্টমার নেই</td></tr>';
-  return users.map(u=>`<tr>
-    <td><strong>${u.name}</strong></td>
-    <td>${u.email}</td><td>${u.phone||'—'}</td>
-    <td style="font-size:.82rem">${new Date(u.createdAt).toLocaleDateString('bn-BD')}</td>
-    <td>${orders.filter(o=>o.userEmail===u.email).length}টি</td>
-    <td><button class="btn-delete-sm" onclick="deleteCustomer(${u.id})"><i class="fas fa-trash"></i></button></td>
-  </tr>`).join('');
+  return users.slice().reverse().map(u=>{
+    const providerBadge=u.provider
+      ? u.provider==='google'
+        ? '<span style="display:inline-flex;align-items:center;gap:3px;background:#fce8e6;color:#c0392b;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:5px"><svg width="10" height="10" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google</span>'
+        : '<span style="display:inline-flex;align-items:center;gap:3px;background:#e8f0fc;color:#1565c0;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:5px"><svg width="10" height="10" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook</span>'
+      : '';
+    const avatar=u.picture
+      ? `<img src="${u.picture}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'">`
+      : `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--green-pale);color:var(--green-dark);font-weight:700;font-size:.75rem;margin-right:6px;vertical-align:middle;flex-shrink:0">${(u.name||'?').slice(0,1)}</span>`;
+    const userOrders=orders.filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email));
+    const totalSpent=userOrders.reduce((s,o)=>s+(o.total||0),0);
+    return`<tr>
+      <td><div style="display:flex;align-items:center">${avatar}<div><strong>${u.name}</strong>${providerBadge}</div></div></td>
+      <td style="font-size:.8rem">${u.email||'—'}</td>
+      <td>${u.phone||'—'}</td>
+      <td style="font-size:.75rem;color:var(--text-muted)">${u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—'}</td>
+      <td><strong>${userOrders.length}</strong>টি<br><span style="font-size:.7rem;color:var(--orange)">৳${totalSpent.toLocaleString()}</span></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          ${u.phone?`<a href="tel:${u.phone}" class="btn-sm btn-primary" style="text-decoration:none;padding:5px 8px"><i class="fas fa-phone"></i></a>`:''}
+          ${u.phone?`<a href="https://wa.me/880${u.phone.replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 8px;border-radius:6px;text-decoration:none"><i class="fab fa-whatsapp"></i></a>`:''}
+          <button class="btn-sm btn-danger" onclick="deleteCustomer('${u.phone||u.email}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
 }
 function searchCustomers(q){
-  const users=getUsers().filter(u=>u.name.includes(q)||u.email.includes(q));
+  const lq=(q||'').toLowerCase();
+  const users=getUsers().filter(u=>(u.name||'').toLowerCase().includes(lq)||(u.email||'').toLowerCase().includes(lq)||(u.phone||'').includes(lq));
   const tbody=document.getElementById('customers-tbody');
   if(tbody) tbody.innerHTML=renderCustomerRows(users,getOrders());
 }
-function deleteCustomer(id){
-  const u=getUsers().find(x=>x.id===id);
+function deleteCustomer(phoneOrEmail){
+  const u=getUsers().find(x=>x.phone===phoneOrEmail||x.email===phoneOrEmail);
   showCustomAlert('কাস্টমার মুছে ফেলুন',`"${u?.name||'এই কাস্টমার'}" এর অ্যাকাউন্ট স্থায়ীভাবে মুছে ফেলা হবে।`,'হ্যাঁ, মুছুন','danger',()=>{
-    saveUsers(getUsers().filter(x=>x.id!==id));
+    saveUsers(getUsers().filter(x=>x.phone!==phoneOrEmail&&x.email!==phoneOrEmail));
     showToast('কাস্টমার মুছে ফেলা হয়েছে','success');renderAdminCustomers();
   });
 }
@@ -12849,7 +12933,348 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 window.addEventListener('scroll',()=>{sessionStorage.setItem('amb_scroll',Math.round(window.scrollY));},{passive:true});
-if(window.location.hash==='#admin'){setTimeout(()=>openAdminLogin(),500);}
+// ============================================================
+// SOCIAL LOGIN — GOOGLE & FACEBOOK OAUTH
+// ============================================================
+
+// ── CONFIG (Admin থেকে set করা যাবে) ──
+function getOAuthConfig(){
+  return JSON.parse(localStorage.getItem('amb_oauth_config')||'{}');
+}
+function saveOAuthConfig(cfg){
+  localStorage.setItem('amb_oauth_config',JSON.stringify(cfg));
+}
+
+// ── GOOGLE LOGIN ──
+function loginWithGoogle(){
+  const cfg=getOAuthConfig();
+  if(!cfg.googleClientId){
+    showOAuthSetup('google');
+    return;
+  }
+  // Load Google Identity Services
+  if(!window.google?.accounts){
+    const script=document.createElement('script');
+    script.src='https://accounts.google.com/gsi/client';
+    script.onload=()=>_initGoogleLogin(cfg.googleClientId);
+    script.onerror=()=>showToast('Google SDK লোড হয়নি। ইন্টারনেট চেক করুন।','error');
+    document.head.appendChild(script);
+  } else {
+    _initGoogleLogin(cfg.googleClientId);
+  }
+}
+function _initGoogleLogin(clientId){
+  try{
+    google.accounts.id.initialize({
+      client_id:clientId,
+      callback:_handleGoogleResponse,
+      auto_select:false,
+      cancel_on_tap_outside:true,
+    });
+    google.accounts.id.prompt((notification)=>{
+      if(notification.isNotDisplayed()||notification.isSkippedMoment()){
+        // Fallback: render button in popup
+        _showGooglePopup(clientId);
+      }
+    });
+  }catch(e){
+    console.error('Google init error:',e);
+    showToast('Google লগইন শুরু করতে সমস্যা হয়েছে','error');
+  }
+}
+function _showGooglePopup(clientId){
+  // Create a temporary div for Google button
+  const ov=document.createElement('div');
+  ov.id='g-signin-popup';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center';
+  ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:28px;max-width:340px;width:90%;text-align:center">'
+    +'<div style="font-size:2rem;margin-bottom:10px">🔐</div>'
+    +'<div style="font-weight:700;margin-bottom:6px;color:#1b4332">Google দিয়ে লগইন</div>'
+    +'<div style="font-size:.82rem;color:#888;margin-bottom:16px">নিচের বোতামে ক্লিক করুন</div>'
+    +'<div id="g-signin-btn" style="display:flex;justify-content:center;margin-bottom:12px"></div>'
+    +'<button onclick="document.getElementById(\'g-signin-popup\').remove()" '
+    +'style="background:none;border:none;color:#888;font-size:.82rem;cursor:pointer;font-family:\'Hind Siliguri\',sans-serif">বাতিল করুন</button></div>';
+  document.body.appendChild(ov);
+  setTimeout(()=>{
+    try{
+      google.accounts.id.renderButton(document.getElementById('g-signin-btn'),{
+        type:'standard',shape:'pill',theme:'outline',size:'large',text:'signin_with',locale:'bn'
+      });
+    }catch(e){console.error(e);}
+  },100);
+}
+function _handleGoogleResponse(response){
+  // Remove popup if open
+  document.getElementById('g-signin-popup')?.remove();
+  if(!response?.credential){
+    showToast('Google লগইন বাতিল হয়েছে','warning');
+    return;
+  }
+  // Decode JWT token (base64)
+  try{
+    const parts=response.credential.split('.');
+    const payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+    const userData={
+      name:payload.name||payload.given_name||'Google User',
+      email:payload.email||'',
+      picture:payload.picture||'',
+      sub:payload.sub,
+      provider:'google'
+    };
+    _completeSocialLogin(userData,'Google');
+  }catch(e){
+    console.error('JWT parse error:',e);
+    showToast('Google তথ্য পড়তে সমস্যা হয়েছে','error');
+  }
+}
+
+// ── FACEBOOK LOGIN ──
+function loginWithFacebook(){
+  const cfg=getOAuthConfig();
+  if(!cfg.facebookAppId){
+    showOAuthSetup('facebook');
+    return;
+  }
+  if(!window.FB){
+    window.fbAsyncInit=function(){
+      FB.init({appId:cfg.facebookAppId,cookie:true,xfbml:true,version:'v19.0'});
+      _doFBLogin();
+    };
+    const script=document.createElement('script');
+    script.src='https://connect.facebook.net/en_US/sdk.js';
+    script.onerror=()=>showToast('Facebook SDK লোড হয়নি','error');
+    document.head.appendChild(script);
+  } else {
+    _doFBLogin();
+  }
+}
+function _doFBLogin(){
+  FB.login(function(res){
+    if(res.authResponse){
+      FB.api('/me',{fields:'name,email,picture'},function(user){
+        _completeSocialLogin({
+          name:user.name||'Facebook User',
+          email:user.email||'',
+          picture:user.picture?.data?.url||'',
+          sub:'fb_'+user.id,
+          provider:'facebook'
+        },'Facebook');
+      });
+    } else {
+      showToast('Facebook লগইন বাতিল হয়েছে','warning');
+    }
+  },{scope:'public_profile,email'});
+}
+
+// ── COMMON: complete social login / register ──
+function _completeSocialLogin(userData,providerName){
+  const users=getUsers();
+  // Check if user already exists by email or social sub
+  let existing=users.find(u=>
+    (userData.email&&u.email===userData.email)||
+    u.socialSub===userData.sub
+  );
+  if(existing){
+    // Login existing user
+    existing.socialSub=userData.sub;
+    existing.provider=userData.provider;
+    existing.picture=userData.picture||existing.picture||'';
+    if(userData.email&&!existing.email) existing.email=userData.email;
+    saveUsers(users);
+    sessionStorage.setItem('amb_user',existing.phone);
+    updateNavAuth();
+    updateCartCount();
+    updateWishlistCount();
+    closeModal('login-modal');
+    showToast(`✅ ${providerName} দিয়ে লগইন সফল! স্বাগতম, ${existing.name}!`,'success');
+    showWelcomeBack(existing);
+    checkBirthdayCoupon();
+    checkAchievements();
+    updateQuickCheckoutBar();
+    logActivity(`🔐 ${providerName} লগইন — ${existing.name}`,'🔐');
+  } else {
+    // New user — need phone number
+    _promptPhoneForSocialUser(userData,providerName);
+  }
+}
+
+// ── Ask for phone if new social user ──
+function _promptPhoneForSocialUser(userData,providerName){
+  const ov=document.createElement('div');
+  ov.id='social-phone-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML=`<div style="background:#fff;border-radius:var(--radius);padding:28px;max-width:360px;width:100%;text-align:center">
+    <div style="font-size:2.2rem;margin-bottom:8px">${providerName==='Google'?'🔴':'🔵'}</div>
+    <div style="font-weight:800;font-size:1.1rem;color:#1b4332;margin-bottom:4px">স্বাগতম, ${userData.name}!</div>
+    <div style="font-size:.82rem;color:#888;margin-bottom:18px">${providerName} দিয়ে রেজিস্ট্রেশন প্রায় সম্পন্ন।<br>শুধু মোবাইল নম্বরটি দিন:</div>
+    <div class="form-group" style="text-align:left;margin-bottom:14px">
+      <label style="font-size:.85rem;font-weight:600;color:#1b4332">মোবাইল নম্বর *</label>
+      <input class="form-control" id="social-phone-input" type="tel" placeholder="০১XXXXXXXXX" pattern="^(\\+880|0)?1[3-9]\\d{8}$" style="margin-top:4px">
+      <div id="social-phone-error" style="color:#e74c3c;font-size:.75rem;margin-top:4px"></div>
+    </div>
+    <button onclick="_registerSocialUser()" style="width:100%;padding:12px;background:#1b4332;color:#fff;border:none;border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif;margin-bottom:8px">✅ রেজিস্ট্রেশন সম্পন্ন করুন</button>
+    <button onclick="document.getElementById('social-phone-overlay').remove()" style="background:none;border:none;color:#888;font-size:.8rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif">বাতিল করুন</button>
+  </div>`;
+  document.body.appendChild(ov);
+  ov._userData=userData;
+  ov._provider=providerName;
+  setTimeout(()=>document.getElementById('social-phone-input')?.focus(),100);
+  document.getElementById('social-phone-input')?.addEventListener('keydown',e=>{if(e.key==='Enter') _registerSocialUser();});
+}
+function _registerSocialUser(){
+  const ov=document.getElementById('social-phone-overlay');
+  if(!ov) return;
+  const userData=ov._userData;
+  const providerName=ov._provider;
+  const phone=(document.getElementById('social-phone-input')?.value||'').trim();
+  const errEl=document.getElementById('social-phone-error');
+  if(!phone||!/^(\+880|0)?1[3-9]\d{8}$/.test(phone)){
+    if(errEl) errEl.textContent='সঠিক বাংলাদেশী মোবাইল নম্বর দিন';
+    return;
+  }
+  const users=getUsers();
+  if(users.find(u=>u.phone===phone)){
+    if(errEl) errEl.textContent='এই নম্বরে আগেই অ্যাকাউন্ট আছে। লগইন করুন।';
+    return;
+  }
+  // Register new social user
+  const newUser={
+    name:userData.name,
+    email:userData.email||'',
+    phone,
+    password:'',// no password for social users
+    picture:userData.picture||'',
+    socialSub:userData.sub,
+    provider:userData.provider,
+    joinDate:Date.now(),
+    points:0,
+    addresses:[],
+  };
+  users.push(newUser);
+  saveUsers(users);
+  sessionStorage.setItem('amb_user',phone);
+  ov.remove();
+  updateNavAuth();updateCartCount();updateWishlistCount();
+  closeModal('login-modal');
+  showToast(`🎉 ${providerName} দিয়ে রেজিস্ট্রেশন সফল! স্বাগতম, ${userData.name}!`,'success');
+  launchConfetti();
+  showWelcomeBack(newUser);
+  checkAchievements();
+  updateQuickCheckoutBar();
+  addNotification(`🆕 নতুন ${providerName} ইউজার — ${userData.name}`,`ফোন: ${phone}`);
+  logActivity(`🆕 ${providerName} রেজিস্ট্রেশন — ${userData.name}`,'🆕');
+}
+
+// ── OAuth SETUP (Admin Configuration) ──
+function showOAuthSetup(provider){
+  const cfg=getOAuthConfig();
+  const isGoogle=provider==='google';
+  document.getElementById('oauth-setup-title').textContent=isGoogle?'🔴 Google OAuth সেটআপ':'🔵 Facebook OAuth সেটআপ';
+  document.getElementById('oauth-setup-body').innerHTML=`
+    <div style="background:var(--green-pale);border-radius:8px;padding:12px;margin-bottom:16px;font-size:.82rem;color:var(--green-dark);line-height:1.7">
+      ${isGoogle?`<strong>Google Client ID পেতে:</strong><br>
+      1. <a href="https://console.cloud.google.com" target="_blank" style="color:var(--green-mid)">Google Cloud Console</a> যান<br>
+      2. নতুন Project তৈরি করুন<br>
+      3. APIs & Services → Credentials<br>
+      4. "OAuth 2.0 Client ID" তৈরি করুন<br>
+      5. Authorized origins-এ আপনার সাইটের URL যোগ করুন`
+      :`<strong>Facebook App ID পেতে:</strong><br>
+      1. <a href="https://developers.facebook.com" target="_blank" style="color:var(--green-mid)">Facebook Developers</a> যান<br>
+      2. নতুন App তৈরি করুন (Consumer)<br>
+      3. Facebook Login product যোগ করুন<br>
+      4. App ID কপি করুন`}
+    </div>
+    <div class="form-group">
+      <label>${isGoogle?'Google Client ID':'Facebook App ID'} *</label>
+      <input class="form-control" id="oauth-key-input" placeholder="${isGoogle?'xxxxxxxxxxxx-xxx.apps.googleusercontent.com':'123456789012345'}" value="${isGoogle?cfg.googleClientId||'':cfg.facebookAppId||''}">
+    </div>
+    <button class="btn-primary" style="width:100%;padding:11px" onclick="saveOAuthKey('${provider}')">✅ সেভ করুন ও লগইন করুন</button>
+    <div style="margin-top:10px;font-size:.75rem;color:var(--text-muted);text-align:center">এই তথ্য শুধু আপনার ব্রাউজারে সংরক্ষিত থাকবে।</div>`;
+  openModal('oauth-setup-modal');
+}
+function saveOAuthKey(provider){
+  const val=(document.getElementById('oauth-key-input')?.value||'').trim();
+  if(!val){showToast('Client ID / App ID দিন','error');return;}
+  const cfg=getOAuthConfig();
+  if(provider==='google') cfg.googleClientId=val;
+  else cfg.facebookAppId=val;
+  saveOAuthConfig(cfg);
+  closeModal('oauth-setup-modal');
+  showToast('✅ সেভ হয়েছে! আবার চেষ্টা করুন।');
+  if(provider==='google') loginWithGoogle();
+  else loginWithFacebook();
+}
+
+// ── Admin: OAuth Settings Tab ──
+function renderAdminOAuthSettings(){
+  const cfg=getOAuthConfig();
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🔐 Social Login সেটিংস</h3></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <strong style="color:#1b4332">Google Login</strong>
+            <span style="margin-left:auto;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:10px;background:${cfg.googleClientId?'#d4edda':'#f8d7da'};color:${cfg.googleClientId?'#155724':'#721c24'}">${cfg.googleClientId?'✅ চালু':'❌ বন্ধ'}</span>
+          </div>
+          <div class="form-group"><label style="font-size:.8rem">Google Client ID</label>
+            <input class="form-control" id="admin-google-id" value="${cfg.googleClientId||''}" placeholder="xxxx.apps.googleusercontent.com" style="font-size:.78rem">
+          </div>
+          <button class="btn-sm btn-primary" onclick="adminSaveOAuth('google')" style="width:100%;margin-top:8px">সেভ করুন</button>
+        </div>
+        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            <strong style="color:#1b4332">Facebook Login</strong>
+            <span style="margin-left:auto;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:10px;background:${cfg.facebookAppId?'#d4edda':'#f8d7da'};color:${cfg.facebookAppId?'#155724':'#721c24'}">${cfg.facebookAppId?'✅ চালু':'❌ বন্ধ'}</span>
+          </div>
+          <div class="form-group"><label style="font-size:.8rem">Facebook App ID</label>
+            <input class="form-control" id="admin-fb-id" value="${cfg.facebookAppId||''}" placeholder="123456789012345" style="font-size:.78rem">
+          </div>
+          <button class="btn-sm btn-primary" onclick="adminSaveOAuth('facebook')" style="width:100%;margin-top:8px">সেভ করুন</button>
+        </div>
+      </div>
+      <div style="background:#fff3cd;border:1px solid #f4a40a;border-radius:8px;padding:14px;font-size:.82rem;color:#856404;line-height:1.75">
+        <strong>📋 Social Login ব্যবহারকারীরা:</strong>
+        ${getUsers().filter(u=>u.provider).length === 0
+          ? '<div style="margin-top:6px;color:#888">এখনো কোনো social login ব্যবহারকারী নেই।</div>'
+          : `<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+            ${getUsers().filter(u=>u.provider).map(u=>`
+              <div style="display:flex;align-items:center;gap:8px;padding:6px;background:rgba(255,255,255,.6);border-radius:6px">
+                <span class="social-tag ${u.provider}">${u.provider==='google'?'🔴 Google':'🔵 Facebook'}</span>
+                <strong style="font-size:.82rem">${u.name}</strong>
+                <span style="font-size:.75rem;color:#888">${u.phone}</span>
+                <span style="font-size:.72rem;color:#888;margin-left:auto">${new Date(u.joinDate||Date.now()).toLocaleDateString('en-GB')}</span>
+              </div>`).join('')}
+          </div>`}
+      </div>
+      <div style="margin-top:14px;background:var(--green-pale);border-radius:8px;padding:14px;font-size:.82rem;color:var(--green-dark);line-height:1.7">
+        <strong>🔗 OAuth Redirect URI (Google Console-এ যোগ করুন):</strong><br>
+        <code style="background:#fff;padding:3px 8px;border-radius:4px;font-size:.75rem">${window.location.origin}</code>
+      </div>
+    </div>`;
+}
+function adminSaveOAuth(provider){
+  const val=(document.getElementById(`admin-${provider==='google'?'google-id':'fb-id'}`)?.value||'').trim();
+  const cfg=getOAuthConfig();
+  if(provider==='google') cfg.googleClientId=val||undefined;
+  else cfg.facebookAppId=val||undefined;
+  saveOAuthConfig(cfg);
+  showToast(`✅ ${provider==='google'?'Google':'Facebook'} Client ID সেভ হয়েছে!`);
+  renderAdminOAuthSettings();
+}
+
+// Extend showAdminTab for oauth
+const _prevTabOAuth=showAdminTab;
+showAdminTab=function(tab){
+  if(tab==='oauth'){
+    currentAdminTab=tab;sessionStorage.setItem('amb_admin_tab',tab);
+    document.querySelectorAll('.admin-nav-item').forEach(b=>b.classList.toggle('active',!!(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'oauth'"))));
+    const t=document.getElementById('admin-page-title');if(t) t.textContent='🔐 Social Login সেটিংস';
+    renderAdminOAuthSettings();
+  } else {_prevTabOAuth(tab);}
+};
 
 // ============================================================
 // BATCH 6 — ALL NEW FEATURE JS
