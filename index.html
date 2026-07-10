@@ -3791,6 +3791,22 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   #admin-bottom-nav{padding-bottom:max(4px,env(safe-area-inset-bottom))}
   .admin-sidebar{padding-bottom:max(0px,env(safe-area-inset-bottom))}
 }
+
+/* ── PROFILE EDIT FORM RESPONSIVE ── */
+.edit-profile-form{padding:4px 0}
+@media(max-width:768px){
+  .edit-profile-form{padding:0}
+  .edit-profile-form [style*="grid-template-columns:1fr 1fr"]{
+    display:grid!important;grid-template-columns:1fr!important;gap:10px!important
+  }
+  #ep-avatar-wrap{width:80px;height:80px}
+}
+@media(max-width:480px){
+  #ep-avatar-wrap{width:72px;height:72px}
+  .edit-profile-form [style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr!important
+  }
+}
 </style>
 </head>
 <body>
@@ -6149,31 +6165,122 @@ function renderOrdersTab(myOrders,statusLabel2,payLabel){
 }
 
 function renderEditTab(u){
-  const initials=u.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-  const avatarHtml=u.avatar
-    ?'<img src="'+u.avatar+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-    :'<span style="font-size:2rem;color:#fff;font-weight:700">'+initials+'</span>';
-  const removeBtn=u.avatar
-    ?'<button onclick="removeAvatar()" style="background:#fee;color:#e74c3c;border:1px solid #fcc;padding:5px 14px;border-radius:20px;font-size:.78rem;cursor:pointer;margin-top:6px;font-family:Hind Siliguri,sans-serif"><i class="fas fa-trash"></i> ছবি মুছুন</button>'
+  const initials=(u.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  const pic=u.avatar||u.picture||'';
+  const avatarHtml=pic
+    ?`<img src="${pic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" onerror="this.style.display='none'">`
+    :`<span style="font-size:2rem;color:#fff;font-weight:700">${initials}</span>`;
+  const removeBtn=pic
+    ?`<button onclick="removeAvatar()" style="background:#fee;color:#e74c3c;border:1px solid #fcc;padding:5px 14px;border-radius:20px;font-size:.78rem;cursor:pointer;margin-top:6px;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-trash"></i> ছবি মুছুন</button>`
     :'';
   return `<div class="edit-profile-form">
+
+    <!-- Profile Picture -->
     <div style="text-align:center;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
       <div style="position:relative;display:inline-block;cursor:pointer" onclick="document.getElementById('avatar-upload-edit').click()">
-        <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--green-pale);margin:0 auto">${avatarHtml}</div>
-        <div style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--green-dark);border:2px solid #fff"><i class="fas fa-camera"></i></div>
+        <div id="ep-avatar-wrap" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));display:flex;align-items:center;justify-content:center;overflow:hidden;border:3px solid var(--green-pale);margin:0 auto">${avatarHtml}</div>
+        <div style="position:absolute;bottom:2px;right:2px;width:28px;height:28px;background:var(--yellow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--green-dark);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2)"><i class="fas fa-camera"></i></div>
       </div>
       <input type="file" id="avatar-upload-edit" style="display:none" accept="image/*" onchange="uploadAvatar(this)">
-      <div style="margin-top:10px;font-size:.82rem;color:var(--text-muted)">ছবিতে ক্লিক করে প্রোফাইল পিকচার পরিবর্তন করুন</div>
+      <div style="margin-top:8px;font-size:.78rem;color:var(--text-muted)">ছবিতে ক্লিক করুন পরিবর্তন করতে</div>
       ${removeBtn}
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="form-group"><label>পূর্ণ নাম <span class="req-star">*</span></label><input id="ep-name" value="${u.name}" placeholder="আপনার নাম" required></div>
-      <div class="form-group"><label>ফোন নম্বর <span class="req-star">*</span></label><input id="ep-phone" type="tel" value="${u.phone||''}" placeholder="০১XXXXXXXXX" required pattern="^(\+880|0)?1[3-9]\d{8}$"></div>
+
+    <!-- Basic Info -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group"><label>পূর্ণ নাম <span class="req-star">*</span></label>
+        <input id="ep-name" class="form-control" value="${u.name||''}" placeholder="আপনার নাম" required></div>
+      <div class="form-group"><label>ফোন নম্বর <span class="req-star">*</span></label>
+        <input id="ep-phone" class="form-control" type="tel" value="${u.phone||''}" placeholder="০১XXXXXXXXX" required pattern="^(\\+880|0)?1[3-9]\\d{8}$"></div>
     </div>
-    <div class="form-group"><label>ইমেইল (পরিবর্তনযোগ্য নয়)</label><input value="${u.email}" disabled style="background:#f5f5f5;color:#999;cursor:not-allowed"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="form-group"><label>ইমেইল</label>
+        <input class="form-control" value="${u.email||''}" disabled style="background:#f5f5f5;color:#999;cursor:not-allowed"></div>
+      <div class="form-group"><label>জন্মতারিখ <span style="color:var(--text-muted);font-size:.72rem">(কুপন পেতে)</span></label>
+        <input id="ep-birthday" class="form-control" type="date" value="${u.birthday||''}"></div>
+    </div>
+
+    <!-- Current Address -->
+    <div style="background:var(--green-pale);border:1.5px solid var(--green-light);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px">
+      <div style="font-size:.88rem;font-weight:700;color:var(--green-dark);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <i class="fas fa-map-marker-alt" style="color:var(--orange)"></i> বর্তমান ঠিকানা
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="form-group"><label>জেলা</label>
+          <select id="ep-district" class="form-control" onchange="updateUpazilaDropdown('ep-district','ep-upazila')">
+            <option value="">-- জেলা --</option>
+            ${districtOptions(u.district||'')}
+          </select></div>
+        <div class="form-group"><label>উপজেলা / থানা</label>
+          <select id="ep-upazila" class="form-control">
+            ${u.district?upazilaOptions(u.district,u.upazila||''):'<option value="">-- আগে জেলা বেছে নিন --</option>'}
+          </select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px"><label>এলাকা / রোড / গ্রাম</label>
+        <input id="ep-area" class="form-control" value="${u.area||''}" placeholder="গ্রাম, রোড, এলাকার নাম"></div>
+      <div class="form-group" style="margin-bottom:0"><label>সম্পূর্ণ ঠিকানা</label>
+        <textarea id="ep-address" class="form-control" rows="2" placeholder="বাড়ি নম্বর, রোড, এলাকা, উপজেলা, জেলা">${u.address||''}</textarea></div>
+    </div>
+
+    <!-- Permanent Address -->
+    <div style="background:linear-gradient(135deg,#f0f8ff,#e8f4fd);border:1.5px solid #90caf9;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+      <div style="font-size:.88rem;font-weight:700;color:#1565c0;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        <i class="fas fa-home"></i> স্থায়ী ঠিকানা
+        <span style="font-size:.72rem;font-weight:400;color:var(--text-muted)">(গ্রামের বাড়ি)</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="form-group"><label>জেলা</label>
+          <select id="ep-perm-district" class="form-control" onchange="updateUpazilaDropdown('ep-perm-district','ep-perm-upazila')">
+            <option value="">-- জেলা --</option>
+            ${districtOptions(u.permDistrict||'')}
+          </select></div>
+        <div class="form-group"><label>উপজেলা / থানা</label>
+          <select id="ep-perm-upazila" class="form-control">
+            ${u.permDistrict?upazilaOptions(u.permDistrict,u.permUpazila||''):'<option value="">-- আগে জেলা --</option>'}
+          </select></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px"><label>এলাকা / রোড / গ্রাম</label>
+        <input id="ep-perm-area" class="form-control" value="${u.permArea||''}" placeholder="গ্রাম, ইউনিয়ন, পোস্ট অফিস"></div>
+      <div class="form-group" style="margin-bottom:0"><label>সম্পূর্ণ স্থায়ী ঠিকানা</label>
+        <textarea id="ep-perm-address" class="form-control" rows="2" placeholder="বাড়ি নম্বর, গ্রাম, ইউনিয়ন, উপজেলা, জেলা">${u.permAddress||''}</textarea></div>
+    </div>
+
     <div id="ep-msg" style="margin-bottom:10px"></div>
-    <button class="btn-primary" onclick="saveProfileEdit()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+    <button class="btn-primary" style="width:100%;padding:12px" onclick="saveProfileEdit()">
+      <i class="fas fa-save"></i> সংরক্ষণ করুন
+    </button>
   </div>`;
+}
+
+function saveProfileEdit(){
+  const u=getCurrentUser();
+  if(!u) return;
+  const name=(document.getElementById('ep-name')?.value||'').trim();
+  const phone=(document.getElementById('ep-phone')?.value||'').trim();
+  const msg=document.getElementById('ep-msg');
+  if(!name){if(msg)msg.innerHTML='<span class="error-msg">নাম লিখুন</span>';return;}
+  if(!phone){if(msg)msg.innerHTML='<span class="error-msg">ফোন নম্বর দিন</span>';return;}
+  const district=document.getElementById('ep-district')?.value||'';
+  const upazila=document.getElementById('ep-upazila')?.value||'';
+  const area=(document.getElementById('ep-area')?.value||'').trim();
+  const address=(document.getElementById('ep-address')?.value||'').trim();
+  const permDistrict=document.getElementById('ep-perm-district')?.value||'';
+  const permUpazila=document.getElementById('ep-perm-upazila')?.value||'';
+  const permArea=(document.getElementById('ep-perm-area')?.value||'').trim();
+  const permAddress=(document.getElementById('ep-perm-address')?.value||'').trim();
+  const birthday=document.getElementById('ep-birthday')?.value||'';
+  const updated={...u,name,phone,district,upazila,area,address,
+    permDistrict,permUpazila,permArea,permAddress,birthday,updatedAt:Date.now()};
+  const users=getUsers().map(x=>{
+    if(x.id===u.id||(u.email&&x.email===u.email)||(u.phone&&x.phone===u.phone)) return {...x,...updated};
+    return x;
+  });
+  saveUsers(users);
+  setCurrentUser(updated);
+  updateNavAuth();
+  if(msg)msg.innerHTML='<span class="success-msg">✅ প্রোফাইল আপডেট হয়েছে</span>';
+  showToast('প্রোফাইল আপডেট হয়েছে ✅','success');
+  setTimeout(()=>renderProfileModal(updated,'edit'),900);
 }
 
 function renderPwTab(){
@@ -6202,49 +6309,58 @@ function renderPwTab(){
 }
 
 function uploadAvatar(input){
-  const file=input.files[0];
+  const file=input.files?.[0];
   if(!file) return;
-  if(file.size>2*1024*1024){showToast('ছবি ২MB এর কম হতে হবে','error');return;}
+  if(file.size>5*1024*1024){showToast('ছবি ৫MB এর কম হতে হবে','error');return;}
+  // Compress before saving
   const reader=new FileReader();
   reader.onload=e=>{
-    const u=getCurrentUser();
-    if(!u) return;
-    const avatar=e.target.result;
-    // Save to user record
-    const users=getUsers().map(x=>x.id===u.id?{...x,avatar}:x);
-    saveUsers(users);
-    const updated={...u,avatar};
-    setCurrentUser(updated);
-    // Update navbar avatar if exists
-    updateNavAuth();
-    showToast('প্রোফাইল ছবি আপডেট হয়েছে ✅','success');
-    // Re-render profile
-    renderProfileModal(updated, document.querySelector('.profile-tab-btn.active')?.textContent?.includes('সম্পাদনা')?'edit':'orders');
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const MAX=400;
+      let w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const avatar=canvas.toDataURL('image/jpeg',0.85);
+      const u=getCurrentUser();
+      if(!u) return;
+      // Match by id OR email OR phone
+      const users=getUsers().map(x=>{
+        if(x.id===u.id||(u.email&&x.email===u.email)||(u.phone&&x.phone===u.phone)) return{...x,avatar};
+        return x;
+      });
+      saveUsers(users);
+      const updated={...u,avatar};
+      setCurrentUser(updated);
+      updateNavAuth();
+      // Update preview immediately
+      const wrap=document.getElementById('ep-avatar-wrap');
+      if(wrap) wrap.innerHTML=`<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      showToast('✅ প্রোফাইল ছবি আপডেট হয়েছে','success');
+      logActivity(`📸 ${u.name} প্রোফাইল ছবি আপডেট করেছেন`,'📸');
+    };
+    img.src=e.target.result;
   };
   reader.readAsDataURL(file);
 }
 function removeAvatar(){
   const u=getCurrentUser();
   if(!u) return;
-  showCustomAlert(
-    'প্রোফাইল ছবি মুছুন',
-    'আপনার প্রোফাইল ছবি স্থায়ীভাবে মুছে ফেলা হবে।',
-    'হ্যাঁ, মুছুন',
-    'danger',
-    ()=>{
-      const users=getUsers().map(x=>x.id===u.id?{...x,avatar:''}:x);
-      saveUsers(users);
-      const updated={...u,avatar:''};
-      setCurrentUser(updated);
-      updateNavAuth();
-      showToast('প্রোফাইল ছবি মুছে ফেলা হয়েছে','success');
-      // Re-render current tab
-      const activeTab=document.querySelector('.profile-tab-btn.active');
-      const tab=activeTab?.textContent?.includes('সম্পাদনা')?'edit':
-                activeTab?.textContent?.includes('পাসওয়ার্ড')?'pw':'orders';
-      renderProfileModal(updated,tab);
-    }
-  );
+  showCustomAlert('প্রোফাইল ছবি মুছুন','আপনার প্রোফাইল ছবি স্থায়ীভাবে মুছে ফেলা হবে।','হ্যাঁ, মুছুন','danger',()=>{
+    const users=getUsers().map(x=>{
+      if(x.id===u.id||(u.email&&x.email===u.email)||(u.phone&&x.phone===u.phone)) return{...x,avatar:'',picture:''};
+      return x;
+    });
+    saveUsers(users);
+    const updated={...u,avatar:'',picture:''};
+    setCurrentUser(updated);
+    updateNavAuth();
+    showToast('প্রোফাইল ছবি মুছে ফেলা হয়েছে','success');
+    renderProfileModal(updated,'edit');
+  });
 }
 function saveProfileEdit(){
   const u=getCurrentUser();
@@ -8157,13 +8273,14 @@ function renderAdminCustomers(){
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
       <div class="admin-section-header">
-        <h3>👥 কাস্টমার তালিকা (${users.length}জন) ${socialCount>0?`<span style="font-size:.72rem;background:#e8f4fd;color:#1565c0;padding:2px 8px;border-radius:10px;margin-left:6px">${socialCount}জন সোশ্যাল লগইন</span>`:''}
+        <h3>👥 কাস্টমার (${users.length}জন)
+          ${socialCount>0?`<span style="font-size:.72rem;background:#e8f4fd;color:#1565c0;padding:2px 8px;border-radius:10px;margin-left:6px">${socialCount}জন সোশ্যাল</span>`:''}
         </h3>
-        <input class="search-bar" placeholder="নাম, ইমেইল বা ফোন দিয়ে খুঁজুন..." oninput="searchCustomers(this.value)">
+        <input class="search-bar" placeholder="নাম, ইমেইল বা ফোন..." oninput="searchCustomers(this.value)">
       </div>
       <div class="table-wrapper">
         <table class="admin-table">
-          <thead><tr><th>নাম ও প্রোভাইডার</th><th>ইমেইল</th><th>ফোন</th><th>যোগদান</th><th>অর্ডার</th><th>অ্যাকশন</th></tr></thead>
+          <thead><tr><th>কাস্টমার</th><th>যোগাযোগ</th><th>ঠিকানা</th><th>যোগদান</th><th>অর্ডার</th><th>অ্যাকশন</th></tr></thead>
           <tbody id="customers-tbody">${renderCustomerRows(users,orders)}</tbody>
         </table>
       </div>
@@ -8172,35 +8289,117 @@ function renderAdminCustomers(){
 function renderCustomerRows(users,orders){
   if(!users.length) return '<tr><td colspan="6" class="no-data">কোনো কাস্টমার নেই</td></tr>';
   return users.slice().reverse().map(u=>{
-    const providerBadge=u.provider
-      ? u.provider==='google'
-        ? '<span style="display:inline-flex;align-items:center;gap:3px;background:#fce8e6;color:#c0392b;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:5px"><svg width="10" height="10" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Google</span>'
-        : '<span style="display:inline-flex;align-items:center;gap:3px;background:#e8f0fc;color:#1565c0;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:5px"><svg width="10" height="10" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook</span>'
-      : '';
-    const avatar=u.picture
-      ? `<img src="${u.picture}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle" onerror="this.style.display='none'">`
-      : `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--green-pale);color:var(--green-dark);font-weight:700;font-size:.75rem;margin-right:6px;vertical-align:middle;flex-shrink:0">${(u.name||'?').slice(0,1)}</span>`;
+    const pic=u.avatar||u.picture||'';
+    const initials=(u.name||'?').slice(0,1).toUpperCase();
+    const avatarEl=pic
+      ?`<img src="${pic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--green-pale)" onerror="this.outerHTML='<span style=\\'display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0\\'>${initials}</span>'">`
+      :`<span style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0">${initials}</span>`;
+    const providerBadge=u.provider==='google'
+      ?`<span style="display:inline-flex;align-items:center;gap:2px;background:#fce8e6;color:#c0392b;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:4px">
+          <svg width="8" height="8" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>G</span>`
+      :u.provider==='facebook'
+      ?`<span style="display:inline-flex;align-items:center;gap:2px;background:#e8f0fc;color:#1565c0;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:4px">
+          <svg width="8" height="8" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>F</span>`
+      :'';
     const userOrders=orders.filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email));
     const totalSpent=userOrders.reduce((s,o)=>s+(o.total||0),0);
-    return`<tr>
-      <td><div style="display:flex;align-items:center">${avatar}<div><strong>${u.name}</strong>${providerBadge}</div></div></td>
-      <td style="font-size:.8rem">${u.email||'—'}</td>
-      <td>${u.phone||'—'}</td>
-      <td style="font-size:.75rem;color:var(--text-muted)">${u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—'}</td>
-      <td><strong>${userOrders.length}</strong>টি<br><span style="font-size:.7rem;color:var(--orange)">৳${totalSpent.toLocaleString()}</span></td>
+    // Address display
+    const currentAddr=[u.area,u.upazila,u.district].filter(Boolean).join(', ')||'—';
+    const permAddr=u.permDistrict?[u.permArea,u.permUpazila,u.permDistrict].filter(Boolean).join(', '):'';
+    return`<tr style="cursor:pointer" onclick="viewCustomerDetail('${u.phone||u.email}')">
       <td>
-        <div style="display:flex;gap:4px">
-          ${u.phone?`<a href="tel:${u.phone}" class="btn-sm btn-primary" style="text-decoration:none;padding:5px 8px"><i class="fas fa-phone"></i></a>`:''}
-          ${u.phone?`<a href="https://wa.me/880${u.phone.replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 8px;border-radius:6px;text-decoration:none"><i class="fab fa-whatsapp"></i></a>`:''}
-          <button class="btn-sm btn-danger" onclick="deleteCustomer('${u.phone||u.email}')"><i class="fas fa-trash"></i></button>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${avatarEl}
+          <div>
+            <div style="font-weight:700;font-size:.85rem">${u.name}${providerBadge}</div>
+            ${u.birthday?`<div style="font-size:.65rem;color:#9d50bb">🎂 ${new Date(u.birthday).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>`:''}
+          </div>
+        </div>
+      </td>
+      <td style="font-size:.78rem">
+        <div>${u.email||'—'}</div>
+        <div style="color:var(--green-mid)">${u.phone||'—'}</div>
+      </td>
+      <td style="font-size:.75rem">
+        <div title="বর্তমান ঠিকানা">📍 ${currentAddr}</div>
+        ${permAddr?`<div style="color:#1565c0;margin-top:2px" title="স্থায়ী ঠিকানা">🏠 ${permAddr}</div>`:''}
+      </td>
+      <td style="font-size:.72rem;color:var(--text-muted)">${u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—'}</td>
+      <td>
+        <strong>${userOrders.length}</strong>টি
+        <div style="font-size:.7rem;color:var(--orange);font-weight:700">৳${totalSpent.toLocaleString()}</div>
+      </td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${u.phone?`<a href="tel:${u.phone}" class="btn-sm btn-primary" style="text-decoration:none;padding:5px 8px" title="কল করুন"><i class="fas fa-phone"></i></a>`:''}
+          ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 8px;border-radius:6px;text-decoration:none" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
+          <button class="btn-sm btn-danger" onclick="deleteCustomer('${u.phone||u.email}')" title="মুছুন"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>`;
   }).join('');
 }
+
+function viewCustomerDetail(phoneOrEmail){
+  const u=getUsers().find(x=>x.phone===phoneOrEmail||x.email===phoneOrEmail);
+  if(!u) return;
+  const orders=getOrders().filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email));
+  const totalSpent=orders.reduce((s,o)=>s+(o.total||0),0);
+  const pic=u.avatar||u.picture||'';
+  const initials=(u.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.innerHTML=`<div style="background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;position:relative">
+    [data-theme="dark"] &{background:#1a2e1f}
+    <button onclick="this.closest('[style]').remove()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.1);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">×</button>
+    <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:24px;border-radius:16px 16px 0 0;text-align:center">
+      <div style="width:80px;height:80px;border-radius:50%;margin:0 auto 12px;overflow:hidden;border:3px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center">
+        ${pic?`<img src="${pic}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span style=\\'font-size:1.8rem;color:#fff;font-weight:700\\'>${initials}</span>'">`:`<span style="font-size:1.8rem;color:#fff;font-weight:700">${initials}</span>`}
+      </div>
+      <div style="color:#fff;font-size:1.1rem;font-weight:700">${u.name}</div>
+      ${u.provider?`<div style="font-size:.75rem;color:rgba(255,255,255,.7);margin-top:3px">${u.provider==='google'?'🔴 Google':'🔵 Facebook'} দিয়ে লগইন</div>`:''}
+    </div>
+    <div style="padding:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <div style="background:var(--green-pale);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:800;color:var(--green-dark)">${orders.length}</div>
+          <div style="font-size:.72rem;color:var(--text-muted)">মোট অর্ডার</div>
+        </div>
+        <div style="background:#fff3cd;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:800;color:var(--orange)">৳${totalSpent.toLocaleString()}</div>
+          <div style="font-size:.72rem;color:var(--text-muted)">মোট ব্যয়</div>
+        </div>
+      </div>
+      <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+        ${[
+          ['📧 ইমেইল', u.email||'—'],
+          ['📞 ফোন', u.phone||'—'],
+          ['🎂 জন্মতারিখ', u.birthday?new Date(u.birthday).toLocaleDateString('en-GB'):'—'],
+          ['📅 যোগদান', u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—'],
+          ['📍 বর্তমান ঠিকানা', [u.area,u.upazila,u.district].filter(Boolean).join(', ')||'—'],
+          ['🏠 স্থায়ী ঠিকানা', u.permAddress||[u.permArea,u.permUpazila,u.permDistrict].filter(Boolean).join(', ')||'—'],
+        ].map(([l,v])=>`<tr><td style="padding:7px 0;color:var(--text-muted);width:40%;border-bottom:1px solid var(--border)">${l}</td><td style="padding:7px 0 7px 10px;font-weight:600;border-bottom:1px solid var(--border)">${v}</td></tr>`).join('')}
+      </table>
+      <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+        ${u.phone?`<a href="tel:${u.phone}" style="flex:1;text-align:center;padding:10px;background:var(--green-dark);color:#fff;border-radius:20px;text-decoration:none;font-size:.85rem;font-weight:700"><i class="fas fa-phone"></i> কল করুন</a>`:''}
+        ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" style="flex:1;text-align:center;padding:10px;background:#25d366;color:#fff;border-radius:20px;text-decoration:none;font-size:.85rem;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp</a>`:''}
+      </div>
+      ${orders.length?`<div style="margin-top:16px"><div style="font-weight:700;color:var(--green-dark);margin-bottom:8px;font-size:.85rem">সর্বশেষ ৩টি অর্ডার</div>
+        ${orders.slice(0,3).map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.8rem">
+          <span style="color:var(--text-muted)">${o.id.slice(-8)}</span>
+          <span class="status-badge status-${o.status}">${o.status}</span>
+          <span style="font-weight:700;color:var(--orange)">৳${o.total}</span>
+        </div>`).join('')}
+      </div>`:''}
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov) ov.remove();});
+}
+
 function searchCustomers(q){
   const lq=(q||'').toLowerCase();
-  const users=getUsers().filter(u=>(u.name||'').toLowerCase().includes(lq)||(u.email||'').toLowerCase().includes(lq)||(u.phone||'').includes(lq));
+  const users=getUsers().filter(u=>(u.name||'').toLowerCase().includes(lq)||(u.email||'').toLowerCase().includes(lq)||(u.phone||'').includes(lq)||(u.district||'').includes(lq)||(u.permDistrict||'').includes(lq));
   const tbody=document.getElementById('customers-tbody');
   if(tbody) tbody.innerHTML=renderCustomerRows(users,getOrders());
 }
