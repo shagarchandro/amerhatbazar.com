@@ -6085,9 +6085,9 @@ function openProfileModal(){
   openModal('profile-modal');
 }
 function renderProfileModal(u,tab){
-  const myOrders=getOrders().filter(o=>o.userEmail===u.email).slice().reverse();
+  const myOrders=getOrders().filter(o=>(u.email&&o.userEmail===u.email)||(u.phone&&o.userPhone===u.phone)).slice().reverse();
   const totalSpent=myOrders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
-  const initials=u.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  const initials=(u.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
   const statusLabel2={'pending':'⏳ অপেক্ষারত','processing':'🔄 প্রক্রিয়াধীন','shipped':'🚚 শিপড','delivered':'✅ ডেলিভারড','cancelled':'❌ বাতিল'};
   const payLabel={'cod':'💵 ক্যাশ অন ডেলিভারি','bkash':'📱 বিকাশ','nagad':'📱 নগদ','bank':'🏦 ব্যাংক'};
 
@@ -6120,6 +6120,8 @@ function renderProfileModal(u,tab){
       <button class="profile-tab-btn ${tab==='edit'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'edit')"><i class="fas fa-user-edit"></i> প্রোফাইল সম্পাদনা</button>
       <button class="profile-tab-btn ${tab==='pw'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'pw')"><i class="fas fa-key"></i> পাসওয়ার্ড</button>
       <button class="profile-tab-btn ${tab==='loyalty'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'loyalty')"><i class="fas fa-star"></i> পয়েন্ট</button>
+      <button class="profile-tab-btn ${tab==='wishlist'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'wishlist')"><i class="fas fa-heart"></i> উইশলিস্ট</button>
+      <button class="profile-tab-btn ${tab==='birthday'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'birthday')"><i class="fas fa-birthday-cake"></i> জন্মদিন</button>
       <button class="profile-tab-btn ${tab==='referral'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'referral')"><i class="fas fa-users"></i> রেফারেল</button>
     </div>
     <!-- Tab content -->
@@ -6128,6 +6130,8 @@ function renderProfileModal(u,tab){
       ${tab==='edit'?renderEditTab(u):''}
       ${tab==='pw'?renderPwTab():''}
       ${tab==='loyalty'?renderLoyaltyTab(u):''}
+      ${tab==='wishlist'?renderProfileWishlistTab(u):''}
+      ${tab==='birthday'?renderBirthdayTab(u):''}
       ${tab==='referral'?renderReferralTab(u):''}
     </div>`;
 }
@@ -7095,6 +7099,12 @@ function getWishlist(){
 }
 function saveWishlist(w){localStorage.setItem('amb_wishlist',JSON.stringify(w));}
 function isWishlisted(pid){return getWishlist().includes(Number(pid));}
+function removeFromWishlist(pid){
+  pid=Number(pid);
+  const w=getWishlist().filter(id=>id!==pid);
+  saveWishlist(w);
+  updateWishlistCount();
+}
 function updateWishlistCount(){
   const c=getWishlist().length;
   const el=document.getElementById('wishlist-count');
@@ -10566,6 +10576,71 @@ function applyReferralCode(code,newUserPhone){
   showToast(`রেফারেল বোনাস! ${referrer.name} ৳৫০ পেয়েছেন 🎉`);
   return true;
 }
+function renderProfileWishlistTab(u){
+  const wishlist=getWishlist();
+  const products=getProducts();
+  const wishItems=wishlist.map(id=>products.find(p=>Number(p.id)===Number(id))).filter(Boolean);
+  if(!wishItems.length) return `<div style="text-align:center;padding:40px 20px">
+    <div style="font-size:3rem;margin-bottom:12px">💔</div>
+    <p style="color:var(--text-muted)">উইশলিস্ট খালি আছে</p>
+    <button class="btn-primary" style="margin-top:12px" onclick="closeModal('profile-modal');scrollToProducts()">পণ্য দেখুন 🥭</button>
+  </div>`;
+  return `<div style="display:flex;flex-direction:column;gap:10px;padding:4px 0">
+    ${wishItems.map(p=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px">
+        <div style="width:52px;height:52px;border-radius:8px;overflow:hidden;background:var(--green-pale);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.6rem">
+          ${p.image?`<img src="${p.image}" style="width:100%;height:100%;object-fit:cover">`:'🥭'}
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.88rem">${p.name}</div>
+          <div style="font-size:.75rem;color:var(--text-muted)">${p.origin}</div>
+          <div style="font-size:.85rem;font-weight:700;color:var(--orange)">৳${getDiscountedPrice(p)}/কেজি</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn-sm btn-primary" onclick="addToCart(${p.id});showToast('কার্টে যোগ হয়েছে','success')"><i class="fas fa-cart-plus"></i></button>
+          <button class="btn-sm btn-danger" onclick="removeFromWishlist(${p.id});renderProfileModal(getCurrentUser(),'wishlist')"><i class="fas fa-heart-broken"></i></button>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function renderBirthdayTab(u){
+  const today=new Date();
+  const hasBday=!!u.birthday;
+  const isBirthday=hasBday&&(()=>{const b=new Date(u.birthday);return b.getMonth()===today.getMonth()&&b.getDate()===today.getDate();})();
+  const year=today.getFullYear();
+  const code='BDAY'+year+(u.phone||'').slice(-4);
+  const coupon=getCoupons().find(c=>c.code===code);
+  const daysUntil=hasBday?(()=>{
+    const b=new Date(u.birthday);
+    const next=new Date(today.getFullYear(),b.getMonth(),b.getDate());
+    if(next<today) next.setFullYear(today.getFullYear()+1);
+    return Math.ceil((next-today)/86400000);
+  })():null;
+  return `<div style="padding:4px 0">
+    ${isBirthday?`<div class="birthday-banner">
+      <div style="font-size:2.5rem;margin-bottom:8px">🎂</div>
+      <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px">শুভ জন্মদিন, ${u.name}!</div>
+      <div style="font-size:.85rem;opacity:.85;margin-bottom:12px">আপনার জন্য বিশেষ ১৫% ছাড়</div>
+      ${coupon?`<div class="birthday-coupon-code" onclick="navigator.clipboard.writeText('${code}').then(()=>showToast('কোড কপি হয়েছে 🎉'))">${code}</div>
+      <div style="font-size:.75rem;opacity:.75">ক্লিক করে কোড কপি করুন</div>`:''}
+    </div>`:`<div style="background:linear-gradient(135deg,#f8f0ff,#f0e8ff);border:1.5px solid #c39bd3;border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:14px">
+      <div style="font-size:2rem;margin-bottom:8px">🎁</div>
+      <div style="font-weight:700;color:#6e48aa;margin-bottom:6px">জন্মদিনের বিশেষ অফার</div>
+      <div style="font-size:.85rem;color:var(--text-muted)">আপনার জন্মদিনে পাবেন <strong style="color:#6e48aa">১৫% বিশেষ ছাড়</strong></div>
+      ${daysUntil!==null?`<div style="font-size:.8rem;color:#6e48aa;margin-top:8px;font-weight:700">⏳ ${daysUntil===0?'আজই জন্মদিন! 🎉':daysUntil+' দিন বাকি'}</div>`:''}
+    </div>`}
+    ${!hasBday?`<div style="background:var(--green-pale);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:.88rem;font-weight:700;color:var(--green-dark);margin-bottom:10px">📅 জন্মতারিখ যোগ করুন</div>
+      <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">জন্মদিনের দিন বিশেষ ছাড়ের কুপন পেতে আপনার জন্মতারিখ যোগ করুন।</div>
+      <button class="btn-primary" style="width:100%;padding:10px" onclick="renderProfileModal(getCurrentUser(),'edit')"><i class="fas fa-birthday-cake"></i> প্রোফাইল সম্পাদনায় যান</button>
+    </div>`:''}
+    ${coupon&&!isBirthday?`<div style="margin-top:12px;padding:12px;background:var(--green-pale);border-radius:var(--radius-sm);text-align:center">
+      <div style="font-size:.82rem;color:var(--green-dark)">এই বছরের কুপন: <strong>${code}</strong></div>
+    </div>`:''}
+  </div>`;
+}
+
 function renderLoyaltyTab(u){
   const pts=getLoyaltyPoints();
   const hist=getLoyaltyHistory();
