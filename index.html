@@ -376,8 +376,9 @@ body.admin-open{overflow:hidden!important;position:fixed!important;width:100%!im
 
 .admin-sidebar{
   width:230px;background:#1a2e23;
-  min-height:100vh;display:flex;flex-direction:column;flex-shrink:0;
-  transition:width .25s ease;overflow:hidden;position:relative;z-index:10;
+  height:100vh;display:flex;flex-direction:column;flex-shrink:0;
+  transition:transform .3s cubic-bezier(.25,.8,.25,1),width .25s ease;
+  overflow:hidden;position:relative;z-index:10;
   box-shadow:4px 0 20px rgba(0,0,0,.15)
 }
 .admin-sidebar.collapsed{width:62px}
@@ -3377,31 +3378,49 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
 @media(max-width:900px){
   /* Admin panel stays fixed fullscreen overlay */
   #admin-panel.open{display:flex!important;flex-direction:row}
-  .admin-content{width:100%;min-height:100vh;overflow-y:auto}
 
-  /* Sidebar off-canvas */
+  /* Sidebar: off-canvas — hidden by default, slides in on mob-open */
   .admin-sidebar{
-    position:fixed!important;left:0;top:0;height:100vh;
-    width:270px!important;z-index:3100;
+    position:fixed!important;
+    left:0;top:0;
+    height:100vh!important;
+    width:270px!important;
+    z-index:3100;
     transform:translateX(-100%);
-    transition:transform .3s cubic-bezier(.25,.8,.25,1);
+    transition:transform .3s cubic-bezier(.25,.8,.25,1)!important;
     box-shadow:4px 0 24px rgba(0,0,0,.35);
     overflow-y:auto
   }
-  .admin-sidebar.mob-open{transform:translateX(0)!important}
-  .admin-sidebar.collapsed{width:270px!important;transform:translateX(-100%)}
-  .admin-sidebar.collapsed.mob-open{transform:translateX(0)!important}
-  .admin-sidebar.collapsed .admin-nav-label{opacity:1!important;width:auto!important;display:inline!important}
+  .admin-sidebar.mob-open{
+    transform:translateX(0)!important
+  }
+  /* Collapsed sidebar also hidden on mobile */
+  .admin-sidebar.collapsed{
+    width:270px!important;
+    transform:translateX(-100%)
+  }
+  .admin-sidebar.collapsed.mob-open{
+    transform:translateX(0)!important
+  }
+  .admin-sidebar.collapsed .admin-nav-label{opacity:1!important;width:auto!important}
   .admin-sidebar.collapsed .admin-logo-text{opacity:1!important;width:auto!important}
   .admin-sidebar.collapsed .admin-nav-section-label{opacity:1!important}
   .admin-collapse-btn{display:none!important}
 
-  /* Overlay */
+  /* Content takes FULL width since sidebar is off-canvas */
+  .admin-content{
+    width:100%!important;
+    flex:1!important;
+    min-height:100vh;
+    overflow-y:auto
+  }
+
+  /* Overlay backdrop */
   #admin-sidebar-overlay{display:none;position:fixed;inset:0;z-index:3050;background:rgba(0,0,0,.5);backdrop-filter:blur(2px)}
   #admin-sidebar-overlay.open{display:block}
 
-  /* Hamburger visible */
-  .admin-mob-menu-btn{display:flex!important;align-items:center;justify-content:center}
+  /* Hamburger visible on mobile */
+  .admin-mob-menu-btn{display:flex!important}
 
   /* Topbar */
   .admin-topbar{padding:10px 12px;gap:8px}
@@ -3409,11 +3428,10 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   #admin-page-title{font-size:.85rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .btn-admin-logout{padding:6px 10px;font-size:.75rem}
 
-  /* Stats */
-  .stats-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-  .stat-card{padding:12px}
+  /* Stats 2x2 */
+  .stats-grid{grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .stat-card{padding:14px}
   .stat-card-value{font-size:1.3rem}
-  .stat-card-label{font-size:.72rem}
   .stat-card-icon{font-size:1.3rem}
 
   /* Main content */
@@ -3430,7 +3448,7 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   /* Action buttons */
   .action-btns,.btn-edit-sm,.btn-delete-sm,.btn-view-sm{font-size:.72rem;padding:4px 7px}
 
-  /* Order detail */
+  /* Order/customer details */
   .order-detail-grid{grid-template-columns:1fr}
   .dash-grid2{grid-template-columns:1fr}
 
@@ -3438,7 +3456,6 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   .analytics-grid{grid-template-columns:1fr 1fr;gap:10px}
   .analytics-card{padding:12px}
   .analytics-card-val{font-size:1.2rem}
-  .analytics-card-lbl{font-size:.72rem}
   .analytics-card-trend{font-size:.68rem}
 
   /* Theme builder */
@@ -3448,20 +3465,10 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   /* Staff */
   .staff-card{padding:12px;gap:10px}
 
-  /* Batch */
-  .batch-row{flex-wrap:wrap;padding:8px;gap:8px}
-
-  /* Todo */
-  .admin-todo-item{padding:8px;gap:8px}
-
   /* Calendar */
   .calendar-grid{gap:3px}
   .calendar-cell{padding:3px;font-size:.62rem}
   .calendar-day-label{font-size:.62rem}
-
-  /* Target */
-  .target-stats{grid-template-columns:1fr 1fr 1fr}
-  .target-stat-val{font-size:.9rem}
 
   /* Forecast */
   .forecast-card{padding:16px}
@@ -3478,24 +3485,25 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   #admin-bottom-nav{display:none}
 }
 
-/* ── 768px: Mobile — Full responsive ── */
+/* ── 768px: Mobile ── */
 @media(max-width:768px){
-  /* Wider sidebar drawer on mobile */
+  /* Sidebar wider for easier touch */
   .admin-sidebar{width:290px!important}
   .admin-nav-item{padding:13px 18px;font-size:.88rem;min-height:46px}
   .admin-nav-item i{font-size:.95rem;width:20px}
   .admin-nav-section-label{padding:8px 18px;font-size:.65rem}
 
+  /* Content MUST be full width — sidebar is off-canvas */
+  .admin-content{width:100%!important;padding-bottom:66px}
+
   /* Topbar compact */
   .admin-topbar{padding:9px 11px}
-  .admin-topbar h2,.admin-topbar-actions .hide-on-mobile{display:none}
+  .hide-on-mobile{display:none!important}
   #admin-page-title{font-size:.82rem;max-width:160px}
-  .btn-admin-logout span{display:none}
   .btn-admin-logout{padding:7px 10px}
 
   /* Bottom nav show */
   #admin-bottom-nav{display:block}
-  .admin-content{padding-bottom:66px}
 
   /* Stats 2 col */
   .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
@@ -3527,50 +3535,40 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
 
   /* Theme builder */
   .theme-builder-grid{grid-template-columns:1fr}
-  .theme-color-swatch{width:38px;height:38px}
   .theme-preset-grid{flex-wrap:wrap;gap:7px}
   .theme-preset{padding:7px 12px;font-size:.75rem}
 
   /* Staff */
   .staff-card{flex-wrap:wrap;padding:10px;gap:8px}
   .staff-avatar{width:40px;height:40px;font-size:.9rem}
-  .staff-role-badge{font-size:.65rem}
 
   /* Batch tracking */
   .batch-row{flex-direction:column;gap:6px;padding:10px}
-  .batch-row>div{width:100%}
 
   /* Todo */
   .admin-todo-item{padding:8px 10px}
   .todo-text{font-size:.82rem}
   .todo-priority{font-size:.6rem}
-  .todo-delete-btn{font-size:.8rem}
 
   /* Calendar */
   .calendar-grid{gap:2px}
   .calendar-cell{padding:2px;font-size:.6rem;border-radius:4px}
   .calendar-day-label{font-size:.6rem;padding:4px 0}
-  .calendar-cell-count{width:13px;height:13px;font-size:.52rem;bottom:2px;right:2px}
-  .calendar-cell-num{font-size:.65rem}
+  .calendar-cell-count{width:13px;height:13px;font-size:.52rem}
 
   /* Delivery zones */
   .delivery-zone-selector{grid-template-columns:1fr 1fr;gap:7px}
   .zone-card{padding:9px}
   .zone-card-name{font-size:.78rem}
-  .zone-card-days,.zone-card-charge{font-size:.72rem}
 
   /* Forecast */
   .forecast-card{padding:14px}
   .forecast-amount{font-size:1.4rem}
-  .forecast-meta{font-size:.75rem}
   .forecast-bars{height:55px}
-  .forecast-bar-lbl{font-size:.52rem;bottom:-16px}
 
   /* Expense */
-  .expense-total-box{padding:11px}
   .expense-item{padding:8px;gap:8px}
-  .expense-category{width:32px;height:32px;font-size:.95rem}
-  .expense-amount{font-size:.88rem}
+  .expense-category{width:32px;height:32px}
 
   /* Inventory */
   .inv-value-card{padding:14px}
@@ -3578,28 +3576,23 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
 
   /* Notification templates */
   .notif-template-card{padding:10px}
-  .notif-template-preview{font-size:.75rem;padding:8px 10px}
-
-  /* Low stock alert */
-  .low-stock-alert{flex-wrap:wrap;padding:10px}
-  .low-stock-alert-icon{font-size:1.5rem}
-  .low-stock-alert-text strong{font-size:.82rem}
-  .low-stock-alert-text span{font-size:.72rem}
 
   /* Target */
   .target-stats{grid-template-columns:1fr 1fr;gap:8px}
-  .target-stat-val{font-size:.9rem;font-size:.85rem}
 
   /* Cmd+K */
   .cmdk-box{width:96vw;max-height:82vh}
   #admin-cmdk-overlay{padding-top:40px}
+
+  /* Low stock alert */
+  .low-stock-alert{flex-wrap:wrap;padding:10px}
 
   /* Bottom nav */
   .abn-inner{padding:0 4px}
   .abn-item{padding:6px 4px;min-width:46px}
   .abn-item i{font-size:1rem}
   .abn-item span{font-size:.56rem}
-  .abn-badge{width:13px;height:13px;font-size:.52rem;top:3px;right:6px}
+  .abn-badge{width:13px;height:13px;font-size:.52rem}
 }
 
 /* ── 600px: Small Mobile ── */
@@ -7242,13 +7235,28 @@ function openAdminPanel(startTab){
   document.getElementById('admin-panel').classList.add('open');
   document.body.classList.add('admin-open');
   document.body.style.overflow='hidden';
-  // Restore collapse state
-  const sb=document.getElementById('admin-sidebar');
+
+  const isMobile=window.innerWidth<=900;
+  const sidebar=document.getElementById('admin-sidebar');
+  const overlay=document.getElementById('admin-sidebar-overlay');
   const icon=document.getElementById('admin-collapse-icon');
-  if(sb&&sessionStorage.getItem('amb_sidebar_collapsed')==='1'){
-    sb.classList.add('collapsed');
-    if(icon) icon.className='fas fa-chevron-right';
+
+  if(isMobile){
+    // Mobile: sidebar always starts hidden (off-canvas)
+    if(sidebar) sidebar.classList.remove('mob-open');
+    if(overlay) overlay.classList.remove('open');
+    // Show bottom nav
+    const bnav=document.getElementById('admin-bottom-nav');
+    if(bnav&&window.innerWidth<=768) bnav.style.display='block';
+  } else {
+    // Desktop: restore collapse state
+    if(sidebar&&sessionStorage.getItem('amb_sidebar_collapsed')==='1'){
+      sidebar.classList.add('collapsed');
+      if(icon) icon.className='fas fa-chevron-right';
+    }
   }
+
+  initAdminResponsive();
   showAdminTab(startTab||'dashboard');
   startAdminRefresh();
 }
@@ -8932,6 +8940,11 @@ function showToast(msg,type='success'){
 function toggleMobile(){document.getElementById('mobile-menu').classList.toggle('open');}
 function closeMobile(){document.getElementById('mobile-menu').classList.remove('open');}
 function toggleAdminCollapse(){
+  // Only collapse on desktop — on mobile, use off-canvas drawer
+  if(window.innerWidth<=900){
+    openMobileAdminSidebar();
+    return;
+  }
   const sb=document.getElementById('admin-sidebar');
   const icon=document.getElementById('admin-collapse-icon');
   if(!sb) return;
@@ -13436,16 +13449,33 @@ function initAdminSidebarSwipe(){
 // Show/hide desktop toggle vs mobile hamburger based on screen
 function initAdminResponsive(){
   const desktopToggle=document.getElementById('admin-desktop-toggle');
-  const mobBtn=document.querySelector('.admin-mob-menu-btn');
+  const mobBtns=document.querySelectorAll('.admin-mob-menu-btn');
   function update(){
     const isMobile=window.innerWidth<=900;
     if(desktopToggle) desktopToggle.style.display=isMobile?'none':'flex';
-    if(mobBtn) mobBtn.style.display=isMobile?'flex':'none';
-    // Hide bottom nav when not in admin
+    mobBtns.forEach(b=>b.style.display=isMobile?'flex':'none');
+    // On mobile, content must always be full width (sidebar is off-canvas)
+    const content=document.getElementById('admin-content');
+    if(content){
+      if(isMobile){
+        content.style.width='100%';
+        content.style.flex='1';
+      } else {
+        content.style.width='';
+        content.style.flex='1';
+      }
+    }
+    // Bottom nav visibility
     const adminBottomNav=document.getElementById('admin-bottom-nav');
     const adminPanel=document.getElementById('admin-panel');
+    const panelOpen=adminPanel&&adminPanel.classList.contains('open');
     if(adminBottomNav){
-      adminBottomNav.style.display=(isMobile&&adminPanel&&adminPanel.classList.contains('open'))?'block':'none';
+      adminBottomNav.style.display=(isMobile&&panelOpen)?'block':'none';
+    }
+    // On resize if sidebar is open and desktop, remove mob-open
+    const sidebar=document.getElementById('admin-sidebar');
+    if(sidebar&&!isMobile&&sidebar.classList.contains('mob-open')){
+      closeMobileAdminSidebar();
     }
   }
   update();
@@ -13476,14 +13506,6 @@ showAdminTab=function(tab){
   updateAdminBottomBadge();
 };
 // Override openAdminPanel to show bottom nav
-const _origOpenAdminPanel=openAdminPanel;
-openAdminPanel=function(tab){
-  _origOpenAdminPanel(tab||'dashboard');
-  const adminBottomNav=document.getElementById('admin-bottom-nav');
-  if(adminBottomNav&&window.innerWidth<=900) adminBottomNav.style.display='block';
-  initAdminResponsive();
-};
-// Hide on panel close
 // Hide admin bottom nav when panel closes
 function hideAdminBottomNav(){
   const adminBottomNav=document.getElementById('admin-bottom-nav');
