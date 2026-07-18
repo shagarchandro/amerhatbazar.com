@@ -3815,6 +3815,41 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
   .inv-settings-card{padding:10px}
   .inv-radio-label{padding:7px 11px;font-size:.78rem}
 }
+
+/* ── Staff Management CSS ── */
+.staff-card{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-sm);transition:all .2s}
+.staff-card:hover{border-color:var(--green-mid);box-shadow:var(--shadow)}
+.staff-card.staff-inactive{opacity:.65;border-style:dashed}
+[data-theme="dark"] .staff-card{background:var(--bg-card);border-color:var(--border)}
+.staff-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem;flex-shrink:0}
+.staff-role-badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block}
+.role-admin{background:#fce8e6;color:#c0392b}
+.role-manager{background:#f3e5f5;color:#8e44ad}
+.role-staff{background:#e3f2fd;color:#1565c0}
+.role-delivery{background:#e8f5e9;color:#27ae60}
+.role-support{background:#fff8e1;color:#f39c12}
+
+/* ── Customer Table Enhanced ── */
+.admin-table td{vertical-align:middle}
+.admin-table tr:hover td{background:var(--bg-raised);cursor:pointer}
+[data-theme="dark"] .admin-table tr:hover td{background:var(--bg-raised)}
+
+/* Staff & Customer Responsive */
+@media(max-width:900px){
+  .staff-card{flex-wrap:wrap;padding:12px}
+  .staff-card>div:last-child{flex-direction:row!important;flex-wrap:wrap;gap:6px}
+}
+@media(max-width:600px){
+  .staff-card{flex-wrap:wrap;gap:8px;padding:10px}
+  #add-staff-form div[style*="grid-template-columns:1fr 1fr"]{display:flex!important;flex-direction:column}
+  .admin-table th:nth-child(4),.admin-table td:nth-child(4),
+  .admin-table th:nth-child(5),.admin-table td:nth-child(5){display:none}
+}
+@media(max-width:480px){
+  .staff-card{padding:8px}
+  .staff-avatar{width:36px;height:36px;font-size:.85rem}
+  .admin-table th:nth-child(3),.admin-table td:nth-child(3){display:none}
+}
 </style>
 </head>
 <body>
@@ -8347,74 +8382,169 @@ function renderAdminCustomers(){
   const users=getUsers();
   const orders=getOrders();
   const socialCount=users.filter(u=>u.provider).length;
+  const totalRevenue=orders.reduce((s,o)=>s+(o.total||0),0);
+  const avgOrderVal=orders.length?Math.round(totalRevenue/orders.length):0;
+
   document.getElementById('admin-main').innerHTML=`
-    <div class="admin-section">
-      <div class="admin-section-header">
-        <h3>👥 কাস্টমার (${users.length}জন)
-          ${socialCount>0?`<span style="font-size:.72rem;background:#e8f4fd;color:#1565c0;padding:2px 8px;border-radius:10px;margin-left:6px">${socialCount}জন সোশ্যাল</span>`:''}
-        </h3>
-        <input class="search-bar" placeholder="নাম, ইমেইল বা ফোন..." oninput="searchCustomers(this.value)">
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <h3>👥 কাস্টমার তালিকা
+        <span style="font-size:.72rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${users.length}জন</span>
+        ${socialCount>0?`<span style="font-size:.72rem;background:#e8f4fd;color:#1565c0;padding:2px 8px;border-radius:10px;margin-left:4px">${socialCount}জন সোশ্যাল</span>`:''}
+      </h3>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input class="search-bar" id="cust-search" placeholder="নাম, ইমেইল, ফোন, জেলা..." oninput="searchCustomers(this.value)" style="width:220px">
+        <select class="form-control" id="cust-filter" onchange="filterCustomers(this.value)" style="width:130px;font-size:.8rem">
+          <option value="all">সবাই</option>
+          <option value="active">সক্রিয়</option>
+          <option value="social">সোশ্যাল লগইন</option>
+          <option value="with-orders">অর্ডার আছে</option>
+          <option value="no-orders">অর্ডার নেই</option>
+          <option value="high-value">টপ কাস্টমার</option>
+        </select>
+        <button class="btn-sm" onclick="exportCustomersCSV()" style="background:var(--green-dark);color:#fff;border:none;padding:7px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-download"></i> CSV</button>
       </div>
-      <div class="table-wrapper">
-        <table class="admin-table">
-          <thead><tr><th>কাস্টমার</th><th>যোগাযোগ</th><th>ঠিকানা</th><th>যোগদান</th><th>অর্ডার</th><th>অ্যাকশন</th></tr></thead>
-          <tbody id="customers-tbody">${renderCustomerRows(users,orders)}</tbody>
-        </table>
-      </div>
-    </div>`;
+    </div>
+
+    <!-- Summary Stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px;background:var(--bg-raised);border-radius:var(--radius-sm);margin-bottom:14px">
+      ${[
+        {icon:'👥',label:'মোট কাস্টমার',val:users.length,color:'var(--green-dark)'},
+        {icon:'📦',label:'মোট অর্ডার',val:orders.length,color:'var(--orange)'},
+        {icon:'💰',label:'মোট রাজস্ব',val:'৳'+totalRevenue.toLocaleString(),color:'#27ae60'},
+        {icon:'📊',label:'গড় অর্ডার মূল্য',val:'৳'+avgOrderVal.toLocaleString(),color:'#8e44ad'},
+      ].map(x=>`<div style="text-align:center">
+        <div style="font-size:1.2rem">${x.icon}</div>
+        <div style="font-size:.95rem;font-weight:800;color:${x.color}">${x.val}</div>
+        <div style="font-size:.68rem;color:var(--text-muted)">${x.label}</div>
+      </div>`).join('')}
+    </div>
+
+    <div class="table-wrapper">
+      <table class="admin-table">
+        <thead><tr>
+          <th>কাস্টমার</th>
+          <th>যোগাযোগ</th>
+          <th>ঠিকানা</th>
+          <th>যোগদান</th>
+          <th>অর্ডার</th>
+          <th>মোট ব্যয়</th>
+          <th>অ্যাকশন</th>
+        </tr></thead>
+        <tbody id="customers-tbody">${renderCustomerRows(users,orders)}</tbody>
+      </table>
+    </div>
+  </div>`;
 }
+
 function renderCustomerRows(users,orders){
-  if(!users.length) return '<tr><td colspan="6" class="no-data">কোনো কাস্টমার নেই</td></tr>';
+  if(!users.length) return '<tr><td colspan="7" class="no-data">কোনো কাস্টমার নেই</td></tr>';
   return users.slice().reverse().map(u=>{
     const pic=u.avatar||u.picture||'';
     const initials=(u.name||'?').slice(0,1).toUpperCase();
     const avatarEl=pic
-      ?`<img src="${pic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--green-pale)" onerror="this.outerHTML='<span style=\\'display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0\\'>${initials}</span>'">`
+      ?`<img src="${pic}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--green-pale)" onerror="this.outerHTML='<span style=&quot;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0&quot;>${initials}</span>'">`
       :`<span style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;font-weight:700;font-size:.85rem;flex-shrink:0">${initials}</span>`;
+
     const providerBadge=u.provider==='google'
-      ?`<span style="display:inline-flex;align-items:center;gap:2px;background:#fce8e6;color:#c0392b;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:4px">
-          <svg width="8" height="8" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>G</span>`
+      ?`<span style="font-size:.6rem;background:#fce8e6;color:#c0392b;padding:1px 5px;border-radius:6px;margin-left:3px">G</span>`
       :u.provider==='facebook'
-      ?`<span style="display:inline-flex;align-items:center;gap:2px;background:#e8f0fc;color:#1565c0;font-size:.6rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:4px">
-          <svg width="8" height="8" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>F</span>`
+      ?`<span style="font-size:.6rem;background:#e8f0fc;color:#1565c0;padding:1px 5px;border-radius:6px;margin-left:3px">F</span>`
       :'';
+
     const userOrders=orders.filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email));
     const totalSpent=userOrders.reduce((s,o)=>s+(o.total||0),0);
-    // Address display
+    const lastOrder=userOrders[0];
     const currentAddr=[u.area,u.upazila,u.district].filter(Boolean).join(', ')||'—';
-    const permAddr=u.permDistrict?[u.permArea,u.permUpazila,u.permDistrict].filter(Boolean).join(', '):'';
+    const permAddr=u.permDistrict?[u.permUpazila,u.permDistrict].filter(Boolean).join(', '):'';
+    const isHighValue=totalSpent>=5000;
+    const joinDate=u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—';
+
     return`<tr style="cursor:pointer" onclick="viewCustomerDetail('${u.phone||u.email}')">
       <td>
         <div style="display:flex;align-items:center;gap:8px">
-          ${avatarEl}
+          <div style="position:relative;flex-shrink:0">
+            ${avatarEl}
+            ${isHighValue?'<span style="position:absolute;bottom:-2px;right:-2px;font-size:.6rem">⭐</span>':''}
+          </div>
           <div>
-            <div style="font-weight:700;font-size:.85rem">${u.name}${providerBadge}</div>
-            ${u.birthday?`<div style="font-size:.65rem;color:#9d50bb">🎂 ${new Date(u.birthday).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>`:''}
+            <div style="font-weight:700;font-size:.85rem">${u.name||'—'}${providerBadge}</div>
+            ${u.birthday?`<div style="font-size:.62rem;color:#9d50bb">🎂 ${new Date(u.birthday).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>`:''}
           </div>
         </div>
       </td>
       <td style="font-size:.78rem">
-        <div>${u.email||'—'}</div>
-        <div style="color:var(--green-mid)">${u.phone||'—'}</div>
+        <div style="color:var(--text)">${u.email||'—'}</div>
+        <div style="color:var(--green-mid);font-weight:600">${u.phone||'—'}</div>
       </td>
-      <td style="font-size:.75rem">
-        <div title="বর্তমান ঠিকানা">📍 ${currentAddr}</div>
-        ${permAddr?`<div style="color:#1565c0;margin-top:2px" title="স্থায়ী ঠিকানা">🏠 ${permAddr}</div>`:''}
+      <td style="font-size:.75rem;max-width:160px">
+        <div title="বর্তমান ঠিকানা" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📍 ${currentAddr}</div>
+        ${permAddr?`<div style="color:#1565c0;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="স্থায়ী ঠিকানা">🏠 ${permAddr}</div>`:''}
       </td>
-      <td style="font-size:.72rem;color:var(--text-muted)">${u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—'}</td>
+      <td style="font-size:.72rem;color:var(--text-muted)">${joinDate}</td>
+      <td style="text-align:center">
+        <strong style="font-size:.88rem">${userOrders.length}</strong>
+        ${lastOrder?`<div style="font-size:.65rem;color:var(--text-muted)">${new Date(lastOrder.createdAt).toLocaleDateString('en-GB')}</div>`:''}
+      </td>
       <td>
-        <strong>${userOrders.length}</strong>টি
-        <div style="font-size:.7rem;color:var(--orange);font-weight:700">৳${totalSpent.toLocaleString()}</div>
+        <strong style="color:var(--orange);font-size:.88rem">৳${totalSpent.toLocaleString()}</strong>
+        ${isHighValue?'<div style="font-size:.6rem;color:#f0a500;font-weight:700">VIP</div>':''}
       </td>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:4px;flex-wrap:wrap">
-          ${u.phone?`<a href="tel:${u.phone}" class="btn-sm btn-primary" style="text-decoration:none;padding:5px 8px" title="কল করুন"><i class="fas fa-phone"></i></a>`:''}
-          ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 8px;border-radius:6px;text-decoration:none" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
+          ${u.phone?`<a href="tel:${u.phone}" class="btn-sm btn-primary" style="text-decoration:none;padding:5px 7px" title="কল"><i class="fas fa-phone"></i></a>`:''}
+          ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 7px;border-radius:6px;text-decoration:none" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
           <button class="btn-sm btn-danger" onclick="deleteCustomer('${u.phone||u.email}')" title="মুছুন"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>`;
   }).join('');
+}
+
+function filterCustomers(filter){
+  const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
+  let users=getUsers();
+  const orders=getOrders();
+  if(filter==='social') users=users.filter(u=>u.provider);
+  else if(filter==='with-orders') users=users.filter(u=>orders.some(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email)));
+  else if(filter==='no-orders') users=users.filter(u=>!orders.some(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email)));
+  else if(filter==='high-value') users=users.filter(u=>{
+    const spent=orders.filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email)).reduce((s,o)=>s+(o.total||0),0);
+    return spent>=5000;
+  }).sort((a,b)=>{
+    const sa=orders.filter(o=>o.userPhone===a.phone||(a.email&&o.userEmail===a.email)).reduce((s,o)=>s+(o.total||0),0);
+    const sb=orders.filter(o=>o.userPhone===b.phone||(b.email&&o.userEmail===b.email)).reduce((s,o)=>s+(o.total||0),0);
+    return sb-sa;
+  });
+  else if(filter==='active'){
+    const activePhones=new Set(orders.map(o=>o.userPhone).filter(Boolean));
+    users=users.filter(u=>activePhones.has(u.phone));
+  }
+  if(q) users=users.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||(u.phone||'').includes(q)||(u.district||'').includes(q)||(u.permDistrict||'').includes(q));
+  const tbody=document.getElementById('customers-tbody');
+  if(tbody) tbody.innerHTML=renderCustomerRows(users,orders);
+}
+
+function searchCustomers(q){
+  filterCustomers(document.getElementById('cust-filter')?.value||'all');
+}
+
+function exportCustomersCSV(){
+  const users=getUsers();
+  const orders=getOrders();
+  const rows=[['নাম','ইমেইল','ফোন','জেলা','উপজেলা','স্থায়ী জেলা','মোট অর্ডার','মোট ব্যয়','যোগদান','জন্মদিন','লগইন ধরন']];
+  users.forEach(u=>{
+    const userOrders=orders.filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email));
+    const spent=userOrders.reduce((s,o)=>s+(o.total||0),0);
+    rows.push([u.name||'',u.email||'',u.phone||'',u.district||'',u.upazila||'',u.permDistrict||'',userOrders.length,spent,u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'',u.birthday||'',u.provider||'email']);
+  });
+  const csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='customers_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  showToast('✅ CSV ডাউনলোড হচ্ছে','success');
 }
 
 function viewCustomerDetail(phoneOrEmail){
@@ -8425,29 +8555,34 @@ function viewCustomerDetail(phoneOrEmail){
   const pic=u.avatar||u.picture||'';
   const initials=(u.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
   const ov=document.createElement('div');
-  ov.style.cssText='position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px';
-  ov.innerHTML=`<div style="background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;position:relative">
-    [data-theme="dark"] &{background:#1a2e1f}
-    <button onclick="this.closest('[style]').remove()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.1);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center">×</button>
-    <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:24px;border-radius:16px 16px 0 0;text-align:center">
+  ov.style.cssText='position:fixed;inset:0;z-index:9997;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;position:relative">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));padding:24px;border-radius:16px 16px 0 0;text-align:center;position:relative">
+      <button onclick="this.closest('[style*=z-index]').remove()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.15);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;color:#fff;font-size:1rem">×</button>
       <div style="width:80px;height:80px;border-radius:50%;margin:0 auto 12px;overflow:hidden;border:3px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center">
-        ${pic?`<img src="${pic}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span style=\\'font-size:1.8rem;color:#fff;font-weight:700\\'>${initials}</span>'">`:`<span style="font-size:1.8rem;color:#fff;font-weight:700">${initials}</span>`}
+        ${pic?`<img src="${pic}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:1.8rem;color:#fff;font-weight:700">${initials}</span>`}
       </div>
-      <div style="color:#fff;font-size:1.1rem;font-weight:700">${u.name}</div>
-      ${u.provider?`<div style="font-size:.75rem;color:rgba(255,255,255,.7);margin-top:3px">${u.provider==='google'?'🔴 Google':'🔵 Facebook'} দিয়ে লগইন</div>`:''}
+      <div style="color:#fff;font-size:1.1rem;font-weight:700">${u.name||'—'}</div>
+      ${u.provider?`<div style="font-size:.75rem;color:rgba(255,255,255,.7);margin-top:3px">${u.provider==='google'?'🔴 Google':'🔵 Facebook'} লগইন</div>`:'<div style="font-size:.72rem;color:rgba(255,255,255,.6)">📧 Email লগইন</div>'}
+      ${totalSpent>=5000?'<div style="margin-top:8px;background:#f0a500;color:#1a4731;padding:3px 12px;border-radius:20px;font-size:.75rem;font-weight:800;display:inline-block">⭐ VIP কাস্টমার</div>':''}
     </div>
-    <div style="padding:20px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-        <div style="background:var(--green-pale);border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:1.4rem;font-weight:800;color:var(--green-dark)">${orders.length}</div>
-          <div style="font-size:.72rem;color:var(--text-muted)">মোট অর্ডার</div>
-        </div>
-        <div style="background:#fff3cd;border-radius:10px;padding:12px;text-align:center">
-          <div style="font-size:1.4rem;font-weight:800;color:var(--orange)">৳${totalSpent.toLocaleString()}</div>
-          <div style="font-size:.72rem;color:var(--text-muted)">মোট ব্যয়</div>
-        </div>
-      </div>
-      <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+
+    <!-- Stats Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border)">
+      ${[
+        {label:'মোট অর্ডার',val:orders.length,color:'var(--green-dark)'},
+        {label:'মোট ব্যয়',val:'৳'+totalSpent.toLocaleString(),color:'var(--orange)'},
+        {label:'গড় অর্ডার',val:orders.length?'৳'+Math.round(totalSpent/orders.length):'—',color:'#8e44ad'},
+      ].map(x=>`<div style="text-align:center;padding:14px 8px">
+        <div style="font-size:1.2rem;font-weight:800;color:${x.color}">${x.val}</div>
+        <div style="font-size:.7rem;color:var(--text-muted)">${x.label}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Details Table -->
+    <div style="padding:16px 20px">
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
         ${[
           ['📧 ইমেইল', u.email||'—'],
           ['📞 ফোন', u.phone||'—'],
@@ -8455,36 +8590,44 @@ function viewCustomerDetail(phoneOrEmail){
           ['📅 যোগদান', u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—'],
           ['📍 বর্তমান ঠিকানা', [u.area,u.upazila,u.district].filter(Boolean).join(', ')||'—'],
           ['🏠 স্থায়ী ঠিকানা', u.permAddress||[u.permArea,u.permUpazila,u.permDistrict].filter(Boolean).join(', ')||'—'],
-        ].map(([l,v])=>`<tr><td style="padding:7px 0;color:var(--text-muted);width:40%;border-bottom:1px solid var(--border)">${l}</td><td style="padding:7px 0 7px 10px;font-weight:600;border-bottom:1px solid var(--border)">${v}</td></tr>`).join('')}
+        ].map(([l,v])=>`<tr>
+          <td style="padding:7px 0;color:var(--text-muted);width:42%;border-bottom:1px solid var(--border)">${l}</td>
+          <td style="padding:7px 0 7px 10px;font-weight:600;border-bottom:1px solid var(--border);word-break:break-all">${v}</td>
+        </tr>`).join('')}
       </table>
+
+      <!-- Action Buttons -->
       <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
-        ${u.phone?`<a href="tel:${u.phone}" style="flex:1;text-align:center;padding:10px;background:var(--green-dark);color:#fff;border-radius:20px;text-decoration:none;font-size:.85rem;font-weight:700"><i class="fas fa-phone"></i> কল করুন</a>`:''}
-        ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" style="flex:1;text-align:center;padding:10px;background:#25d366;color:#fff;border-radius:20px;text-decoration:none;font-size:.85rem;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp</a>`:''}
+        ${u.phone?`<a href="tel:${u.phone}" style="flex:1;min-width:100px;text-align:center;padding:10px;background:var(--green-dark);color:#fff;border-radius:20px;text-decoration:none;font-size:.83rem;font-weight:700"><i class="fas fa-phone"></i> কল</a>`:''}
+        ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" style="flex:1;min-width:100px;text-align:center;padding:10px;background:#25d366;color:#fff;border-radius:20px;text-decoration:none;font-size:.83rem;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp</a>`:''}
+        ${u.email?`<a href="mailto:${u.email}" style="flex:1;min-width:100px;text-align:center;padding:10px;background:#1565c0;color:#fff;border-radius:20px;text-decoration:none;font-size:.83rem;font-weight:700"><i class="fas fa-envelope"></i> ইমেইল</a>`:''}
       </div>
-      ${orders.length?`<div style="margin-top:16px"><div style="font-weight:700;color:var(--green-dark);margin-bottom:8px;font-size:.85rem">সর্বশেষ ৩টি অর্ডার</div>
-        ${orders.slice(0,3).map(o=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.8rem">
-          <span style="color:var(--text-muted)">${o.id.slice(-8)}</span>
-          <span class="status-badge status-${o.status}">${o.status}</span>
-          <span style="font-weight:700;color:var(--orange)">৳${o.total}</span>
-        </div>`).join('')}
-      </div>`:''}
+
+      <!-- Recent Orders -->
+      ${orders.length?`<div style="margin-top:18px">
+        <div style="font-weight:700;color:var(--green-dark);margin-bottom:10px;font-size:.85rem">📦 সর্বশেষ অর্ডার</div>
+        ${orders.slice(0,5).map(o=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.8rem">
+            <div>
+              <span style="color:var(--text-muted);font-family:monospace">#${o.id.slice(-8)}</span>
+              <div style="font-size:.7rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('en-GB')}</div>
+            </div>
+            <span class="status-badge status-${o.status}">${o.status}</span>
+            <strong style="color:var(--orange)">৳${o.total}</strong>
+          </div>`).join('')}
+      </div>`:'<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:.85rem">কোনো অর্ডার নেই</div>'}
     </div>
   </div>`;
   document.body.appendChild(ov);
-  ov.addEventListener('click',e=>{if(e.target===ov) ov.remove();});
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
 }
 
-function searchCustomers(q){
-  const lq=(q||'').toLowerCase();
-  const users=getUsers().filter(u=>(u.name||'').toLowerCase().includes(lq)||(u.email||'').toLowerCase().includes(lq)||(u.phone||'').includes(lq)||(u.district||'').includes(lq)||(u.permDistrict||'').includes(lq));
-  const tbody=document.getElementById('customers-tbody');
-  if(tbody) tbody.innerHTML=renderCustomerRows(users,getOrders());
-}
 function deleteCustomer(phoneOrEmail){
   const u=getUsers().find(x=>x.phone===phoneOrEmail||x.email===phoneOrEmail);
-  showCustomAlert('কাস্টমার মুছে ফেলুন',`"${u?.name||'এই কাস্টমার'}" এর অ্যাকাউন্ট স্থায়ীভাবে মুছে ফেলা হবে।`,'হ্যাঁ, মুছুন','danger',()=>{
+  showCustomAlert('কাস্টমার মুছুন',`"${u?.name||'এই কাস্টমার'}" এর অ্যাকাউন্ট স্থায়ীভাবে মুছে ফেলা হবে।`,'হ্যাঁ, মুছুন','danger',()=>{
     saveUsers(getUsers().filter(x=>x.phone!==phoneOrEmail&&x.email!==phoneOrEmail));
-    showToast('কাস্টমার মুছে ফেলা হয়েছে','success');renderAdminCustomers();
+    showToast('কাস্টমার মুছে ফেলা হয়েছে','success');
+    renderAdminCustomers();
   });
 }
 
@@ -12063,55 +12206,201 @@ function renderAdminTodo(){
 // ============================================================
 // 18. STAFF ROLE MANAGEMENT
 // ============================================================
-function getStaff(){return JSON.parse(localStorage.getItem('amb_staff')||'[{"id":1,"name":"মালিক/এডমিন","role":"admin","phone":"01305144356"}]');}
+function getStaff(){
+  const def=[{id:1,name:'মালিক/এডমিন',role:'admin',phone:'01305144356',email:'mbs200361@gmail.com',salary:'',joinDate:'2024-01-01',status:'active',note:''}];
+  return JSON.parse(localStorage.getItem('amb_staff')||JSON.stringify(def));
+}
 function saveStaff(s){localStorage.setItem('amb_staff',JSON.stringify(s));}
+
 function addStaffMember(){
-  const name=document.getElementById('staff-name')?.value.trim();
-  const phone=document.getElementById('staff-phone')?.value.trim();
-  const role=document.getElementById('staff-role')?.value;
+  const name=(document.getElementById('staff-name')?.value||'').trim();
+  const phone=(document.getElementById('staff-phone')?.value||'').trim();
+  const email=(document.getElementById('staff-email')?.value||'').trim();
+  const role=document.getElementById('staff-role')?.value||'staff';
+  const salary=(document.getElementById('staff-salary')?.value||'').trim();
+  const note=(document.getElementById('staff-note')?.value||'').trim();
   if(!name||!phone){showToast('নাম ও ফোন নম্বর দিন','error');return;}
   const staff=getStaff();
-  staff.push({id:Date.now(),name,phone,role});
+  if(staff.find(s=>s.phone===phone)){showToast('এই ফোন নম্বর আগেই আছে','error');return;}
+  staff.push({id:Date.now(),name,phone,email,role,salary,note,joinDate:new Date().toISOString().slice(0,10),status:'active'});
   saveStaff(staff);
-  showToast('✅ স্টাফ যোগ হয়েছে');
+  showToast('✅ স্টাফ যোগ হয়েছে','success');
+  logActivity('👤 নতুন স্টাফ যোগ: '+name,'👤');
   renderAdminStaff();
 }
 function removeStaffMember(id){
-  if(!confirm('এই স্টাফ মুছে ফেলবেন?')) return;
-  saveStaff(getStaff().filter(s=>s.id!==id));
+  const s=getStaff().find(x=>x.id===id);
+  if(s&&s.id===1){showToast('মালিককে মুছা যাবে না','error');return;}
+  showCustomAlert('স্টাফ মুছুন',`"${s?.name||'এই স্টাফ'}" কে তালিকা থেকে মুছে ফেলা হবে।`,'হ্যাঁ, মুছুন','danger',()=>{
+    saveStaff(getStaff().filter(x=>x.id!==id));
+    showToast('স্টাফ মুছে ফেলা হয়েছে','success');
+    renderAdminStaff();
+  });
+}
+function toggleStaffStatus(id){
+  const staff=getStaff().map(s=>{
+    if(s.id===id) return{...s,status:s.status==='active'?'inactive':'active'};
+    return s;
+  });
+  saveStaff(staff);
+  renderAdminStaff();
+}
+function openEditStaff(id){
+  const s=getStaff().find(x=>x.id===id);
+  if(!s) return;
+  const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:var(--bg-card);border-radius:var(--radius);padding:24px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;position:relative">
+    <button onclick="this.closest('[style]').remove()" style="position:absolute;top:12px;right:12px;background:var(--bg-raised);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;color:var(--text-muted)">×</button>
+    <h3 style="color:var(--green-dark);margin-bottom:16px;font-size:1rem"><i class="fas fa-user-edit"></i> স্টাফ সম্পাদনা</h3>
+    <div class="form-group"><label class="inv-label">নাম <span class="req-star">*</span></label>
+      <input id="edit-staff-name" class="form-control" value="${s.name}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="inv-label">ফোন <span class="req-star">*</span></label>
+        <input id="edit-staff-phone" class="form-control" value="${s.phone}" ${s.id===1?'disabled':''}></div>
+      <div class="form-group"><label class="inv-label">ইমেইল</label>
+        <input id="edit-staff-email" class="form-control" value="${s.email||''}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="inv-label">ভূমিকা</label>
+        <select id="edit-staff-role" class="form-control" ${s.id===1?'disabled':''}>
+          ${Object.entries(roleLabels).map(([v,l])=>`<option value="${v}" ${s.role===v?'selected':''}>${l}</option>`).join('')}
+        </select></div>
+      <div class="form-group"><label class="inv-label">বেতন (৳)</label>
+        <input id="edit-staff-salary" class="form-control" type="number" value="${s.salary||''}"></div>
+    </div>
+    <div class="form-group"><label class="inv-label">যোগদানের তারিখ</label>
+      <input id="edit-staff-joindate" class="form-control" type="date" value="${s.joinDate||''}"></div>
+    <div class="form-group"><label class="inv-label">নোট</label>
+      <textarea id="edit-staff-note" class="form-control" rows="2">${s.note||''}</textarea></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn-primary" style="flex:1" onclick="saveEditStaff(${id})"><i class="fas fa-save"></i> সংরক্ষণ</button>
+      <button onclick="this.closest('[style]').remove()" style="flex:1;background:var(--bg-raised);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.85rem;color:var(--text)">বাতিল</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+function saveEditStaff(id){
+  const name=(document.getElementById('edit-staff-name')?.value||'').trim();
+  const phone=(document.getElementById('edit-staff-phone')?.value||'').trim();
+  const email=(document.getElementById('edit-staff-email')?.value||'').trim();
+  const role=document.getElementById('edit-staff-role')?.value||'staff';
+  const salary=(document.getElementById('edit-staff-salary')?.value||'').trim();
+  const joinDate=document.getElementById('edit-staff-joindate')?.value||'';
+  const note=(document.getElementById('edit-staff-note')?.value||'').trim();
+  if(!name){showToast('নাম দিন','error');return;}
+  const staff=getStaff().map(s=>{
+    if(s.id===id) return{...s,name,phone:phone||s.phone,email,role:s.id===1?'admin':role,salary,joinDate,note};
+    return s;
+  });
+  saveStaff(staff);
+  document.querySelector('[style*="position:fixed"][style*="z-index:9999"]')?.remove();
+  showToast('✅ স্টাফ তথ্য আপডেট হয়েছে','success');
   renderAdminStaff();
 }
 function renderAdminStaff(){
   const staff=getStaff();
-  const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ'};
+  const orders=getOrders();
+  const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
+  const roleColors={admin:'#e74c3c',manager:'#8e44ad',staff:'#2980b9',delivery:'#27ae60',support:'#f39c12'};
+  const activeCount=staff.filter(s=>s.status==='active').length;
+  const totalSalary=staff.reduce((s,x)=>s+(Number(x.salary)||0),0);
+
   document.getElementById('admin-main').innerHTML=`
-    <div class="admin-section">
-      <div class="admin-section-header"><h3>👥 স্টাফ ব্যবস্থাপনা (${staff.length}জন)</h3></div>
-      ${staff.map(s=>`
-        <div class="staff-card">
-          <div class="staff-avatar">${s.name.slice(0,1)}</div>
-          <div style="flex:1">
-            <div style="font-weight:700;color:var(--green-dark)">${s.name}</div>
-            <div style="font-size:.78rem;color:var(--text-muted)">${s.phone}</div>
-            <span class="staff-role-badge role-${s.role}">${roleLabels[s.role]||s.role}</span>
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <h3>👥 স্টাফ ব্যবস্থাপনা <span style="font-size:.75rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${staff.length}জন · ${activeCount}জন সক্রিয়</span></h3>
+      <button class="btn-add" onclick="document.getElementById('add-staff-form').scrollIntoView({behavior:'smooth'})"><i class="fas fa-plus"></i> নতুন স্টাফ</button>
+    </div>
+
+    <!-- Summary Stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px">
+      ${[
+        {icon:'👥',label:'মোট স্টাফ',val:staff.length,color:'var(--green-dark)'},
+        {icon:'✅',label:'সক্রিয়',val:activeCount,color:'#27ae60'},
+        {icon:'⛔',label:'নিষ্ক্রিয়',val:staff.length-activeCount,color:'#e74c3c'},
+        {icon:'💰',label:'মাসিক বেতন',val:'৳'+totalSalary.toLocaleString(),color:'var(--orange)'},
+      ].map(x=>`<div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
+        <div style="font-size:1.3rem">${x.icon}</div>
+        <div style="font-size:1rem;font-weight:800;color:${x.color}">${x.val}</div>
+        <div style="font-size:.7rem;color:var(--text-muted)">${x.label}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Staff Cards -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      ${staff.map(s=>{
+        const initials=(s.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+        const isActive=s.status!=='inactive';
+        const roleColor=roleColors[s.role]||'#2980b9';
+        const joined=s.joinDate?new Date(s.joinDate).toLocaleDateString('en-GB'):'—';
+        return`<div class="staff-card ${!isActive?'staff-inactive':''}">
+          <div style="width:46px;height:46px;border-radius:50%;background:${roleColor};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem;flex-shrink:0">${initials}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-weight:700;color:var(--text)">${s.name}</span>
+              <span style="background:${roleColor}18;color:${roleColor};font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid ${roleColor}44">${roleLabels[s.role]||s.role}</span>
+              <span style="background:${isActive?'#e8f8ee':'#fef0f0'};color:${isActive?'#27ae60':'#e74c3c'};font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:10px">${isActive?'সক্রিয়':'নিষ্ক্রিয়'}</span>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+              ${s.phone?`<span style="font-size:.75rem;color:var(--text-muted)"><i class="fas fa-phone" style="width:12px"></i> ${s.phone}</span>`:''}
+              ${s.email?`<span style="font-size:.75rem;color:var(--text-muted)"><i class="fas fa-envelope" style="width:12px"></i> ${s.email}</span>`:''}
+              <span style="font-size:.75rem;color:var(--text-muted)"><i class="fas fa-calendar" style="width:12px"></i> ${joined}</span>
+              ${s.salary?`<span style="font-size:.75rem;color:var(--orange);font-weight:700"><i class="fas fa-money-bill-wave" style="width:12px"></i> ৳${Number(s.salary).toLocaleString()}/মাস</span>`:''}
+            </div>
+            ${s.note?`<div style="font-size:.72rem;color:var(--text-muted);margin-top:3px;font-style:italic">📝 ${s.note}</div>`:''}
           </div>
-          ${s.id!==1?`<button class="btn-sm btn-danger" onclick="removeStaffMember(${s.id})"><i class="fas fa-trash"></i></button>`:''}
-        </div>`).join('')}
-      <div style="margin-top:16px;padding:16px;background:var(--green-pale);border-radius:var(--radius-sm)">
-        <h4 style="margin-bottom:10px;color:var(--green-dark)">➕ নতুন স্টাফ যোগ করুন</h4>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <input class="form-control" id="staff-name" placeholder="নাম" required>
-          <input class="form-control" id="staff-phone" placeholder="ফোন নম্বর" type="tel" required pattern="^(\+880|0)?1[3-9]\d{8}$">
+          <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+            <button class="btn-sm btn-primary" onclick="openEditStaff(${s.id})" title="সম্পাদনা"><i class="fas fa-edit"></i></button>
+            ${s.phone?`<a href="tel:${s.phone}" class="btn-sm" style="background:var(--green-pale);color:var(--green-dark);border:none;padding:5px 8px;border-radius:6px;text-decoration:none;display:flex;align-items:center;justify-content:center" title="কল"><i class="fas fa-phone"></i></a>`:''}
+            ${s.phone?`<a href="https://wa.me/880${s.phone.replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#e8fdf0;color:#25d366;border:none;padding:5px 8px;border-radius:6px;text-decoration:none;display:flex;align-items:center;justify-content:center" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
+            ${s.id!==1?`<button class="btn-sm" onclick="toggleStaffStatus(${s.id})" style="background:${isActive?'#fef0f0':'#e8fdf0'};color:${isActive?'#e74c3c':'#27ae60'};border:1px solid ${isActive?'#fcc':'#b7f5d0'};padding:5px 8px;border-radius:6px;cursor:pointer" title="${isActive?'নিষ্ক্রিয়':'সক্রিয়'} করুন"><i class="fas fa-${isActive?'ban':'check'}"></i></button>`:''}
+            ${s.id!==1?`<button class="btn-sm btn-danger" onclick="removeStaffMember(${s.id})" title="মুছুন"><i class="fas fa-trash"></i></button>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Add Staff Form -->
+    <div id="add-staff-form" style="background:var(--bg-raised);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:18px">
+      <h4 style="color:var(--green-dark);margin-bottom:14px;font-size:.9rem"><i class="fas fa-user-plus"></i> নতুন স্টাফ যোগ করুন</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><label class="inv-label">নাম <span class="req-star">*</span></label>
+          <input class="form-control" id="staff-name" placeholder="স্টাফের পূর্ণ নাম"></div>
+        <div><label class="inv-label">ফোন নম্বর <span class="req-star">*</span></label>
+          <input class="form-control" id="staff-phone" type="tel" placeholder="01XXXXXXXXX"></div>
+        <div><label class="inv-label">ইমেইল</label>
+          <input class="form-control" id="staff-email" type="email" placeholder="staff@example.com"></div>
+        <div><label class="inv-label">ভূমিকা</label>
           <select class="form-control" id="staff-role">
-            <option value="staff">স্টাফ</option><option value="manager">ম্যানেজার</option><option value="admin">অ্যাডমিন</option>
-          </select>
-        </div>
-        <button class="btn-add" style="margin-top:10px" onclick="addStaffMember()"><i class="fas fa-plus"></i> যোগ করুন</button>
+            <option value="staff">স্টাফ</option>
+            <option value="manager">ম্যানেজার</option>
+            <option value="delivery">ডেলিভারি</option>
+            <option value="support">সাপোর্ট</option>
+            <option value="admin">অ্যাডমিন</option>
+          </select></div>
+        <div><label class="inv-label">মাসিক বেতন (৳)</label>
+          <input class="form-control" id="staff-salary" type="number" placeholder="0"></div>
+        <div><label class="inv-label">নোট</label>
+          <input class="form-control" id="staff-note" placeholder="বিশেষ দায়িত্ব বা তথ্য..."></div>
       </div>
-      <div style="margin-top:14px;font-size:.8rem;color:var(--text-muted)">
-        💡 <strong>অ্যাডমিন:</strong> সব অ্যাক্সেস। <strong>ম্যানেজার:</strong> অর্ডার ও পণ্য পরিচালনা। <strong>স্টাফ:</strong> শুধু অর্ডার দেখা ও আপডেট।
+      <button class="btn-add" onclick="addStaffMember()"><i class="fas fa-plus"></i> যোগ করুন</button>
+    </div>
+
+    <!-- Role Permissions Guide -->
+    <div style="margin-top:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:.82rem;font-weight:700;color:var(--green-dark);margin-bottom:8px"><i class="fas fa-shield-alt"></i> ভূমিকার অনুমতি</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;font-size:.75rem">
+        ${Object.entries({admin:'সব অ্যাক্সেস — সেটিংস সহ',manager:'অর্ডার, পণ্য, কাস্টমার',delivery:'শুধু শিপিং অর্ডার',support:'টিকিট ও মেসেজ',staff:'অর্ডার দেখা ও আপডেট'}).map(([role,perm])=>`
+        <div style="padding:8px;background:${roleColors[role]}12;border-left:3px solid ${roleColors[role]};border-radius:4px">
+          <div style="font-weight:700;color:${roleColors[role]}">${roleLabels[role]}</div>
+          <div style="color:var(--text-muted)">${perm}</div>
+        </div>`).join('')}
       </div>
-    </div>`;
+    </div>
+  </div>`;
 }
 
 // ============================================================
