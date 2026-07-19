@@ -262,12 +262,39 @@ i.fab,[class*="fa-brands"]{font-family:'Font Awesome 6 Brands' !important;font-w
 .user-menu span{color:var(--yellow);font-weight:600}
 .btn-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 12px;border-radius:20px;font-size:.85rem;cursor:pointer;transition:all .2s}
 .btn-logout:hover{background:#e74c3c;border-color:#e74c3c}
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:5px}
-.hamburger span{display:block;width:24px;height:2px;background:#fff;border-radius:2px;transition:all .3s}
-.mobile-menu{display:none;position:fixed;top:65px;left:0;right:0;background:var(--green-dark);padding:15px 20px;z-index:999;flex-direction:column;gap:5px;box-shadow:0 5px 20px rgba(0,0,0,.2)}
-.mobile-menu.open{display:flex}
-.mobile-menu a{color:rgba(255,255,255,.85);padding:10px 15px;border-radius:var(--radius-sm);font-size:1rem}
-.mobile-menu a:hover{background:rgba(255,255,255,.08);color:var(--yellow)}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;background:rgba(255,255,255,.1);border-radius:8px;border:none}
+.hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:all .3s}
+/* Hide/Show helpers */
+.hide-mobile{display:flex!important}
+.show-mobile{display:none!important}
+/* Mobile Drawer */
+.mob-drawer{position:fixed;top:0;right:0;width:min(320px,88vw);height:100vh;background:#1a3528;z-index:2100;transform:translateX(100%);transition:transform .35s cubic-bezier(.25,.8,.25,1);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.mob-drawer.open{transform:translateX(0)!important}
+.mob-drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--green-dark);border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0;position:sticky;top:0;z-index:10}
+.mob-drawer-close{background:rgba(255,255,255,.12);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s}
+.mob-drawer-close:hover{background:rgba(255,255,255,.22)}
+.mob-drawer-section{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.mob-drawer-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.32);padding:8px 20px 3px}
+.mob-drawer-item{display:flex;align-items:center;gap:12px;padding:13px 20px;color:rgba(255,255,255,.85);font-size:.9rem;font-family:'Hind Siliguri',sans-serif;text-decoration:none;transition:background .15s;cursor:pointer}
+.mob-drawer-item:hover,.mob-drawer-item:active{background:rgba(255,255,255,.08);color:#fff}
+.mob-drawer-item i{width:18px;text-align:center;opacity:.7;font-size:.92rem}
+.mob-lang-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.7);padding:4px 10px;border-radius:14px;font-size:.75rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s}
+.mob-lang-btn.active{background:var(--yellow);color:var(--green-dark);font-weight:700}
+/* Responsive breakpoint */
+@media(max-width:768px){
+  .hide-mobile{display:none!important}
+  .show-mobile{display:flex!important}
+  .hamburger{display:flex!important}
+  #navbar .nav-links{display:none!important}
+  .nav-inner{padding:0 12px}
+  .nav-logo>div>div:last-child{display:none}
+}
+@media(min-width:769px){
+  .mob-drawer,#mob-drawer-overlay{display:none!important}
+}
+@supports(padding:max(0px)){
+  .mob-drawer{padding-bottom:max(0px,env(safe-area-inset-bottom))}
+}
 
 /* ===== HERO ===== */
 #hero{margin-top:65px;min-height:88vh;background:linear-gradient(135deg,var(--green-dark) 0%,var(--green-mid) 50%,#1a472a 100%);display:flex;align-items:center;position:relative;overflow:hidden;z-index:0;isolation:isolate}
@@ -3932,26 +3959,45 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
 <!-- NAVBAR -->
 <nav id="navbar">
   <div class="nav-inner">
+    <!-- LOGO -->
     <div class="nav-logo">
       <span>🥭</span>
-      <div><div style="font-size:1rem;line-height:1">আমের হাট বাজার</div><div style="font-size:.65rem;color:rgba(255,255,255,.5);font-weight:400">তাজা আম, সেরা দাম</div></div>
+      <div>
+        <div style="font-size:1rem;line-height:1">আমের হাট বাজার</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,.5);font-weight:400">তাজা আম, সেরা দাম</div>
+      </div>
     </div>
+
+    <!-- DESKTOP NAV LINKS -->
     <div class="nav-links">
       <a href="#hero">হোম</a>
       <a href="#products">পণ্যসমূহ</a>
       <a href="#about">আমাদের সম্পর্কে</a>
       <a href="#contact">যোগাযোগ</a>
     </div>
+
+    <!-- NAV RIGHT (desktop full, mobile icons-only) -->
     <div class="nav-right">
-      <!-- LANGUAGE TOGGLE -->
-      <div class="lang-toggle-wrap" id="lang-toggle">
+      <!-- Language — desktop only -->
+      <div class="lang-toggle-wrap hide-mobile" id="lang-toggle">
         <button class="lang-btn active" onclick="setLanguage('bn')" id="lang-bn">বাং</button>
         <button class="lang-btn" onclick="setLanguage('en')" id="lang-en">EN</button>
       </div>
-      <!-- SEARCH OPEN -->
+
+      <!-- Search button — always visible -->
       <button class="search-open-btn" onclick="openSearchPanel()" title="পণ্য খুঁজুন"><i class="fas fa-search"></i></button>
-      <!-- NOTIFICATION BELL -->
-      <div class="notif-bell-wrap" id="notif-bell-wrap">
+
+      <!-- Search box -->
+      <div class="search-wrap" id="nav-search-wrap" style="display:none">
+        <div class="nav-search-box">
+          <i class="fas fa-search nav-search-icon"></i>
+          <input type="text" class="nav-search-input" id="nav-search-input" placeholder="আম খুঁজুন..." autocomplete="off" oninput="handleNavSearch(this.value)" onkeydown="if(event.key==='Escape')closeNavSearch()">
+        </div>
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
+
+      <!-- Notification — desktop only -->
+      <div class="notif-bell-wrap hide-mobile" id="notif-bell-wrap">
         <button class="notif-bell-btn" onclick="toggleNotifDropdown()" title="নোটিফিকেশন">
           <i class="fas fa-bell"></i>
           <span class="notif-dot" id="notif-dot"></span>
@@ -3964,46 +4010,150 @@ body,#navbar,.product-card,.modal,.admin-section,.cart-sidebar{transition:backgr
           <div id="notif-list"></div>
         </div>
       </div>
-      <!-- SEARCH -->
-      <div class="search-wrap" id="nav-search-wrap" style="display:none">
-        <div class="nav-search-box">
-          <i class="fas fa-search nav-search-icon"></i>
-          <input type="text" class="nav-search-input" id="nav-search-input" placeholder="আম খুঁজুন..." autocomplete="off" oninput="handleNavSearch(this.value)" onkeydown="if(event.key==='Escape')closeNavSearch()">
-        </div>
-        <div class="search-dropdown" id="search-dropdown"></div>
-      </div>
-      <button class="dark-toggle" id="dark-toggle-btn" onclick="toggleDarkMode()" title="ডার্ক মোড"><i class="fas fa-moon"></i></button>
-      <button class="cart-btn" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cart-count">0</span></button>
-      <button class="wishlist-btn-nav" onclick="openWishlistModal()" title="উইশলিস্ট"><i class="fas fa-heart"></i><span class="wishlist-count" id="wishlist-count" style="display:none">0</span></button>
-      <div id="nav-guest" style="display:flex;gap:8px">
+
+      <!-- Dark mode — desktop only -->
+      <button class="dark-toggle hide-mobile" id="dark-toggle-btn" onclick="toggleDarkMode()" title="ডার্ক মোড"><i class="fas fa-moon"></i></button>
+
+      <!-- Wishlist — desktop only -->
+      <button class="wishlist-btn-nav hide-mobile" onclick="openWishlistModal()" title="উইশলিস্ট">
+        <i class="fas fa-heart"></i>
+        <span class="wishlist-count" id="wishlist-count" style="display:none">0</span>
+      </button>
+
+      <!-- Cart — always visible -->
+      <button class="cart-btn" onclick="toggleCart()">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-count" id="cart-count">0</span>
+      </button>
+
+      <!-- Auth — desktop only -->
+      <div id="nav-guest" class="hide-mobile" style="display:flex;gap:8px">
         <button class="btn-login" onclick="openModal('login-modal')">লগইন</button>
         <button class="btn-register" onclick="openModal('login-modal')">রেজিস্ট্রেশন</button>
       </div>
-      <div id="nav-user" class="user-menu" style="display:none">
+      <div id="nav-user" class="user-menu hide-mobile" style="display:none">
         <i class="fas fa-user-circle" style="font-size:1.3rem;color:var(--yellow)"></i>
         <span id="user-display-name" style="cursor:pointer;text-decoration:underline dotted" onclick="openProfileModal()"></span>
         <button class="btn-logout" onclick="openProfileModal()" style="background:rgba(244,164,10,.2);border-color:var(--yellow);color:var(--yellow)"><i class="fas fa-user"></i> প্রোফাইল</button>
         <button class="btn-logout" onclick="logoutUser()">লগআউট</button>
       </div>
-    </div>
-    <div class="hamburger" onclick="toggleMobile()">
-      <span></span><span></span><span></span>
+
+      <!-- Hamburger — mobile only -->
+      <button class="hamburger show-mobile" onclick="openMobileDrawer()" aria-label="মেনু">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </nav>
 
+<!-- MOBILE DRAWER OVERLAY -->
+<div id="mob-drawer-overlay" onclick="closeMobileDrawer()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.55);backdrop-filter:blur(3px)"></div>
+
+<!-- MOBILE DRAWER -->
+<div id="mob-drawer" class="mob-drawer">
+  <!-- Drawer Header -->
+  <div class="mob-drawer-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.6rem">🥭</span>
+      <div>
+        <div style="font-size:.95rem;font-weight:700;color:#fff">আমের হাট বাজার</div>
+        <div style="font-size:.65rem;color:rgba(255,255,255,.5)">তাজা আম, সেরা দাম</div>
+      </div>
+    </div>
+    <button onclick="closeMobileDrawer()" class="mob-drawer-close"><i class="fas fa-times"></i></button>
+  </div>
+
+  <!-- User Info (if logged in) -->
+  <div id="mob-user-section" style="display:none;padding:14px 20px;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1)">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="mob-user-avatar" style="width:44px;height:44px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:var(--green-dark);flex-shrink:0">?</div>
+      <div style="flex:1;min-width:0">
+        <div id="mob-user-name" style="font-weight:700;color:#fff;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+        <div id="mob-user-phone" style="font-size:.72rem;color:rgba(255,255,255,.6)"></div>
+      </div>
+      <button onclick="openProfileModal();closeMobileDrawer()" style="background:rgba(244,164,10,.2);border:1px solid var(--yellow);color:var(--yellow);padding:6px 12px;border-radius:20px;font-size:.75rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;white-space:nowrap"><i class="fas fa-user"></i> প্রোফাইল</button>
+    </div>
+  </div>
+
+  <!-- Guest section (if not logged in) -->
+  <div id="mob-guest-section" style="padding:14px 20px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.1)">
+    <div style="font-size:.82rem;color:rgba(255,255,255,.6);margin-bottom:10px">লগইন করুন বা নতুন অ্যাকাউন্ট তৈরি করুন</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="openModal('login-modal');closeMobileDrawer()" class="btn-login" style="flex:1;justify-content:center">লগইন</button>
+      <button onclick="openModal('login-modal');closeMobileDrawer()" class="btn-register" style="flex:1;justify-content:center">রেজিস্ট্রেশন</button>
+    </div>
+  </div>
+
+  <!-- Nav Links -->
+  <div class="mob-drawer-section">
+    <div class="mob-drawer-label">মেনু</div>
+    <a href="#hero" onclick="closeMobileDrawer()" class="mob-drawer-item"><i class="fas fa-home"></i> হোম</a>
+    <a href="#products" onclick="closeMobileDrawer()" class="mob-drawer-item"><i class="fas fa-shopping-basket"></i> পণ্যসমূহ</a>
+    <a href="#about" onclick="closeMobileDrawer()" class="mob-drawer-item"><i class="fas fa-info-circle"></i> আমাদের সম্পর্কে</a>
+    <a href="#contact" onclick="closeMobileDrawer()" class="mob-drawer-item"><i class="fas fa-phone"></i> যোগাযোগ</a>
+    <a href="#blog-section" onclick="closeMobileDrawer()" class="mob-drawer-item"><i class="fas fa-newspaper"></i> ব্লগ</a>
+    <a href="#" onclick="openWishlistModal();closeMobileDrawer()" class="mob-drawer-item">
+      <i class="fas fa-heart"></i> উইশলিস্ট
+      <span id="mob-wishlist-count" style="background:var(--yellow);color:var(--green-dark);font-size:.62rem;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:auto;display:none">0</span>
+    </a>
+  </div>
+
+  <!-- Utility -->
+  <div class="mob-drawer-section">
+    <div class="mob-drawer-label">সেটিংস</div>
+    <div class="mob-drawer-item" onclick="toggleDarkMode()" style="cursor:pointer">
+      <i class="fas fa-moon" id="mob-dark-icon"></i>
+      <span id="mob-dark-label">ডার্ক মোড</span>
+      <div id="mob-dark-toggle" style="margin-left:auto;width:36px;height:20px;background:rgba(255,255,255,.2);border-radius:10px;position:relative;transition:background .2s">
+        <div id="mob-dark-knob" style="position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s"></div>
+      </div>
+    </div>
+    <!-- Notification -->
+    <div class="mob-drawer-item" onclick="openMobileNotif()" style="cursor:pointer">
+      <i class="fas fa-bell"></i> নোটিফিকেশন
+      <span id="mob-notif-badge" style="background:#e74c3c;color:#fff;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:auto;display:none">0</span>
+    </div>
+    <!-- Language -->
+    <div class="mob-drawer-item" style="cursor:default">
+      <i class="fas fa-language"></i> ভাষা
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button onclick="setLanguage('bn')" id="mob-lang-bn" class="mob-lang-btn active">বাং</button>
+        <button onclick="setLanguage('en')" id="mob-lang-en" class="mob-lang-btn">EN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification List (mobile) -->
+  <div id="mob-notif-section" style="display:none;padding:0 0 10px">
+    <div style="padding:8px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1)">
+      <span style="font-size:.82rem;font-weight:700;color:#fff">🔔 নোটিফিকেশন</span>
+      <button onclick="clearNotifs();updateMobDrawer()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:.72rem;cursor:pointer">সব পড়া হয়েছে</button>
+    </div>
+    <div id="mob-notif-list" style="max-height:200px;overflow-y:auto"></div>
+  </div>
+
+  <!-- Admin -->
+  <div class="mob-drawer-section">
+    <div class="mob-drawer-label">উন্নত</div>
+    <div class="mob-drawer-item" onclick="openAdminLogin();closeMobileDrawer()" style="cursor:pointer;color:rgba(255,255,255,.45)">
+      <i class="fas fa-cog"></i> অ্যাডমিন প্যানেল
+    </div>
+    <div id="mob-logout-item" style="display:none">
+      <div class="mob-drawer-item" onclick="logoutUser();closeMobileDrawer()" style="cursor:pointer;color:#ff8a80">
+        <i class="fas fa-sign-out-alt"></i> লগআউট
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);margin-top:auto">
+    <div style="font-size:.72rem;color:rgba(255,255,255,.3);text-align:center">© ২০২৪ আমের হাট বাজার · সুন্দরগঞ্জ, গাইবান্ধা</div>
+  </div>
+</div>
+
 <!-- CATEGORY NAVIGATION -->
 <div id="category-nav">
   <div class="cat-nav-inner" id="cat-nav-inner"></div>
-</div>
-
-<div class="mobile-menu" id="mobile-menu">
-  <a href="#hero" onclick="closeMobile()">🏠 হোম</a>
-  <a href="#products" onclick="closeMobile()">🥭 পণ্যসমূহ</a>
-  <a href="#about" onclick="closeMobile()">ℹ️ আমাদের সম্পর্কে</a>
-  <a href="#contact" onclick="closeMobile()">📞 যোগাযোগ</a>
-  <a href="#" onclick="openModal('login-modal');closeMobile()">👤 লগইন / রেজিস্ট্রেশন</a>
-  <a href="#" onclick="openAdminLogin();closeMobile()" style="color:rgba(255,255,255,.4);font-size:.85rem">⚙️ অ্যাডমিন</a>
 </div>
 
 <!-- COUNTDOWN BANNER -->
@@ -14756,9 +14906,100 @@ showAdminTab=function(tab){
   } else {_prevTabOAuth(tab);}
 };
 
-// ============================================================
-// BATCH 6 — ALL NEW FEATURE JS
-// ============================================================
+// ── MOBILE DRAWER ──
+function openMobileDrawer(){
+  document.getElementById('mob-drawer')?.classList.add('open');
+  document.getElementById('mob-drawer-overlay').style.display='block';
+  document.body.style.overflow='hidden';
+  updateMobDrawer();
+}
+function closeMobileDrawer(){
+  document.getElementById('mob-drawer')?.classList.remove('open');
+  document.getElementById('mob-drawer-overlay').style.display='none';
+  document.body.style.overflow='';
+}
+function openMobileNotif(){
+  const sec=document.getElementById('mob-notif-section');
+  if(!sec) return;
+  const isOpen=sec.style.display!=='none';
+  sec.style.display=isOpen?'none':'block';
+  if(!isOpen){
+    const list=document.getElementById('mob-notif-list');
+    const srcList=document.getElementById('notif-list');
+    if(list&&srcList) list.innerHTML=srcList.innerHTML||'<div style="padding:14px 20px;font-size:.82rem;color:rgba(255,255,255,.5)">কোনো নোটিফিকেশন নেই</div>';
+  }
+}
+function updateMobDrawer(){
+  const u=getCurrentUser();
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  // User / Guest section
+  const userSec=document.getElementById('mob-user-section');
+  const guestSec=document.getElementById('mob-guest-section');
+  const logoutItem=document.getElementById('mob-logout-item');
+  if(u){
+    if(userSec) userSec.style.display='block';
+    if(guestSec) guestSec.style.display='none';
+    if(logoutItem) logoutItem.style.display='block';
+    const avatar=document.getElementById('mob-user-avatar');
+    const name=document.getElementById('mob-user-name');
+    const phone=document.getElementById('mob-user-phone');
+    if(avatar){
+      if(u.avatar||u.picture){
+        avatar.innerHTML=`<img src="${u.avatar||u.picture}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      } else {
+        avatar.textContent=(u.name||'?').slice(0,1).toUpperCase();
+      }
+    }
+    if(name) name.textContent=u.name||'';
+    if(phone) phone.textContent=u.phone||u.email||'';
+  } else {
+    if(userSec) userSec.style.display='none';
+    if(guestSec) guestSec.style.display='block';
+    if(logoutItem) logoutItem.style.display='none';
+  }
+  // Dark mode toggle
+  const knob=document.getElementById('mob-dark-knob');
+  const toggle=document.getElementById('mob-dark-toggle');
+  const label=document.getElementById('mob-dark-label');
+  if(knob) knob.style.left=isDark?'18px':'2px';
+  if(toggle) toggle.style.background=isDark?'var(--yellow)':'rgba(255,255,255,.2)';
+  if(knob) knob.style.background=isDark?'var(--green-dark)':'#fff';
+  if(label) label.textContent=isDark?'লাইট মোড':'ডার্ক মোড';
+  // Wishlist count
+  const wc=getWishlist().length;
+  const mobWc=document.getElementById('mob-wishlist-count');
+  if(mobWc){mobWc.style.display=wc>0?'inline':'none';mobWc.textContent=wc;}
+  // Notification badge
+  const notifs=JSON.parse(localStorage.getItem('amb_notifications')||'[]');
+  const unread=notifs.filter(n=>!n.read).length;
+  const nb=document.getElementById('mob-notif-badge');
+  if(nb){nb.style.display=unread>0?'inline':'none';nb.textContent=unread;}
+  // Language
+  const lang=localStorage.getItem('amb_lang')||'bn';
+  document.getElementById('mob-lang-bn')?.classList.toggle('active',lang==='bn');
+  document.getElementById('mob-lang-en')?.classList.toggle('active',lang==='en');
+}
+// Backward compat
+function toggleMobile(){openMobileDrawer();}
+function closeMobile(){closeMobileDrawer();}
+// Swipe to close drawer
+(function(){
+  let startX=0;
+  document.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+  document.addEventListener('touchend',e=>{
+    const diff=startX-e.changedTouches[0].clientX;
+    if(diff<-60&&document.getElementById('mob-drawer')?.classList.contains('open')){
+      closeMobileDrawer();
+    }
+  },{passive:true});
+})();
+// Update drawer when dark mode toggles
+const _origToggleDark=toggleDarkMode;
+toggleDarkMode=function(){
+  _origToggleDark();
+  setTimeout(updateMobDrawer,100);
+};
+// ── END MOBILE DRAWER ──
 
 // CONFETTI
 
