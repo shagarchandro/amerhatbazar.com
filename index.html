@@ -10207,6 +10207,9 @@ function getAttendanceStatus(staffId,date){
   const rec=getAttendance().find(a=>a.staffId===staffId&&a.date===date);
   return rec?rec.status:null;
 }
+function deleteAttendance(staffId,date){
+  saveAttendanceData(getAttendance().filter(a=>!(a.staffId===staffId&&a.date===date)));
+}
 function getAttendanceSummary(staffId,yearMonth){
   const recs=getAttendance().filter(a=>a.staffId===staffId&&a.date.startsWith(yearMonth));
   const summary={present:0,absent:0,leave:0,halfday:0};
@@ -10218,6 +10221,11 @@ function getAttendanceSummary(staffId,yearMonth){
 function getSalaryPayments(){try{return JSON.parse(localStorage.getItem('amb_salary_payments')||'[]');}catch(e){return [];}}
 function saveSalaryPayments(p){localStorage.setItem('amb_salary_payments',JSON.stringify(p));}
 function getSalaryPayment(staffId,month){return getSalaryPayments().find(p=>p.staffId===staffId&&p.month===month)||null;}
+function deleteSalaryPayment(staffId,month){
+  saveSalaryPayments(getSalaryPayments().filter(p=>!(p.staffId===staffId&&p.month===month)));
+  const staffName=getStaff().find(s=>s.id===staffId)?.name||'';
+  logActivity(`↩️ বেতন পেমেন্ট বাতিল — ${staffName} (${month})`,'↩️');
+}
 function paySalary(staffId,month,amount,note){
   const payments=getSalaryPayments();
   const idx=payments.findIndex(p=>p.staffId===staffId&&p.month===month);
@@ -10468,10 +10476,11 @@ function renderStaffAttendanceView(){
         const current=getAttendanceStatus(s.id,date);
         return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);flex-wrap:wrap">
           <div style="flex:1;min-width:120px;font-weight:700;font-size:.88rem">${s.name}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
             ${Object.entries(statusMeta).map(([key,m])=>`
               <button onclick="markAttendance(${s.id},'${date}','${key}');renderStaffAttendanceView()" style="background:${current===key?m.color:'var(--bg-raised)'};color:${current===key?'#fff':'var(--text)'};border:1px solid ${current===key?m.color:'var(--border)'};padding:6px 12px;border-radius:16px;font-size:.76rem;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;font-weight:600">${m.icon} ${m.label}</button>
             `).join('')}
+            ${current?`<button onclick="deleteAttendance(${s.id},'${date}');renderStaffAttendanceView()" title="মুছুন" style="background:var(--bg-raised);color:var(--text-muted);border:1px solid var(--border);width:30px;height:30px;border-radius:50%;cursor:pointer"><i class="fas fa-times"></i></button>`:''}
           </div>
         </div>`;
       }).join('')}
@@ -10485,7 +10494,26 @@ function renderStaffAttendanceView(){
           return `<tr><td><strong>${s.name}</strong></td><td>${sum.present}</td><td>${sum.absent}</td><td>${sum.leave}</td><td>${sum.halfday}</td></tr>`;
         }).join('')}</tbody>
       </table>
-    </div>`}
+    </div>
+    <div class="admin-section-header" style="margin-top:18px"><h3>📝 বিস্তারিত রেকর্ড — সম্পাদনা/মুছুন</h3></div>
+    ${(()=>{
+      const staffMap={};staff.forEach(s=>staffMap[s.id]=s.name);
+      const monthRecs=getAttendance().filter(a=>staffMap[a.staffId]&&a.date.startsWith(monthKey)).sort((a,b)=>b.date.localeCompare(a.date));
+      if(!monthRecs.length) return '<div class="no-data" style="padding:20px;text-align:center">এই মাসে কোনো রেকর্ড নেই</div>';
+      return `<div class="table-wrapper"><table class="admin-table">
+        <thead><tr><th>তারিখ</th><th>স্টাফ</th><th>অবস্থা</th><th></th></tr></thead>
+        <tbody>${monthRecs.map(r=>`<tr>
+          <td>${new Date(r.date).toLocaleDateString('bn-BD',{day:'numeric',month:'short'})}</td>
+          <td>${staffMap[r.staffId]}</td>
+          <td>
+            <select onchange="markAttendance(${r.staffId},'${r.date}',this.value);renderStaffAttendanceView()" style="padding:4px 8px;border-radius:6px;border:1px solid var(--border);font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;font-size:.78rem">
+              ${Object.entries(statusMeta).map(([key,m])=>`<option value="${key}" ${r.status===key?'selected':''}>${m.icon} ${m.label}</option>`).join('')}
+            </select>
+          </td>
+          <td><button class="btn-delete-sm" onclick="deleteAttendance(${r.staffId},'${r.date}');renderStaffAttendanceView()"><i class="fas fa-trash"></i></button></td>
+        </tr>`).join('')}</tbody>
+      </table></div>`;
+    })()}`}
   </div>`;
 }
 
@@ -10537,6 +10565,7 @@ function renderStaffPayrollView(){
             <div style="font-size:.8rem">প্রদেয়: <strong style="color:var(--orange)">৳${calc.payable.toLocaleString()}</strong>${calc.deduction>0?` <span style="color:var(--text-muted);font-size:.75rem">(কর্তন ৳${calc.deduction.toLocaleString()})</span>`:''}</div>
             <input type="number" class="form-control" id="pay-amt-${s.id}" style="width:110px;padding:6px 10px" value="${payment?payment.amount:calc.payable}">
             <button class="btn-sm btn-primary" onclick="submitSalaryPayment(${s.id},'${month}')"><i class="fas fa-money-bill-wave"></i> ${payment?'আপডেট করুন':'পরিশোধ করুন'}</button>
+            ${payment?`<button class="btn-sm btn-danger" onclick="confirmDeleteSalaryPayment(${s.id},'${month}')" title="পেমেন্ট বাতিল করুন"><i class="fas fa-trash"></i></button>`:''}
           </div>
         </div>`).join('')}
     </div>`}
@@ -10548,6 +10577,14 @@ function submitSalaryPayment(staffId,month){
   paySalary(staffId,month,amt);
   showToast('✅ বেতন পরিশোধ রেকর্ড হয়েছে','success');
   renderStaffPayrollView();
+}
+function confirmDeleteSalaryPayment(staffId,month){
+  const s=getStaff().find(x=>x.id===staffId);
+  showCustomAlert('পেমেন্ট বাতিল করুন',`"${s?.name||'এই স্টাফ'}" এর ${month} মাসের বেতন পরিশোধের রেকর্ড মুছে ফেলা হবে।`,'হ্যাঁ, মুছুন','danger',()=>{
+    deleteSalaryPayment(staffId,month);
+    showToast('পেমেন্ট রেকর্ড মুছে ফেলা হয়েছে','success');
+    renderStaffPayrollView();
+  });
 }
 
 // ============================================================
@@ -14690,6 +14727,17 @@ function deleteOrder(id){
     showToast('অর্ডার মুছে ফেলা হয়েছে','success');renderAdminOrders();
   });
 }
+const DELIVERY_DAYS={
+  'ঢাকা':1,'নারায়ণগঞ্জ':1,'গাজীপুর':1,'মুন্সিগঞ্জ':1,'মানিকগঞ্জ':1,'নরসিংদী':1,
+  'রাজশাহী':2,'চাঁপাইনবাবগঞ্জ':2,'নওগাঁ':2,'নাটোর':2,'পাবনা':2,'সিরাজগঞ্জ':2,'বগুড়া':2,'জয়পুরহাট':2,
+  'রংপুর':2,'গাইবান্ধা':2,'কুড়িগ্রাম':2,'লালমনিরহাট':2,'নীলফামারী':2,'দিনাজপুর':2,'ঠাকুরগাঁও':2,'পঞ্চগড়':2,
+  'চট্টগ্রাম':2,'কক্সবাজার':2,'কুমিল্লা':2,'ফেনী':2,'নোয়াখালী':2,'লক্ষ্মীপুর':2,'চাঁদপুর':2,'ব্রাহ্মণবাড়িয়া':2,
+  'খুলনা':2,'বাগেরহাট':2,'সাতক্ষীরা':2,'যশোর':2,'ঝিনাইদহ':2,'মাগুরা':2,'নড়াইল':2,'কুষ্টিয়া':2,'মেহেরপুর':2,'চুয়াডাঙ্গা':2,
+  'ময়মনসিংহ':2,'টাঙ্গাইল':2,'জামালপুর':2,'শেরপুর':2,'নেত্রকোণা':2,'ফরিদপুর':2,
+  'বরিশাল':3,'পটুয়াখালী':3,'পিরোজপুর':3,'ঝালকাঠি':3,'বরগুনা':3,'ভোলা':3,
+  'সিলেট':3,'মৌলভীবাজার':3,'হবিগঞ্জ':3,'সুনামগঞ্জ':3,
+  'রাঙ্গামাটি':3,'বান্দরবান':3,'খাগড়াছড়ি':3
+};
 function estimateDelivery(district){
   const d=district?district.toLowerCase():'';
   let days=3;
