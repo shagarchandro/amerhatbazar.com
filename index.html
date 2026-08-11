@@ -814,6 +814,10 @@ body.admin-open #pwa-install-bar{display:none!important}
   .payment-options{grid-template-columns:1fr 1fr}
   .admin-topbar{flex-wrap:wrap;gap:8px}
 
+  /* Contact */
+  .contact-grid{grid-template-columns:1fr;gap:28px}
+  .contact-form{padding:20px}
+
   /* Flash Sale */
   #flash-sale{padding:35px 16px}
   .flash-title{font-size:1.5rem;gap:8px}
@@ -10245,6 +10249,27 @@ function calcPayableSalary(staff,yearMonth){
   return {base,deduction,payable,summary};
 }
 
+// ── STAFF NOTES / REMARKS HISTORY ──
+function getStaffNotes(staffId){
+  try{return JSON.parse(localStorage.getItem('amb_staff_notes')||'{}')[staffId]||[];}
+  catch(e){return [];}
+}
+function addStaffNote(staffId,text,type){
+  let all={};
+  try{all=JSON.parse(localStorage.getItem('amb_staff_notes')||'{}');}catch(e){all={};}
+  if(!all[staffId]) all[staffId]=[];
+  all[staffId].unshift({text,type:type||'note',date:new Date().toISOString()});
+  localStorage.setItem('amb_staff_notes',JSON.stringify(all));
+  const staffName=getStaff().find(s=>s.id===staffId)?.name||'';
+  logActivity(`📝 স্টাফ মন্তব্য — ${staffName}: ${text.slice(0,40)}`,'📝');
+}
+function deleteStaffNote(staffId,idx){
+  let all={};
+  try{all=JSON.parse(localStorage.getItem('amb_staff_notes')||'{}');}catch(e){all={};}
+  if(all[staffId]) all[staffId].splice(idx,1);
+  localStorage.setItem('amb_staff_notes',JSON.stringify(all));
+}
+
 function addStaffMember(){
   const name=(document.getElementById('staff-name')?.value||'').trim();
   const phone=(document.getElementById('staff-phone')?.value||'').trim();
@@ -10333,7 +10358,111 @@ function saveEditStaff(id){
   showToast('✅ স্টাফ তথ্য আপডেট হয়েছে','success');
   renderAdminStaff();
 }
+function exportStaffCSV(){
+  const staff=getStaff();
+  if(!staff.length){showToast('কোনো স্টাফ নেই','error');return;}
+  const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
+  const rows=[['নাম','ফোন','ইমেইল','ভূমিকা','স্ট্যাটাস','মাসিক বেতন','যোগদানের তারিখ','নোট']];
+  staff.forEach(s=>{
+    rows.push([s.name||'',s.phone||'',s.email||'',roleLabels[s.role]||s.role,s.status==='inactive'?'নিষ্ক্রিয়':'সক্রিয়',s.salary||0,s.joinDate||'',s.note||'']);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`staff_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+function exportAttendanceCSV(){
+  const staff=getStaff();
+  const monthKey=attendanceSelectedDate.slice(0,7);
+  const recs=getAttendance().filter(a=>a.date.startsWith(monthKey));
+  if(!recs.length){showToast('এই মাসে কোনো হাজিরা রেকর্ড নেই','error');return;}
+  const staffMap={};staff.forEach(s=>staffMap[s.id]=s.name);
+  const statusLbl={present:'উপস্থিত',absent:'অনুপস্থিত',leave:'ছুটি',halfday:'হাফ ডে'};
+  const rows=[['তারিখ','স্টাফ','অবস্থা']];
+  recs.sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{
+    rows.push([r.date,staffMap[r.staffId]||r.staffId,statusLbl[r.status]||r.status]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`attendance_${monthKey}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+function exportPayrollCSV(){
+  const staff=getStaff().filter(s=>s.status!=='inactive'&&Number(s.salary)>0);
+  if(!staff.length){showToast('বেতন নির্ধারিত কোনো স্টাফ নেই','error');return;}
+  const month=payrollSelectedMonth;
+  const rows=[['স্টাফ','মূল বেতন','উপস্থিত','অনুপস্থিত','ছুটি','কর্তন','প্রদেয়','পরিশোধিত','স্ট্যাটাস']];
+  staff.forEach(s=>{
+    const calc=calcPayableSalary(s,month);
+    const payment=getSalaryPayment(s.id,month);
+    rows.push([s.name,calc.base,calc.summary.present,calc.summary.absent,calc.summary.leave,calc.deduction,calc.payable,payment?payment.amount:0,payment?'পরিশোধিত':'বাকি']);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`payroll_${month}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+function openStaffNotesModal(staffId){
+  const s=getStaff().find(x=>x.id===staffId);
+  if(!s) return;
+  const ov=document.createElement('div');
+  ov.id='staff-notes-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:var(--bg-card);border-radius:var(--radius);padding:22px;width:100%;max-width:440px;max-height:85vh;overflow-y:auto;position:relative">
+    <button onclick="this.closest('#staff-notes-overlay').remove()" style="position:absolute;top:12px;right:12px;background:var(--bg-raised);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;color:var(--text-muted)">×</button>
+    <h3 style="color:var(--green-dark);margin-bottom:4px;font-size:1rem"><i class="fas fa-sticky-note"></i> মন্তব্য/নোট — ${s.name}</h3>
+    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:14px">পারফরম্যান্স, সতর্কতা বা প্রশংসার রেকর্ড এখানে রাখুন</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <textarea id="new-staff-note" class="form-control" rows="2" placeholder="নতুন মন্তব্য লিখুন..." style="flex:1"></textarea>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-bottom:16px" onclick="submitStaffNote(${staffId})"><i class="fas fa-plus"></i> যোগ করুন</button>
+    <div id="staff-notes-list"></div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  renderStaffNotesList(staffId);
+}
+function renderStaffNotesList(staffId){
+  const notes=getStaffNotes(staffId);
+  const list=document.getElementById('staff-notes-list');
+  if(!list) return;
+  if(!notes.length){list.innerHTML='<div class="no-data" style="padding:16px;text-align:center;font-size:.82rem">এখনো কোনো মন্তব্য নেই</div>';return;}
+  list.innerHTML=notes.map((n,i)=>`
+    <div style="padding:10px 12px;background:var(--bg-raised);border-radius:var(--radius-sm);margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-size:.82rem;color:var(--text)">${n.text}</div>
+        <div style="font-size:.68rem;color:var(--text-muted);margin-top:4px">${new Date(n.date).toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+      <button onclick="deleteStaffNote(${staffId},${i});renderStaffNotesList(${staffId})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+}
+function submitStaffNote(staffId){
+  const txt=(document.getElementById('new-staff-note')?.value||'').trim();
+  if(!txt){showToast('মন্তব্য লিখুন','error');return;}
+  addStaffNote(staffId,txt);
+  document.getElementById('new-staff-note').value='';
+  renderStaffNotesList(staffId);
+  showToast('✅ মন্তব্য যোগ হয়েছে','success');
+}
 let staffSubTab='list';
+let staffListFilter={q:'',role:'',status:''};
+function setStaffListFilter(key,val){
+  staffListFilter[key]=val;
+  renderStaffListView();
+  if(key==='q'){
+    const inp=document.querySelector('#staff-subtab-body input[placeholder*="নাম বা ফোন"]');
+    if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+  }
+}
 function switchStaffSubTab(tab){
   staffSubTab=tab;
   renderAdminStaff();
@@ -10350,26 +10479,51 @@ function renderAdminStaff(){
   else renderStaffListView();
 }
 function renderStaffListView(){
-  const staff=getStaff();
+  const allStaff=getStaff();
   const orders=getOrders();
   const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
   const roleColors={admin:'#e74c3c',manager:'#8e44ad',staff:'#2980b9',delivery:'#27ae60',support:'#f39c12'};
-  const activeCount=staff.filter(s=>s.status==='active').length;
-  const totalSalary=staff.reduce((s,x)=>s+(Number(x.salary)||0),0);
+  const activeCount=allStaff.filter(s=>s.status==='active').length;
+  const totalSalary=allStaff.reduce((s,x)=>s+(Number(x.salary)||0),0);
+  const q=(staffListFilter.q||'').trim().toLowerCase();
+  const staff=allStaff.filter(s=>{
+    if(staffListFilter.role&&s.role!==staffListFilter.role) return false;
+    if(staffListFilter.status==='active'&&s.status==='inactive') return false;
+    if(staffListFilter.status==='inactive'&&s.status!=='inactive') return false;
+    if(q&&!(s.name||'').toLowerCase().includes(q)&&!(s.phone||'').includes(q)) return false;
+    return true;
+  });
 
   document.getElementById('staff-subtab-body').innerHTML=`
   <div class="admin-section">
     <div class="admin-section-header">
-      <h3>👥 স্টাফ ব্যবস্থাপনা <span style="font-size:.75rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${staff.length}জন · ${activeCount}জন সক্রিয়</span></h3>
-      <button class="btn-add" onclick="document.getElementById('add-staff-form').scrollIntoView({behavior:'smooth'})"><i class="fas fa-plus"></i> নতুন স্টাফ</button>
+      <h3>👥 স্টাফ ব্যবস্থাপনা <span style="font-size:.75rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${allStaff.length}জন · ${activeCount}জন সক্রিয়</span></h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer" onclick="exportStaffCSV()"><i class="fas fa-file-csv"></i> CSV এক্সপোর্ট</button>
+        <button class="btn-add" onclick="document.getElementById('add-staff-form').scrollIntoView({behavior:'smooth'})"><i class="fas fa-plus"></i> নতুন স্টাফ</button>
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <input class="form-control" style="flex:1;min-width:160px" placeholder="🔍 নাম বা ফোন দিয়ে খুঁজুন..." value="${staffListFilter.q||''}" oninput="setStaffListFilter('q',this.value)">
+      <select class="form-control" style="width:auto" onchange="setStaffListFilter('role',this.value)">
+        <option value="">সব ভূমিকা</option>
+        ${Object.entries(roleLabels).map(([v,l])=>`<option value="${v}" ${staffListFilter.role===v?'selected':''}>${l}</option>`).join('')}
+      </select>
+      <select class="form-control" style="width:auto" onchange="setStaffListFilter('status',this.value)">
+        <option value="">সব স্ট্যাটাস</option>
+        <option value="active" ${staffListFilter.status==='active'?'selected':''}>সক্রিয়</option>
+        <option value="inactive" ${staffListFilter.status==='inactive'?'selected':''}>নিষ্ক্রিয়</option>
+      </select>
     </div>
 
     <!-- Summary Stats -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px">
       ${[
-        {icon:'👥',label:'মোট স্টাফ',val:staff.length,color:'var(--green-dark)'},
+        {icon:'👥',label:'মোট স্টাফ',val:allStaff.length,color:'var(--green-dark)'},
         {icon:'✅',label:'সক্রিয়',val:activeCount,color:'#27ae60'},
-        {icon:'⛔',label:'নিষ্ক্রিয়',val:staff.length-activeCount,color:'#e74c3c'},
+        {icon:'⛔',label:'নিষ্ক্রিয়',val:allStaff.length-activeCount,color:'#e74c3c'},
         {icon:'💰',label:'মাসিক বেতন',val:'৳'+totalSalary.toLocaleString(),color:'var(--orange)'},
       ].map(x=>`<div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
         <div style="font-size:1.3rem">${x.icon}</div>
@@ -10380,7 +10534,7 @@ function renderStaffListView(){
 
     <!-- Staff Cards -->
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-      ${staff.map(s=>{
+      ${!staff.length?'<div class="no-data" style="padding:24px;text-align:center">কোনো স্টাফ পাওয়া যায়নি</div>':staff.map(s=>{
         const initials=(s.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
         const isActive=s.status!=='inactive';
         const roleColor=roleColors[s.role]||'#2980b9';
@@ -10403,6 +10557,7 @@ function renderStaffListView(){
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
             <button class="btn-sm btn-primary" onclick="openEditStaff(${s.id})" title="সম্পাদনা"><i class="fas fa-edit"></i></button>
+            <button class="btn-sm" onclick="openStaffNotesModal(${s.id})" style="background:#fff8e6;color:#b8860b;border:1px solid #f0dca0;padding:5px 8px;border-radius:6px;cursor:pointer" title="মন্তব্য/নোট"><i class="fas fa-sticky-note"></i></button>
             ${s.phone?`<a href="tel:${s.phone}" class="btn-sm" style="background:var(--green-pale);color:var(--green-dark);border:none;padding:5px 8px;border-radius:6px;text-decoration:none;display:flex;align-items:center;justify-content:center" title="কল"><i class="fas fa-phone"></i></a>`:''}
             ${s.phone?`<a href="https://wa.me/880${s.phone.replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#e8fdf0;color:#25d366;border:none;padding:5px 8px;border-radius:6px;text-decoration:none;display:flex;align-items:center;justify-content:center" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
             ${s.id!==1?`<button class="btn-sm" onclick="toggleStaffStatus(${s.id})" style="background:${isActive?'#fef0f0':'#e8fdf0'};color:${isActive?'#e74c3c':'#27ae60'};border:1px solid ${isActive?'#fcc':'#b7f5d0'};padding:5px 8px;border-radius:6px;cursor:pointer" title="${isActive?'নিষ্ক্রিয়':'সক্রিয়'} করুন"><i class="fas fa-${isActive?'ban':'check'}"></i></button>`:''}
@@ -10468,7 +10623,10 @@ function renderStaffAttendanceView(){
   <div class="admin-section">
     <div class="admin-section-header">
       <h3>📅 দৈনিক হাজিরা</h3>
-      <input type="date" class="form-control" style="width:auto" value="${date}" max="${new Date().toISOString().slice(0,10)}" onchange="setAttendanceDate(this.value)">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="date" class="form-control" style="width:auto" value="${date}" max="${new Date().toISOString().slice(0,10)}" onchange="setAttendanceDate(this.value)">
+        <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer" onclick="exportAttendanceCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+      </div>
     </div>
     ${!staff.length?'<div class="no-data" style="padding:30px;text-align:center">কোনো সক্রিয় স্টাফ নেই</div>':`
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
@@ -10534,7 +10692,10 @@ function renderStaffPayrollView(){
   <div class="admin-section">
     <div class="admin-section-header">
       <h3>💰 বেতন / পেরোল</h3>
-      <input type="month" class="form-control" style="width:auto" value="${month}" max="${new Date().toISOString().slice(0,7)}" onchange="setPayrollMonth(this.value)">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="month" class="form-control" style="width:auto" value="${month}" max="${new Date().toISOString().slice(0,7)}" onchange="setPayrollMonth(this.value)">
+        <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer" onclick="exportPayrollCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px">
       <div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
