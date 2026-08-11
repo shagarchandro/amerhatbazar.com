@@ -5353,9 +5353,7 @@ function doRegister(){
       <button class="modal-close" onclick="closeModal('admin-login-modal')"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <div style="background:var(--yellow-light);border:1px solid var(--yellow);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:15px;font-size:.85rem;color:#856404">
-        <strong>ডিফল্ট:</strong> admin@amerbazar.com / admin123
-      </div>
+      <div id="admin-login-lockout-msg" style="display:none;background:#fef0f0;border:1px solid #fcc;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:15px;font-size:.85rem;color:#c0392b"></div>
       <div class="form-group"><label>অ্যাডমিন ইমেইল</label><input class="form-control" id="admin-email-input" type="email" placeholder="অ্যাডমিন ইমেইল"></div>
       <div class="form-group"><label>পাসওয়ার্ড <span class="req-star">*</span></label>
         <div class="pw-wrap">
@@ -7769,14 +7767,39 @@ function openAdminLogin(){openModal('admin-login-modal');}
 // ============================================================
 // ADMIN AUTH
 // ============================================================
+function getAdminLoginLockout(){
+  try{return JSON.parse(localStorage.getItem('amb_admin_lockout')||'{"attempts":0,"until":0}');}
+  catch(e){return {attempts:0,until:0};}
+}
+function saveAdminLoginLockout(l){localStorage.setItem('amb_admin_lockout',JSON.stringify(l));}
 function doAdminLogin(){
   const email=document.getElementById('admin-email-input').value.trim();
   const pass=document.getElementById('admin-pass-input').value;
   const err=document.getElementById('admin-login-error');
+  const lockMsg=document.getElementById('admin-login-lockout-msg');
+  const lockout=getAdminLoginLockout();
+  const now=Date.now();
+  if(lockout.until>now){
+    const secsLeft=Math.ceil((lockout.until-now)/1000);
+    if(lockMsg){lockMsg.style.display='block';lockMsg.textContent=`🔒 অনেকবার ভুল চেষ্টার কারণে সাময়িকভাবে বন্ধ। ${secsLeft} সেকেন্ড পর আবার চেষ্টা করুন।`;}
+    return;
+  }
   const admin=getAdmin();
   if(email===admin.email&&pass===admin.password){
+    saveAdminLoginLockout({attempts:0,until:0});
+    if(lockMsg) lockMsg.style.display='none';
     closeModal('admin-login-modal');openAdminPanel();
-  } else {err.textContent='ইমেইল বা পাসওয়ার্ড ভুল';}
+  } else {
+    const attempts=(lockout.attempts||0)+1;
+    if(attempts>=5){
+      saveAdminLoginLockout({attempts:0,until:now+60000});
+      if(lockMsg){lockMsg.style.display='block';lockMsg.textContent='🔒 ৫ বার ভুল চেষ্টা — ৬০ সেকেন্ডের জন্য বন্ধ করা হয়েছে।';}
+      if(err) err.textContent='';
+    } else {
+      saveAdminLoginLockout({attempts,until:0});
+      if(err) err.textContent=`ইমেইল বা পাসওয়ার্ড ভুল (${5-attempts}টি চেষ্টা বাকি)`;
+    }
+  }
 }
 function openAdminPanel(startTab){
   const _panel=document.getElementById('admin-panel');
@@ -8027,6 +8050,10 @@ function renderDashboard(){
   const alertCount=Object.values(stockAlerts).reduce((s,a)=>s+a.length,0);
   const flashProds=products.filter(p=>p.discount>=15&&p.stock>0).length;
   document.getElementById('admin-main').innerHTML=`
+    ${getAdmin().password==='admin123'?`<div style="background:#fff3cd;border:1.5px solid #ffc107;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">⚠️</span><span style="font-size:.85rem;color:#856404"><strong>নিরাপত্তা সতর্কতা:</strong> আপনি এখনো ডিফল্ট পাসওয়ার্ড ব্যবহার করছেন। এখনই পরিবর্তন করুন।</span></div>
+      <button class="btn-sm btn-primary" onclick="showAdminTab('password');setTimeout(()=>switchSettingsTab('pass'),50)">পাসওয়ার্ড পরিবর্তন করুন</button>
+    </div>`:''}
     ${renderLowStockAlert()}
     <div class="stats-grid">
       <div class="stat-card" style="cursor:pointer" onclick="showAdminTab('orders')">
@@ -10166,6 +10193,50 @@ function getStaff(){
 }
 function saveStaff(s){localStorage.setItem('amb_staff',JSON.stringify(s));}
 
+// ── STAFF ATTENDANCE ──
+function getAttendance(){try{return JSON.parse(localStorage.getItem('amb_attendance')||'[]');}catch(e){return [];}}
+function saveAttendanceData(a){localStorage.setItem('amb_attendance',JSON.stringify(a));}
+function markAttendance(staffId,date,status){
+  const all=getAttendance();
+  const idx=all.findIndex(a=>a.staffId===staffId&&a.date===date);
+  if(idx>-1) all[idx].status=status;
+  else all.push({staffId,date,status});
+  saveAttendanceData(all);
+}
+function getAttendanceStatus(staffId,date){
+  const rec=getAttendance().find(a=>a.staffId===staffId&&a.date===date);
+  return rec?rec.status:null;
+}
+function getAttendanceSummary(staffId,yearMonth){
+  const recs=getAttendance().filter(a=>a.staffId===staffId&&a.date.startsWith(yearMonth));
+  const summary={present:0,absent:0,leave:0,halfday:0};
+  recs.forEach(r=>{if(summary[r.status]!==undefined) summary[r.status]++;});
+  return summary;
+}
+
+// ── STAFF SALARY / PAYROLL ──
+function getSalaryPayments(){try{return JSON.parse(localStorage.getItem('amb_salary_payments')||'[]');}catch(e){return [];}}
+function saveSalaryPayments(p){localStorage.setItem('amb_salary_payments',JSON.stringify(p));}
+function getSalaryPayment(staffId,month){return getSalaryPayments().find(p=>p.staffId===staffId&&p.month===month)||null;}
+function paySalary(staffId,month,amount,note){
+  const payments=getSalaryPayments();
+  const idx=payments.findIndex(p=>p.staffId===staffId&&p.month===month);
+  const rec={staffId,month,amount:Number(amount)||0,paidDate:new Date().toISOString(),note:note||''};
+  if(idx>-1) payments[idx]=rec; else payments.push(rec);
+  saveSalaryPayments(payments);
+  const staffName=getStaff().find(s=>s.id===staffId)?.name||'';
+  logActivity(`💰 বেতন পরিশোধ — ${staffName} (${month}): ৳${Number(amount).toLocaleString()}`,'💰');
+}
+function calcPayableSalary(staff,yearMonth){
+  const base=Number(staff.salary)||0;
+  if(!base) return {base:0,deduction:0,payable:0,summary:{present:0,absent:0,leave:0,halfday:0}};
+  const summary=getAttendanceSummary(staff.id,yearMonth);
+  const perDay=base/30;
+  const deduction=Math.round(perDay*summary.absent+(perDay/2)*summary.halfday);
+  const payable=Math.max(0,Math.round(base-deduction));
+  return {base,deduction,payable,summary};
+}
+
 function addStaffMember(){
   const name=(document.getElementById('staff-name')?.value||'').trim();
   const phone=(document.getElementById('staff-phone')?.value||'').trim();
@@ -10254,7 +10325,23 @@ function saveEditStaff(id){
   showToast('✅ স্টাফ তথ্য আপডেট হয়েছে','success');
   renderAdminStaff();
 }
+let staffSubTab='list';
+function switchStaffSubTab(tab){
+  staffSubTab=tab;
+  renderAdminStaff();
+}
 function renderAdminStaff(){
+  const tabs=[['list','👥 তালিকা'],['attendance','📅 হাজিরা'],['payroll','💰 বেতন']];
+  document.getElementById('admin-main').innerHTML=`
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
+      ${tabs.map(([key,label])=>`<button onclick="switchStaffSubTab('${key}')" style="background:${staffSubTab===key?'var(--green-dark)':'var(--bg-card)'};color:${staffSubTab===key?'#fff':'var(--text)'};border:1px solid var(--border);padding:8px 16px;border-radius:20px;font-size:.82rem;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;font-weight:600" onclick="switchStaffSubTab('${key}')">${label}</button>`).join('')}
+    </div>
+    <div id="staff-subtab-body"></div>`;
+  if(staffSubTab==='attendance') renderStaffAttendanceView();
+  else if(staffSubTab==='payroll') renderStaffPayrollView();
+  else renderStaffListView();
+}
+function renderStaffListView(){
   const staff=getStaff();
   const orders=getOrders();
   const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
@@ -10262,7 +10349,7 @@ function renderAdminStaff(){
   const activeCount=staff.filter(s=>s.status==='active').length;
   const totalSalary=staff.reduce((s,x)=>s+(Number(x.salary)||0),0);
 
-  document.getElementById('admin-main').innerHTML=`
+  document.getElementById('staff-subtab-body').innerHTML=`
   <div class="admin-section">
     <div class="admin-section-header">
       <h3>👥 স্টাফ ব্যবস্থাপনা <span style="font-size:.75rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${staff.length}জন · ${activeCount}জন সক্রিয়</span></h3>
@@ -10355,6 +10442,112 @@ function renderAdminStaff(){
       </div>
     </div>
   </div>`;
+}
+
+let attendanceSelectedDate=new Date().toISOString().slice(0,10);
+function setAttendanceDate(d){attendanceSelectedDate=d;renderStaffAttendanceView();}
+function renderStaffAttendanceView(){
+  const staff=getStaff().filter(s=>s.status!=='inactive');
+  const date=attendanceSelectedDate;
+  const monthKey=date.slice(0,7);
+  const statusMeta={
+    present:{label:'উপস্থিত',icon:'✅',color:'#27ae60'},
+    absent:{label:'অনুপস্থিত',icon:'❌',color:'#e74c3c'},
+    leave:{label:'ছুটি',icon:'🌴',color:'#f39c12'},
+    halfday:{label:'হাফ ডে',icon:'🌓',color:'#3498db'}
+  };
+  document.getElementById('staff-subtab-body').innerHTML=`
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <h3>📅 দৈনিক হাজিরা</h3>
+      <input type="date" class="form-control" style="width:auto" value="${date}" max="${new Date().toISOString().slice(0,10)}" onchange="setAttendanceDate(this.value)">
+    </div>
+    ${!staff.length?'<div class="no-data" style="padding:30px;text-align:center">কোনো সক্রিয় স্টাফ নেই</div>':`
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+      ${staff.map(s=>{
+        const current=getAttendanceStatus(s.id,date);
+        return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);flex-wrap:wrap">
+          <div style="flex:1;min-width:120px;font-weight:700;font-size:.88rem">${s.name}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${Object.entries(statusMeta).map(([key,m])=>`
+              <button onclick="markAttendance(${s.id},'${date}','${key}');renderStaffAttendanceView()" style="background:${current===key?m.color:'var(--bg-raised)'};color:${current===key?'#fff':'var(--text)'};border:1px solid ${current===key?m.color:'var(--border)'};padding:6px 12px;border-radius:16px;font-size:.76rem;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;font-weight:600">${m.icon} ${m.label}</button>
+            `).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="admin-section-header"><h3>📊 এই মাসের সারাংশ (${monthKey})</h3></div>
+    <div class="table-wrapper">
+      <table class="admin-table">
+        <thead><tr><th>স্টাফ</th><th>✅ উপস্থিত</th><th>❌ অনুপস্থিত</th><th>🌴 ছুটি</th><th>🌓 হাফ ডে</th></tr></thead>
+        <tbody>${staff.map(s=>{
+          const sum=getAttendanceSummary(s.id,monthKey);
+          return `<tr><td><strong>${s.name}</strong></td><td>${sum.present}</td><td>${sum.absent}</td><td>${sum.leave}</td><td>${sum.halfday}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`}
+  </div>`;
+}
+
+let payrollSelectedMonth=new Date().toISOString().slice(0,7);
+function setPayrollMonth(m){payrollSelectedMonth=m;renderStaffPayrollView();}
+function renderStaffPayrollView(){
+  const staff=getStaff().filter(s=>s.status!=='inactive'&&Number(s.salary)>0);
+  const month=payrollSelectedMonth;
+  let totalPayable=0,totalPaid=0;
+  const rows=staff.map(s=>{
+    const calc=calcPayableSalary(s,month);
+    const payment=getSalaryPayment(s.id,month);
+    totalPayable+=calc.payable;
+    if(payment) totalPaid+=payment.amount;
+    return {s,calc,payment};
+  });
+  document.getElementById('staff-subtab-body').innerHTML=`
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <h3>💰 বেতন / পেরোল</h3>
+      <input type="month" class="form-control" style="width:auto" value="${month}" max="${new Date().toISOString().slice(0,7)}" onchange="setPayrollMonth(this.value)">
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px">
+      <div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
+        <div style="font-size:1rem;font-weight:800;color:var(--orange)">৳${totalPayable.toLocaleString()}</div>
+        <div style="font-size:.7rem;color:var(--text-muted)">মোট প্রদেয় (হাজিরা অনুযায়ী)</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
+        <div style="font-size:1rem;font-weight:800;color:#27ae60">৳${totalPaid.toLocaleString()}</div>
+        <div style="font-size:.7rem;color:var(--text-muted)">পরিশোধিত</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
+        <div style="font-size:1rem;font-weight:800;color:#e74c3c">৳${Math.max(0,totalPayable-totalPaid).toLocaleString()}</div>
+        <div style="font-size:.7rem;color:var(--text-muted)">বাকি</div>
+      </div>
+    </div>
+    ${!rows.length?'<div class="no-data" style="padding:30px;text-align:center">বেতন নির্ধারিত কোনো সক্রিয় স্টাফ নেই</div>':`
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${rows.map(({s,calc,payment})=>`
+        <div style="padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+            <div>
+              <div style="font-weight:700;font-size:.9rem">${s.name}</div>
+              <div style="font-size:.75rem;color:var(--text-muted)">মূল বেতন: ৳${calc.base.toLocaleString()} · উপস্থিত ${calc.summary.present} · অনুপস্থিত ${calc.summary.absent} · ছুটি ${calc.summary.leave}</div>
+            </div>
+            ${payment?`<span style="background:#e8f8ee;color:#27ae60;font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:12px">✅ পরিশোধিত ৳${payment.amount.toLocaleString()}</span>`:`<span style="background:#fef0f0;color:#e74c3c;font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:12px">⏳ বাকি</span>`}
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="font-size:.8rem">প্রদেয়: <strong style="color:var(--orange)">৳${calc.payable.toLocaleString()}</strong>${calc.deduction>0?` <span style="color:var(--text-muted);font-size:.75rem">(কর্তন ৳${calc.deduction.toLocaleString()})</span>`:''}</div>
+            <input type="number" class="form-control" id="pay-amt-${s.id}" style="width:110px;padding:6px 10px" value="${payment?payment.amount:calc.payable}">
+            <button class="btn-sm btn-primary" onclick="submitSalaryPayment(${s.id},'${month}')"><i class="fas fa-money-bill-wave"></i> ${payment?'আপডেট করুন':'পরিশোধ করুন'}</button>
+          </div>
+        </div>`).join('')}
+    </div>`}
+  </div>`;
+}
+function submitSalaryPayment(staffId,month){
+  const amt=Number(document.getElementById(`pay-amt-${staffId}`)?.value);
+  if(!amt||amt<0){showToast('সঠিক পরিমাণ দিন','error');return;}
+  paySalary(staffId,month,amt);
+  showToast('✅ বেতন পরিশোধ রেকর্ড হয়েছে','success');
+  renderStaffPayrollView();
 }
 
 // ============================================================
