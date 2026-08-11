@@ -7165,6 +7165,39 @@ function _continueInvoice(c,S,IS,order,canvas,PW,PH,fill,stroke,rRect,bn,en,line
   fill(40,y,714,28,'#f0faf4');
   stroke(40,y,714,28,'#b7e4c7',0.5);
   bn('✅ '+(IS.watermarkText||'ধন্যবাদ আমাদের থেকে কিনেছেন!')+'  •  পণ্যে সমস্যা হলে ৭ দিনের মধ্যে যোগাযোগ করুন।',48,y+8,9.5,IS.headerBg||'#1a4731');
+  y+=44;
+
+  // ── FILL REMAINING SPACE (trust badges + thank-you flourish + contact strip) ──
+  // Footer starts at y=1080; only draw these if there's comfortable room, so short
+  // invoices don't stay mostly blank and long invoices never collide with the footer.
+  const spaceLeft=1000-y;
+  if(spaceLeft>=140){
+    // Trust badges strip
+    const badges=[['🌿','১০০% তাজা গ্যারান্টি'],['🚚','দ্রুত হোম ডেলিভারি'],['💯','মানসম্মত পণ্য'],['🔄','সহজ রিটার্ন নীতি']];
+    const bw=714/badges.length;
+    fill(40,y,714,58,'#faf8f2');
+    stroke(40,y,714,58,'#e8e0d0',0.5);
+    badges.forEach((b,i)=>{
+      const bx=40+i*bw;
+      if(i>0) line(bx,y+10,bx,y+48,'#e0dbd0',0.4);
+      c.font=`${S(20)}px "Hind Siliguri","Noto Sans Bengali",sans-serif`;c.textAlign='center';c.textBaseline='top';
+      c.fillText(b[0],S(bx+bw/2),S(y+8));c.textAlign='left';
+      bn(b[1],bx+bw/2,y+34,8.3,'#3d4f42','center',bw-14);
+    });
+    y+=76;
+
+    // Thank-you flourish
+    line(280,y,340,y,IS.accentColor||'#f0a500',1);
+    line(454,y,514,y,IS.accentColor||'#f0a500',1);
+    bn('আপনার আস্থার জন্য আমরা কৃতজ্ঞ 🥭',397,y-7,11,IS.headerBg||'#1a4731','center');
+    y+=32;
+
+    // Contact reminder strip
+    const contactBits=[IS.phone?('📞 '+IS.phone):'',IS.email?('✉️ '+IS.email):'',IS.website?('🌐 '+IS.website):''].filter(Boolean);
+    if(contactBits.length){
+      en(contactBits.join('   |   '),397,y,8.5,'#8a8378',false,'center');
+    }
+  }
 
   // ── FOOTER ──
   fill(0,1080,794,43,IS.headerBg||'#1a4731');
