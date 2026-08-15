@@ -643,6 +643,13 @@ body.admin-open #pwa-install-bar{display:none!important}
 .admin-main{padding:20px;flex:1}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:28px}
 .stat-card{background:#fff;border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border-left:4px solid var(--green-mid)}
+.toggle-switch{position:relative;display:inline-block;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s}
+.toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-switch input:checked+.toggle-slider{background:var(--green-mid)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px)}
+.pay-option-disabled{pointer-events:none}
 .stat-card:nth-child(2){border-left-color:var(--yellow)}
 .stat-card:nth-child(3){border-left-color:var(--green-light)}
 .stat-card:nth-child(4){border-left-color:var(--orange)}
@@ -5489,6 +5496,7 @@ function doRegister(){
       <div class="admin-nav-divider"></div>
       <div class="admin-nav-section-label">সেটিংস</div>
       <button class="admin-nav-item" onclick="showAdminTab('delivery');closeMobileAdminSidebar()" data-label="ডেলিভারি সেটিংস"><i class="fas fa-truck"></i><span class="admin-nav-label">ডেলিভারি সেটিংস</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('paymentsettings');closeMobileAdminSidebar()" data-label="পেমেন্ট সেটিংস"><i class="fas fa-credit-card"></i><span class="admin-nav-label">পেমেন্ট সেটিংস</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('customize');closeMobileAdminSidebar()" data-label="সাইট কাস্টমাইজ"><i class="fas fa-paint-brush"></i><span class="admin-nav-label">সাইট কাস্টমাইজ</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('password');closeMobileAdminSidebar()" data-label="পাসওয়ার্ড"><i class="fas fa-key"></i><span class="admin-nav-label">পাসওয়ার্ড পরিবর্তন</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('oauth');closeMobileAdminSidebar()" data-label="Social Login"><i class="fas fa-sign-in-alt"></i><span class="admin-nav-label">Social Login সেটিংস</span></button>
@@ -6108,7 +6116,7 @@ function renderCheckoutForm(){
     </button>`;
   setTimeout(()=>{
     const po=document.getElementById('co-payment-options');
-    if(po) po.innerHTML=getPaymentOptionsHTML();
+    if(po) po.innerHTML=getPaymentOptionsHTML(ct.total);
     selectPayment('cod');
     updateCheckoutDelivery();
   },0);
@@ -6225,6 +6233,33 @@ const PAYMENT_METHODS={
   },
 };
 
+// ── PAYMENT SETTINGS (admin-configurable overrides) ──
+function getPaymentSettings(){
+  const defaults={
+    enabled:{cod:true,bkash:true,nagad:true,rocket:true,upay:true,bank:true},
+    numbers:{bkash:'01305-144356',nagad:'01305-144356',rocket:'01305-144356',upay:'01305-144356'},
+    bankName:'Dutch-Bangla Bank',bankAcc:'1234567890',bankRouting:'090261539',
+    codLimit:0 // 0 = no limit; otherwise max order total allowed for COD
+  };
+  try{
+    const saved=JSON.parse(localStorage.getItem('amb_payment_settings')||'{}');
+    return {...defaults,...saved,enabled:{...defaults.enabled,...(saved.enabled||{})},numbers:{...defaults.numbers,...(saved.numbers||{})}};
+  }catch(e){return defaults;}
+}
+function savePaymentSettingsData(s){localStorage.setItem('amb_payment_settings',JSON.stringify(s));}
+function getActivePaymentMethods(){
+  const ps=getPaymentSettings();
+  const merged={};
+  Object.entries(PAYMENT_METHODS).forEach(([key,pm])=>{
+    if(!ps.enabled[key]) return;
+    const copy={...pm};
+    if(ps.numbers[key]){copy.number=ps.numbers[key];copy.hint=copy.hint.replace(/01305-144356/,ps.numbers[key]);}
+    if(key==='bank') copy.hint=`ব্যাংক: ${ps.bankName} | A/C: ${ps.bankAcc} | Routing: ${ps.bankRouting}`;
+    merged[key]=copy;
+  });
+  return merged;
+}
+
 function selectPayment(method){
   selectedPayment=method;
   document.querySelectorAll('.pay-option').forEach(el=>{
@@ -6233,7 +6268,7 @@ function selectPayment(method){
   // Support both checkout modal and buy-now modal
   const detail=document.getElementById('payment-detail')||document.getElementById('bn-payment-detail');
   if(!detail) return;
-  const pm=PAYMENT_METHODS[method];
+  const pm=getActivePaymentMethods()[method];
   if(!pm) return;
   if(!pm.needsTxn){detail.innerHTML='';return;}
   detail.innerHTML=`
@@ -6241,19 +6276,23 @@ function selectPayment(method){
       <div style="font-size:.82rem;color:#666;margin-bottom:8px;line-height:1.6">
         <i class="fas fa-info-circle" style="color:${pm.color}"></i> ${pm.hint}
       </div>
-      <input class="form-control" id="pay-number" placeholder="পেমেন্ট নম্বর (যেটা থেকে পাঠিয়েছেন)">
-      <input class="form-control" id="pay-txnid" placeholder="ট্রানজেকশন আইডি / রেফারেন্স নম্বর *" style="margin-top:8px;border-color:${pm.color}40">
-      <div style="font-size:.75rem;color:#e74c3c;margin-top:4px">* ট্রানজেকশন আইডি ছাড়া অর্ডার নিশ্চিত হবে না</div>
+      <input class="form-control" id="pay-number" placeholder="${t('পেমেন্ট নম্বর (যেটা থেকে পাঠিয়েছেন)')}">
+      <input class="form-control" id="pay-txnid" placeholder="${t('ট্রানজেকশন আইডি / রেফারেন্স নম্বর')} *" style="margin-top:8px;border-color:${pm.color}40">
+      <div style="font-size:.75rem;color:#e74c3c;margin-top:4px">* ${t('ট্রানজেকশন আইডি ছাড়া অর্ডার নিশ্চিত হবে না')}</div>
     </div>`;
 }
 
-function getPaymentOptionsHTML(){
-  return Object.entries(PAYMENT_METHODS).map(([key,pm])=>
-    `<div class="pay-option" data-method="${key}" onclick="selectPayment('${key}')" style="${key===selectedPayment?'border-color:var(--green-mid);background:var(--green-pale)':''}">
+function getPaymentOptionsHTML(orderTotal){
+  const ps=getPaymentSettings();
+  const methods=getActivePaymentMethods();
+  const codBlocked=ps.codLimit>0&&orderTotal>ps.codLimit&&methods.cod;
+  return Object.entries(methods).map(([key,pm])=>{
+    const blocked=key==='cod'&&codBlocked;
+    return `<div class="pay-option${blocked?' pay-option-disabled':''}" data-method="${key}" onclick="${blocked?'':`selectPayment('${key}')`}" style="${key===selectedPayment?'border-color:var(--green-mid);background:var(--green-pale)':''}${blocked?';opacity:.4;cursor:not-allowed':''}" ${blocked?`title="${t('৳')}${ps.codLimit}+ ${t('অর্ডারে ক্যাশ অন ডেলিভারি সুবিধা নেই')}"`:''}>
       <div class="pay-option-icon">${pm.icon}</div>
       <div class="pay-option-name">${t(pm.name)}</div>
-    </div>`
-  ).join('');
+    </div>`;
+  }).join('')+(codBlocked?`<div style="grid-column:1/-1;font-size:.75rem;color:#e74c3c;margin-top:6px">⚠️ ৳${ps.codLimit}+ ${t('অর্ডারে ক্যাশ অন ডেলিভারি সুবিধা নেই — অগ্রিম পেমেন্ট প্রয়োজন')}</div>`:'');
 }
 function placeOrder(isBuyNow){
   const nameEl=document.getElementById(isBuyNow?'bn-name':'co-name');
@@ -6460,7 +6499,7 @@ function renderBuyNowModal(p,u){
     </div>`;
   setTimeout(()=>{
     const po=document.getElementById('bn-payment-options');
-    if(po) po.innerHTML=getPaymentOptionsHTML();
+    if(po) po.innerHTML=getPaymentOptionsHTML(ct.total);
     selectPayment('cod');
   },0);
 }
@@ -7902,7 +7941,7 @@ function showAdminTab(tab,silent=false){
   const titles={dashboard:'📊 ড্যাশবোর্ড',products:'📦 পণ্য',orders:'🛒 অর্ডার',customers:'👥 কাস্টমার',staff:'👤 স্টাফ',coupons:'🎫 কুপন',reviews:'⭐ রিভিউ',delivery:'🚚 ডেলিভারি',password:'🔑 পাসওয়ার্ড',customize:'🎨 কাস্টমাইজ',flashsale:'⚡ ফ্ল্যাশ সেল',bulk:'🏢 বাল্ক',newsletter:'📬 নিউজলেটার',loyalty:'🌟 লয়্যালটি',stockalerts:'🔔 স্টক অ্যালার্ট',analytics:'📈 অ্যানালিটিক্স',target:'🎯 লক্ষ্যমাত্রা',backup:'💾 ব্যাকআপ',settings:'⚙️ সেটিংস',messages:'✉️ বার্তাসমূহ',invoicesettings:'🧾 Invoice',expenses:'💰 খরচ',invvalue:'📊 ইনভেন্টরি',notiftemplates:'🔔 টেমপ্লেট',preorders:'📋 প্রি-অর্ডার'};
   const t=document.getElementById('admin-page-title');
   if(t) t.textContent=titles[tab]||tab;
-  const tabFnMap={dashboard:'renderDashboard',products:'renderAdminProducts',orders:'renderAdminOrders',customers:'renderAdminCustomers',staff:'renderAdminStaff',coupons:'renderAdminCoupons',reviews:'renderAdminReviews',delivery:'renderDeliverySettings',password:'renderPasswordChange',customize:'renderCustomizeSettings',flashsale:'renderAdminFlashSale',bulk:'renderAdminBulkOrders',newsletter:'renderAdminNewsletter',loyalty:'renderAdminLoyalty',stockalerts:'renderAdminStockAlerts',analytics:'renderAdminAnalytics',target:'renderAdminTarget',backup:'renderAdminBackup',settings:'renderAdminSettings',messages:'renderAdminMessages',invoicesettings:'renderAdminInvoiceSettings',expenses:'renderAdminExpenses',invvalue:'renderInventoryValue',notiftemplates:'renderAdminNotifTemplates',preorders:'renderAdminPreOrders',profit:'renderAdminProfit',forecast:'renderAdminForecast',wholesale:'renderAdminWholesale',segments:'renderAdminSegments',seasonal:'renderAdminSeasonal',activitylog:'renderAdminActivityLog',todo:'renderAdminTodo',calendar:'renderAdminCalendar',batches:'renderAdminBatches',tickets:'renderAdminTickets',zones:'renderAdminDeliveryZones',themebuilder:'renderAdminThemeBuilder',oauth:'renderAdminOAuthSettings'};
+  const tabFnMap={dashboard:'renderDashboard',products:'renderAdminProducts',orders:'renderAdminOrders',customers:'renderAdminCustomers',staff:'renderAdminStaff',coupons:'renderAdminCoupons',reviews:'renderAdminReviews',delivery:'renderDeliverySettings',password:'renderPasswordChange',customize:'renderCustomizeSettings',flashsale:'renderAdminFlashSale',bulk:'renderAdminBulkOrders',newsletter:'renderAdminNewsletter',loyalty:'renderAdminLoyalty',stockalerts:'renderAdminStockAlerts',analytics:'renderAdminAnalytics',target:'renderAdminTarget',backup:'renderAdminBackup',settings:'renderAdminSettings',messages:'renderAdminMessages',invoicesettings:'renderAdminInvoiceSettings',expenses:'renderAdminExpenses',invvalue:'renderInventoryValue',notiftemplates:'renderAdminNotifTemplates',preorders:'renderAdminPreOrders',profit:'renderAdminProfit',forecast:'renderAdminForecast',wholesale:'renderAdminWholesale',segments:'renderAdminSegments',seasonal:'renderAdminSeasonal',activitylog:'renderAdminActivityLog',todo:'renderAdminTodo',calendar:'renderAdminCalendar',batches:'renderAdminBatches',tickets:'renderAdminTickets',zones:'renderAdminDeliveryZones',themebuilder:'renderAdminThemeBuilder',oauth:'renderAdminOAuthSettings',paymentsettings:'renderAdminPaymentSettings'};
   const fnName=tabFnMap[tab];
   const adminMain=document.getElementById('admin-main');
   if(fnName&&typeof window[fnName]==='function'){
@@ -12385,7 +12424,13 @@ const TRANSLATIONS={
     'কার্টে যোগ করুন':'Add to Cart','কেজি':'kg','ছাড়!':'off!','বেস্টসেলার':'Bestseller','স্টাফ পিক':'Staff Pick',
     // Quick View
     'মাত্র':'Only','বাকি!':'left!','এখনো রেটিং নেই':'No ratings yet','আনুমানিক ডেলিভারি':'Estimated Delivery',
-    'হিসাব করা হচ্ছে...':'Calculating...','আপনার জেলা নির্বাচন করলে সঠিক তারিখ জানা যাবে':'Select your district for an exact date',
+    'হিসাব করা হচ্ছে...':'Calculating...','চেকআউটে সঠিক ঠিকানা দিলে নির্দিষ্ট তারিখ জানা যাবে':'Enter your address at checkout for an exact date',
+    'দিনের মধ্যে':'days',
+    'পেমেন্ট নম্বর (যেটা থেকে পাঠিয়েছেন)':'Payment number (the one you sent from)',
+    'ট্রানজেকশন আইডি / রেফারেন্স নম্বর':'Transaction ID / Reference number',
+    'ট্রানজেকশন আইডি ছাড়া অর্ডার নিশ্চিত হবে না':'Order cannot be confirmed without a transaction ID',
+    'অর্ডারে ক্যাশ অন ডেলিভারি সুবিধা নেই':'orders are not eligible for Cash on Delivery',
+    'অর্ডারে ক্যাশ অন ডেলিভারি সুবিধা নেই — অগ্রিম পেমেন্ট প্রয়োজন':'orders are not eligible for Cash on Delivery — advance payment required',
     'শেয়ার':'Share','এই আমটি সরাসরি বাগান থেকে সংগ্রহ করা, তাজা ও সুস্বাদু।':'This mango is sourced directly from the orchard — fresh and delicious.',
     'পরিমাণ বেছে নিন:':'Choose quantity:','এখনই কিনুন':'Buy Now','ছাড়':'off',
     // PDP
@@ -14309,7 +14354,7 @@ function openQuickView(pid){
           <div class="delivery-estimate-text">
             <div class="delivery-estimate-title">${t('আনুমানিক ডেলিভারি')}</div>
             <div class="delivery-estimate-date" id="qv-delivery-date">${t('হিসাব করা হচ্ছে...')}</div>
-            <div class="delivery-estimate-note">${t('আপনার জেলা নির্বাচন করলে সঠিক তারিখ জানা যাবে')}</div>
+            <div class="delivery-estimate-note">${t('চেকআউটে সঠিক ঠিকানা দিলে নির্দিষ্ট তারিখ জানা যাবে')}</div>
           </div>
         </div>
         <div class="social-share-row">
@@ -14332,6 +14377,8 @@ function openQuickView(pid){
       </div>
     </div>`;
   openModal('quick-view-modal');
+  const qvUser=getCurrentUser();
+  updateQVDelivery(qvUser?.district||'');
   // Show related products below
   setTimeout(()=>renderRelatedProducts(pid), 200);
 }
@@ -16217,6 +16264,83 @@ function renderPasswordChange(){
     </div>`;
   document.getElementById('pw-new')?.addEventListener('input',checkPwStrength);
 }
+function renderAdminPaymentSettings(){
+  const ps=getPaymentSettings();
+  const methodLabels={cod:'ক্যাশ অন ডেলিভারি',bkash:'বিকাশ',nagad:'নগদ',rocket:'রকেট',upay:'উপায়',bank:'ব্যাংক ট্রান্সফার'};
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>💳 পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয়</h3></div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
+        ${Object.entries(methodLabels).map(([key,label])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:30px;height:30px">${PAYMENT_METHODS[key].icon}</div>
+              <span style="font-weight:600;font-size:.88rem">${label}</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="pm-enabled-${key}" ${ps.enabled[key]?'checked':''}>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="admin-section" style="margin-top:16px">
+      <div class="admin-section-header"><h3>📱 মোবাইল ব্যাংকিং নম্বর</h3></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0">
+        ${['bkash','nagad','rocket','upay'].map(key=>`
+          <div class="form-group">
+            <label>${methodLabels[key]} নম্বর</label>
+            <input class="form-control" id="pm-number-${key}" value="${ps.numbers[key]||''}" placeholder="01XXXXXXXXX">
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="admin-section" style="margin-top:16px">
+      <div class="admin-section-header"><h3>🏦 ব্যাংক অ্যাকাউন্ট তথ্য</h3></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:4px 0">
+        <div class="form-group"><label>ব্যাংকের নাম</label><input class="form-control" id="pm-bank-name" value="${ps.bankName}"></div>
+        <div class="form-group"><label>অ্যাকাউন্ট নম্বর</label><input class="form-control" id="pm-bank-acc" value="${ps.bankAcc}"></div>
+        <div class="form-group"><label>রাউটিং নম্বর</label><input class="form-control" id="pm-bank-routing" value="${ps.bankRouting}"></div>
+      </div>
+    </div>
+
+    <div class="admin-section" style="margin-top:16px">
+      <div class="admin-section-header"><h3>🛡️ ক্যাশ অন ডেলিভারি সীমা</h3></div>
+      <div class="form-group" style="max-width:320px">
+        <label>সর্বোচ্চ অর্ডার মূল্য (৳) — COD-এর জন্য</label>
+        <input type="number" class="form-control" id="pm-cod-limit" value="${ps.codLimit||0}" placeholder="0 = সীমা নেই">
+      </div>
+      <div style="background:var(--yellow-light);border:1px solid var(--yellow);border-radius:6px;padding:9px 13px;font-size:.82rem;color:#856404;max-width:600px">
+        💡 এর বেশি মূল্যের অর্ডারে গ্রাহক ক্যাশ অন ডেলিভারি নির্বাচন করতে পারবেন না, শুধু অগ্রিম পেমেন্ট (বিকাশ/নগদ/ব্যাংক) দিতে হবে। প্রতারণা/ফেক অর্ডার কমাতে সহায়ক। 0 দিলে কোনো সীমা থাকবে না।
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <button class="btn-primary" style="padding:12px 30px" onclick="saveAdminPaymentSettings()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+    </div>`;
+}
+function saveAdminPaymentSettings(){
+  const ps=getPaymentSettings();
+  ['cod','bkash','nagad','rocket','upay','bank'].forEach(key=>{
+    ps.enabled[key]=document.getElementById(`pm-enabled-${key}`)?.checked??true;
+  });
+  ['bkash','nagad','rocket','upay'].forEach(key=>{
+    const val=document.getElementById(`pm-number-${key}`)?.value?.trim();
+    if(val) ps.numbers[key]=val;
+  });
+  ps.bankName=document.getElementById('pm-bank-name')?.value?.trim()||ps.bankName;
+  ps.bankAcc=document.getElementById('pm-bank-acc')?.value?.trim()||ps.bankAcc;
+  ps.bankRouting=document.getElementById('pm-bank-routing')?.value?.trim()||ps.bankRouting;
+  ps.codLimit=Number(document.getElementById('pm-cod-limit')?.value)||0;
+  if(!Object.values(ps.enabled).some(Boolean)){
+    showToast('অন্তত একটা পেমেন্ট পদ্ধতি সক্রিয় রাখতে হবে','error');
+    return;
+  }
+  savePaymentSettingsData(ps);
+  logActivity('💳 পেমেন্ট সেটিংস আপডেট হয়েছে','💳');
+  showToast('✅ পেমেন্ট সেটিংস সংরক্ষিত হয়েছে','success');
+}
 function saveDeliverySettings(){
   const current=getDelivery();
   current.inside=parseInt(document.getElementById('del-inside').value)||60;
@@ -16324,7 +16448,7 @@ function updateQVDelivery(district){
   const el=document.getElementById('qv-delivery-date');
   if(!el) return;
   const est=estimateDelivery(district);
-  el.textContent=`${est.date} (${est.days} দিনের মধ্যে)`;
+  el.textContent=`${est.date} (${est.days} ${t('দিনের মধ্যে')})`;
 }
 function printOrder(orderId){
   const o=getOrders().find(x=>x.id===orderId);
