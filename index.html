@@ -12691,7 +12691,7 @@ function verifyOTPCode(expected){
 // ============================================================
 // 8. DELIVERY ZONE MAP (visual zone selector)
 // ============================================================
-const DELIVERY_ZONES=[
+let DELIVERY_ZONES=[
   {name:'ঢাকা সিটি',days:1,charge:60},
   {name:'গাজীপুর/নারায়ণগঞ্জ',days:1,charge:80},
   {name:'রাজশাহী বিভাগ',days:2,charge:100},
@@ -12702,6 +12702,12 @@ const DELIVERY_ZONES=[
   {name:'সিলেট বিভাগ',days:3,charge:130},
   {name:'অন্যান্য এলাকা',days:3,charge:150},
 ];
+(function loadSavedDeliveryZones(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('amb_delivery_zones')||'null');
+    if(Array.isArray(saved)&&saved.length) DELIVERY_ZONES=saved;
+  }catch(e){}
+})();
 function renderAdminDeliveryZones(){
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
@@ -12728,7 +12734,7 @@ function renderAdminDeliveryZones(){
         </div>
       </div>
       <div style="margin-top:16px;background:#f9f5e7;border-radius:var(--radius-sm);padding:14px;font-size:.82rem;color:var(--text-muted)">
-        💡 জোন কার্ডে ক্লিক করে দিন ও চার্জ পরিবর্তন করুন। এই তথ্য চেকআউট পেজে customer-কে দেখানো হবে।
+        💡 এটি একটি আঞ্চলিক সংক্ষিপ্ত চিত্র (ওভারভিউ)। প্রকৃত চেকআউট চার্জ ও ডেলিভারি সময় নির্ধারিত হয় জেলাভিত্তিক সেটিংস থেকে — সেটা পরিবর্তন করতে <a href="#" onclick="showAdminTab('delivery');return false" style="color:var(--green-dark);font-weight:700">🚚 ডেলিভারি সেটিংস</a> ট্যাবে যান।
       </div>
     </div>`;
 }
@@ -15113,8 +15119,14 @@ const DELIVERY_DAYS={
 function estimateDelivery(district){
   const d=district?district.toLowerCase():'';
   let days=3;
-  for(const [key,val] of Object.entries(DELIVERY_DAYS)){
-    if(d.includes(key)){days=val;break;}
+  const zoneDays=getDelivery().zoneDays||{};
+  // Check admin-configured override first (exact district match)
+  let matched=false;
+  if(district&&zoneDays[district]){days=zoneDays[district];matched=true;}
+  if(!matched){
+    for(const [key,val] of Object.entries(DELIVERY_DAYS)){
+      if(d.includes(key)){days=val;break;}
+    }
   }
   const date=new Date();
   date.setDate(date.getDate()+days);
@@ -15431,8 +15443,10 @@ function addZoneRow(){
     <select class="zone-dist" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem;font-family:'Hind Siliguri',sans-serif">
       ${BD_DISTRICTS.map(d=>`<option value="${d}">${d}</option>`).join('')}
     </select>
-    <input type="number" class="zone-charge" value="100" placeholder="৳" style="width:80px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem">
-    <span style="font-size:.78rem;color:var(--text-muted)">৳</span>
+    <input type="number" class="zone-charge" value="100" placeholder="৳" title="ডেলিভারি চার্জ" style="width:70px;padding:7px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem">
+    <span style="font-size:.72rem;color:var(--text-muted)">৳</span>
+    <input type="number" class="zone-days" min="1" value="3" placeholder="দিন" title="ডেলিভারি সময় (দিন)" style="width:55px;padding:7px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem">
+    <span style="font-size:.72rem;color:var(--text-muted)">দিন</span>
     <button onclick="this.closest('.zone-row').remove()" style="background:#fee;border:1px solid #fcc;color:#e74c3c;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:.78rem"><i class="fas fa-trash"></i></button>`;
   container.appendChild(row);
 }
@@ -16112,8 +16126,10 @@ function renderDeliverySettings(){
               <select class="zone-dist" style="flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem;font-family:'Hind Siliguri',sans-serif">
                 ${BD_DISTRICTS.map(d2=>`<option value="${d2}" ${d2===dist?'selected':''}>${d2}</option>`).join('')}
               </select>
-              <input type="number" class="zone-charge" value="${charge}" placeholder="৳" style="width:80px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem">
-              <span style="font-size:.78rem;color:var(--text-muted)">৳</span>
+              <input type="number" class="zone-charge" value="${charge}" placeholder="৳" title="ডেলিভারি চার্জ" style="width:70px;padding:7px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem">
+              <span style="font-size:.72rem;color:var(--text-muted)">৳</span>
+              <input type="number" class="zone-days" min="1" value="${(d.zoneDays||{})[dist]||DELIVERY_DAYS[dist]||3}" placeholder="দিন" title="ডেলিভারি সময় (দিন)" style="width:55px;padding:7px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:.85rem">
+              <span style="font-size:.72rem;color:var(--text-muted)">দিন</span>
               <button onclick="this.closest('.zone-row').remove()" style="background:#fee;border:1px solid #fcc;color:#e74c3c;padding:5px 8px;border-radius:4px;cursor:pointer;font-size:.78rem"><i class="fas fa-trash"></i></button>
             </div>`).join('')}
         </div>
@@ -16125,17 +16141,19 @@ function renderDeliverySettings(){
 
     <!-- Preview table -->
     <div class="admin-section" style="margin-top:16px">
-      <div class="admin-section-header"><h3>📋 সব জেলার ডেলিভারি চার্জ প্রিভিউ</h3></div>
+      <div class="admin-section-header"><h3>📋 সব জেলার ডেলিভারি চার্জ ও সময় প্রিভিউ</h3></div>
       <div class="table-wrapper">
         <table class="admin-table">
-          <thead><tr><th>জেলা</th><th>চার্জ (৳)</th><th>ধরন</th></tr></thead>
+          <thead><tr><th>জেলা</th><th>চার্জ (৳)</th><th>সময় (দিন)</th><th>ধরন</th></tr></thead>
           <tbody>${BD_DISTRICTS.map(dist=>{
             const charge=zones[dist]||null;
             const isCustom=charge!==null;
             const displayCharge=isCustom?charge:(dist.includes('ঢাকা')?d.inside:d.outside);
+            const days=(d.zoneDays||{})[dist]||DELIVERY_DAYS[dist]||3;
             return `<tr>
               <td><strong>${dist}</strong></td>
               <td><strong style="color:var(--orange)">৳${displayCharge}</strong></td>
+              <td>${days} দিন</td>
               <td><span class="status-badge ${isCustom?'status-delivered':'status-pending'}">${isCustom?'কাস্টম':'ডিফল্ট'}</span></td>
             </tr>`;
           }).join('')}</tbody>
@@ -16364,14 +16382,18 @@ function saveZoneSettings(){
   const current=getDelivery();
   const rows=document.querySelectorAll('.zone-row');
   const zones={};
+  const zoneDays={};
   rows.forEach(row=>{
     const dist=row.querySelector('.zone-dist')?.value;
     const charge=parseInt(row.querySelector('.zone-charge')?.value)||0;
+    const days=parseInt(row.querySelector('.zone-days')?.value)||0;
     if(dist&&charge>0) zones[dist]=charge;
+    if(dist&&days>0) zoneDays[dist]=days;
   });
   current.zones=zones;
+  current.zoneDays=zoneDays;
   saveDelivery(current);
-  showToast('জোন চার্জ সংরক্ষিত ✅ ('+Object.keys(zones).length+'টি জেলা)','success');
+  showToast('জোন চার্জ ও সময় সংরক্ষিত ✅ ('+Object.keys(zones).length+'টি জেলা)','success');
   renderDeliverySettings();
 }
 function searchCustomers(q){
