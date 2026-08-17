@@ -887,9 +887,12 @@ body.admin-open #pwa-install-bar{display:none!important}
   #mobile-bottom-nav{display:block}
   body{padding-bottom:65px}
   #sticky-cart-bar{bottom:65px}
-  #wa-float{bottom:75px;right:12px}
+  #wa-float,#faq-chatbot-btn,#click-to-call,#fab-main-toggle{bottom:85px;right:12px}
   #wa-float .wa-float-btn{width:48px;height:48px;font-size:1.3rem}
-  #back-to-top{bottom:130px;right:12px;width:40px;height:40px}
+  body.fab-open #wa-float{bottom:280px}
+  body.fab-open #faq-chatbot-btn{bottom:215px}
+  body.fab-open #click-to-call{bottom:150px}
+  #back-to-top{bottom:85px;left:12px;right:auto;width:40px;height:40px}
   #pwa-install-bar{bottom:72px;left:10px;right:10px}
 
   /* Notification dropdown */
@@ -1107,7 +1110,7 @@ body.admin-open #pwa-install-bar{display:none!important}
   #mobile-bottom-nav{display:none}
   body{padding-bottom:0}
   #sticky-cart-bar{bottom:0}
-  #wa-float{bottom:20px}
+  #wa-float,#faq-chatbot-btn,#click-to-call,#fab-main-toggle{bottom:20px}
   #back-to-top{bottom:80px}
 }
 
@@ -1228,13 +1231,22 @@ body.admin-open #pwa-install-bar{display:none!important}
 .search-item-price{font-size:.78rem;color:var(--orange)}
 .search-no-result{padding:15px;text-align:center;color:var(--text-muted);font-size:.88rem}
 
-/* ===== WHATSAPP FLOAT ===== */
-#wa-float{position:fixed;bottom:85px;right:20px;z-index:1300;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+/* ===== WHATSAPP FLOAT (part of FAB group) ===== */
+#wa-float{position:fixed;bottom:20px;right:20px;z-index:1930;display:flex;flex-direction:column;align-items:flex-end;gap:10px;opacity:0;transform:translateY(10px) scale(.4);pointer-events:none;transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+body.fab-open #wa-float{bottom:215px;opacity:1;transform:translateY(0) scale(1);pointer-events:all;transition-delay:.12s}
 .wa-float-btn{width:54px;height:54px;border-radius:50%;background:#25d366;color:#fff;border:none;font-size:1.5rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.45);cursor:pointer;transition:all .3s;animation:waPulse 2.5s infinite}
 .wa-float-btn:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,.6)}
 @keyframes waPulse{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,.45)}50%{box-shadow:0 4px 28px rgba(37,211,102,.7),0 0 0 8px rgba(37,211,102,.1)}}
 .wa-tooltip{background:var(--green-dark);color:#fff;padding:6px 14px;border-radius:20px;font-size:.8rem;white-space:nowrap;opacity:0;transform:translateX(10px);transition:all .2s;pointer-events:none}
 #wa-float:hover .wa-tooltip{opacity:1;transform:translateX(0)}
+
+/* ===== FAB MENU TOGGLE ===== */
+#fab-main-toggle{position:fixed;bottom:20px;right:20px;z-index:1950;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--green-dark),var(--green-mid));color:#fff;border:none;font-size:1.5rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(27,67,50,.45);cursor:pointer;transition:all .3s}
+#fab-main-toggle:hover{transform:scale(1.08)}
+#fab-main-toggle i{transition:transform .35s cubic-bezier(.68,-.55,.27,1.55)}
+body.fab-open #fab-main-toggle i{transform:rotate(135deg)}
+#fab-main-toggle .fab-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#e74c3c;border:2px solid #fff;transition:opacity .3s}
+body.fab-open #fab-main-toggle .fab-badge{opacity:0}
 
 /* ===== GLASSMORPHISM PRODUCT CARD HOVER ===== */
 .product-card{backdrop-filter:blur(0px);transition:all .3s cubic-bezier(.25,.8,.25,1)}
@@ -1251,7 +1263,7 @@ body.admin-open #pwa-install-bar{display:none!important}
 .product-card:hover .btn-quick-view{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ===== BACK TO TOP ===== */
-#back-to-top{position:fixed;bottom:90px;right:20px;z-index:1250;width:44px;height:44px;border-radius:50%;background:var(--green-dark);color:#fff;border:none;font-size:1.1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(27,67,50,.35);cursor:pointer;opacity:0;transform:translateY(20px);transition:all .3s;pointer-events:none}
+#back-to-top{position:fixed;bottom:20px;left:20px;z-index:1250;width:44px;height:44px;border-radius:50%;background:var(--green-dark);color:#fff;border:none;font-size:1.1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(27,67,50,.35);cursor:pointer;opacity:0;transform:translateY(20px);transition:all .3s;pointer-events:none}
 #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:all}
 #back-to-top:hover{background:var(--green-mid);transform:translateY(-3px)}
 
@@ -2670,9 +2682,10 @@ img.lazy.loaded{opacity:1}
 .one-click-reorder-btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(45,106,79,.35)}
 
 /* ── 8. FAQ CHATBOT ── */
-#faq-chatbot-btn{position:fixed;bottom:140px;right:20px;z-index:1305;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(110,72,170,.4);cursor:pointer;transition:all .3s;isolation:isolate}
+#faq-chatbot-btn{position:fixed;bottom:20px;right:20px;z-index:1935;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#6e48aa,#9d50bb);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(110,72,170,.4);cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);isolation:isolate;opacity:0;transform:translateY(10px) scale(.4);pointer-events:none}
+body.fab-open #faq-chatbot-btn{bottom:150px;opacity:1;transform:translateY(0) scale(1);pointer-events:all;transition-delay:.08s}
 #faq-chatbot-btn:hover{transform:scale(1.08)}
-@media(max-width:768px){#faq-chatbot-btn{bottom:150px;right:12px;width:46px;height:46px;font-size:1.1rem}}
+@media(max-width:768px){#faq-chatbot-btn{width:46px;height:46px;font-size:1.1rem}}
 #faq-chatbot-window{position:fixed;bottom:200px;right:20px;z-index:1295;width:340px;max-width:90vw;height:440px;background:#fff;border-radius:var(--radius);box-shadow:0 12px 40px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden}
 #faq-chatbot-window.open{display:flex}
 [data-theme="dark"] #faq-chatbot-window{background:#1a2e1f}
@@ -2745,9 +2758,10 @@ img.lazy.loaded{opacity:1}
 .cert-badge-label{font-size:.68rem;color:var(--text-muted);font-weight:600;text-align:center}
 
 /* ── 15. CLICK-TO-CALL WIDGET ── */
-#click-to-call{position:fixed;bottom:215px;right:20px;z-index:1310;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:transform .3s,box-shadow .3s}
+#click-to-call{position:fixed;bottom:20px;right:20px;z-index:1940;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1565c0,#1976d2);color:#fff;border:none;font-size:1.3rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(21,101,192,.4);cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s,opacity .3s;opacity:0;transform:translateY(10px) scale(.4);pointer-events:none}
+body.fab-open #click-to-call{bottom:85px;opacity:1;transform:translateY(0) scale(1);pointer-events:all;transition-delay:.04s}
 #click-to-call:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(21,101,192,.6)}
-@media(max-width:768px){#click-to-call{bottom:225px;right:12px;width:46px;height:46px;font-size:1.1rem}}
+@media(max-width:768px){#click-to-call{width:46px;height:46px;font-size:1.1rem}}
 
 /* ── 16. SUPPORT TICKET ── */
 .ticket-status{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:10px}
@@ -2861,8 +2875,6 @@ img.lazy.loaded{opacity:1}
   .cert-badge-label{font-size:.62rem}
   .bt-item{width:64px}
   .bt-item-img{width:52px;height:52px}
-  #faq-chatbot-btn{bottom:148px}
-  #click-to-call{bottom:218px}
   .cmdk-box{width:95%;max-height:80vh}
   .calendar-grid{gap:3px}
   .calendar-cell{font-size:.62rem}
@@ -4988,6 +5000,12 @@ function doRegister(){
 
 <!-- CLICK TO CALL -->
 <button id="click-to-call" onclick="window.location.href='tel:+8801305144356'" aria-label="কল করুন"><i class="fas fa-phone-alt"></i></button>
+
+<!-- FAB MENU TOGGLE (shows/hides WhatsApp, chatbot, call) -->
+<button id="fab-main-toggle" onclick="toggleFabMenu()" aria-label="যোগাযোগ অপশন" title="যোগাযোগ">
+  <i class="fas fa-headset"></i>
+  <span class="fab-badge"></span>
+</button>
 
 <!-- ADMIN GLOBAL SEARCH (Cmd+K) -->
 <div id="admin-cmdk-overlay" onclick="if(event.target===this)closeAdminCmdK()">
@@ -10114,11 +10132,22 @@ const CHATBOT_FAQ=[
   {keywords:['স্টক','আছে','available'],answer:'প্রতিটি পণ্য কার্ডে স্টকের পরিমাণ দেখানো আছে। স্টক শেষ হলে "স্টক এলে জানান" বাটনে ক্লিক করুন। 📦'},
   {keywords:['কেমিক্যাল','অর্গানিক','বিষমুক্ত'],answer:'আমাদের সব আম ১০০% কেমিক্যাল মুক্ত ও প্রাকৃতিকভাবে পাকানো। আমরা মান নিয়ে কোনো আপোষ করি না। 🌿'},
 ];
+function toggleFabMenu(){
+  document.body.classList.toggle('fab-open');
+}
+document.addEventListener('click',function(e){
+  if(!document.body.classList.contains('fab-open')) return;
+  const withinGroup=e.target.closest('#fab-main-toggle, #wa-float, #faq-chatbot-btn, #click-to-call, #faq-chatbot-window');
+  if(!withinGroup) document.body.classList.remove('fab-open');
+});
 function toggleChatbot(){
   const win=document.getElementById('faq-chatbot-window');
   if(!win) return;
   win.classList.toggle('open');
-  if(win.classList.contains('open')) renderChatSuggestions();
+  if(win.classList.contains('open')){
+    renderChatSuggestions();
+    document.body.classList.remove('fab-open');
+  }
 }
 function renderChatSuggestions(){
   const el=document.getElementById('chatbot-suggestions');
