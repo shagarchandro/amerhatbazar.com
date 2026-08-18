@@ -248,6 +248,27 @@
 [data-theme="dark"] .product-tag-badge{background:var(--bg-raised);color:var(--text-muted)}
 [data-theme="dark"] .edit-profile-form [style*="background:var(--green-pale)"]{background:var(--green-pale)!important}
 [data-theme="dark"] .search-highlight{background:#3a2a00;color:var(--yellow)}
+[data-theme="dark"] .chart-wrap,
+[data-theme="dark"] .quick-stat-pill,
+[data-theme="dark"] .related-card,
+[data-theme="dark"] .track-result,
+[data-theme="dark"] .custom-alert-box,
+[data-theme="dark"] .trust-badge,
+[data-theme="dark"] .search-dropdown,
+[data-theme="dark"] .skeleton-card,
+[data-theme="dark"] .cart-item,
+[data-theme="dark"] .toggle-slider:before,
+[data-theme="dark"] .flash-card-btn:hover{background:var(--bg-card);border-color:var(--border)}
+[data-theme="dark"] .tab-btn,
+[data-theme="dark"] .settings-tab-btn,
+[data-theme="dark"] .weight-btn,
+[data-theme="dark"] .carousel-btn,
+[data-theme="dark"] .btn-action-sm,
+[data-theme="dark"] .qty-btn{background:var(--bg-card);color:var(--text);border-color:var(--border)}
+[data-theme="dark"] #testimonials{background:var(--green-xpale)}
+[data-theme="dark"] .hero-circle-2{background:rgba(255,255,255,.05)}
+[data-theme="dark"] #alert-message,
+[data-theme="dark"] #alert-title{color:var(--text)}
 
 /* ── Dark mode toggle button ── */
 .dark-toggle{background:rgba(255,255,255,.12);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer}
@@ -8312,15 +8333,23 @@ function saveSiteSettings(s){localStorage.setItem('amb_site_settings',JSON.strin
 function applySettings(s){
   if(!s) s=getSiteSettings();
   const root=document.documentElement;
+  // Only inline-override a CSS variable if the admin explicitly customized it —
+  // otherwise let the [data-theme="dark"]/light CSS cascade control it naturally.
+  // (Previously this always force-set inline values using hardcoded light-mode
+  // defaults, which — being inline styles — permanently beat dark mode's CSS.)
+  let raw={};
+  try{raw=JSON.parse(localStorage.getItem('amb_site_settings')||'{}');}catch(e){}
 
   // ── CSS Variables (propagates to ALL elements instantly) ──
-  root.style.setProperty('--green-mid', s.primaryColor||'#2d6a4f');
-  root.style.setProperty('--green-dark', s.navBg||'#1b4332');
-  root.style.setProperty('--green-light', lightenColor(s.primaryColor||'#2d6a4f',20));
-  root.style.setProperty('--yellow', s.accentColor||'#f4a40a');
-  root.style.setProperty('--orange', s.accentColor2||'#e76f00');
-  root.style.setProperty('--bg', s.bgColor||'#f9f5e7');
-  root.style.setProperty('--green-pale', s.paleColor||'#d8f3dc');
+  if(raw.primaryColor){
+    root.style.setProperty('--green-mid', raw.primaryColor);
+    root.style.setProperty('--green-light', lightenColor(raw.primaryColor,20));
+  }
+  if(raw.navBg) root.style.setProperty('--green-dark', raw.navBg);
+  if(raw.accentColor) root.style.setProperty('--yellow', raw.accentColor);
+  if(raw.accentColor2) root.style.setProperty('--orange', raw.accentColor2);
+  if(raw.bgColor) root.style.setProperty('--bg', raw.bgColor);
+  if(raw.paleColor) root.style.setProperty('--green-pale', raw.paleColor);
 
   // ── Navbar ──
   const nav=document.getElementById('navbar');
@@ -14243,6 +14272,7 @@ function toggleDarkMode(){
   localStorage.setItem('amb_theme',newTheme);
   const btn=document.getElementById('dark-toggle-btn');
   if(btn) btn.innerHTML=newTheme==='dark'?'<i class="fas fa-sun"></i>':'<i class="fas fa-moon"></i>';
+  if(typeof updateMobDrawer==='function') updateMobDrawer();
 }
 function toggleNotifDropdown(){
   const dd=document.getElementById('notif-dropdown');
