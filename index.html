@@ -2787,6 +2787,7 @@ body.fab-open #click-to-call{bottom:85px;opacity:1;transform:translateY(0) scale
 /* ── 16. SUPPORT TICKET ── */
 .ticket-status{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:10px}
 .ticket-status.open{background:#fff3cd;color:#856404}
+.ticket-status.replied{background:#d1ecf1;color:#0c5460}
 .ticket-status.resolved{background:#d4edda;color:#155724}
 .ticket-status.closed{background:#f0f0f0;color:#888}
 
@@ -6631,6 +6632,7 @@ function renderProfileModal(u,tab){
       <button class="profile-tab-btn ${tab==='wishlist'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'wishlist')"><i class="fas fa-heart"></i> উইশলিস্ট</button>
       <button class="profile-tab-btn ${tab==='birthday'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'birthday')"><i class="fas fa-birthday-cake"></i> জন্মদিন</button>
       <button class="profile-tab-btn ${tab==='referral'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'referral')"><i class="fas fa-users"></i> রেফারেল</button>
+      <button class="profile-tab-btn ${tab==='tickets'?'active':''}" onclick="renderProfileModal(getCurrentUser(),'tickets')"><i class="fas fa-headset"></i> সাপোর্ট টিকেট</button>
     </div>
     <!-- Tab content -->
     <div class="profile-content" id="profile-tab-content">
@@ -6641,6 +6643,7 @@ function renderProfileModal(u,tab){
       ${tab==='wishlist'?renderProfileWishlistTab(u):''}
       ${tab==='birthday'?renderBirthdayTab(u):''}
       ${tab==='referral'?renderReferralTab(u):''}
+      ${tab==='tickets'?renderMyTicketsTab(u):''}
     </div>`;
 }
 
@@ -10272,6 +10275,21 @@ function renderUGCGallery(){
 // ============================================================
 function getTickets(){return JSON.parse(localStorage.getItem('amb_tickets')||'[]');}
 function saveTickets(t){localStorage.setItem('amb_tickets',JSON.stringify(t));}
+function addTicketReply(ticketId,text,from){
+  const tickets=getTickets();
+  const t=tickets.find(x=>x.id===ticketId);
+  if(!t) return;
+  if(!Array.isArray(t.replies)) t.replies=[];
+  t.replies.push({text,from:from||'admin',date:Date.now()});
+  if(from==='admin'&&t.status==='open') t.status='replied';
+  if(from==='customer'&&(t.status==='resolved'||t.status==='closed')) t.status='open';
+  saveTickets(tickets);
+  if(from==='admin') logActivity(`💬 টিকেট উত্তর — ${t.name||''} (${t.subject||''})`,'💬');
+}
+function getMyTickets(phone){
+  if(!phone) return [];
+  return getTickets().filter(t=>t.phone===phone).sort((a,b)=>b.createdAt-a.createdAt);
+}
 function createSupportTicket(subject,message,phone,name){
   const tickets=getTickets();
   const ticket={id:'TKT-'+Date.now(),subject,message,phone,name,status:'open',createdAt:Date.now(),replies:[]};
@@ -10280,24 +10298,66 @@ function createSupportTicket(subject,message,phone,name){
   addNotification(`🎫 নতুন সাপোর্ট টিকেট — ${subject}`,`${name}: ${message.slice(0,50)}`);
   return ticket.id;
 }
+let adminTicketFilter={status:'',q:''};
+function setAdminTicketFilter(key,val){
+  adminTicketFilter[key]=val;
+  renderAdminTickets();
+  if(key==='q'){
+    const inp=document.querySelector('#admin-main input[placeholder*="নাম, ফোন"]');
+    if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+  }
+}
 function renderAdminTickets(){
-  const tickets=getTickets();
+  const all=getTickets();
+  const statusLabels={open:'🟡 খোলা',replied:'💬 উত্তর দেওয়া হয়েছে',resolved:'✅ সমাধান',closed:'⚫ বন্ধ'};
+  const q=(adminTicketFilter.q||'').trim().toLowerCase();
+  const tickets=all.filter(t=>{
+    if(adminTicketFilter.status&&t.status!==adminTicketFilter.status) return false;
+    if(q&&!(t.name||'').toLowerCase().includes(q)&&!(t.phone||'').includes(q)&&!(t.subject||'').toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b)=>b.createdAt-a.createdAt);
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
-      <div class="admin-section-header"><h3>🎫 সাপোর্ট টিকেট (${tickets.length}টি)</h3></div>
+      <div class="admin-section-header"><h3>🎫 সাপোর্ট টিকেট <span style="font-size:.75rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${all.length}টি</span></h3></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <input class="form-control" style="flex:1;min-width:160px" placeholder="🔍 নাম, ফোন বা বিষয় দিয়ে খুঁজুন..." value="${adminTicketFilter.q||''}" oninput="setAdminTicketFilter('q',this.value)">
+        <select class="form-control" style="width:auto" onchange="setAdminTicketFilter('status',this.value)">
+          <option value="">সব স্ট্যাটাস</option>
+          ${Object.entries(statusLabels).map(([k,l])=>`<option value="${k}" ${adminTicketFilter.status===k?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
       ${tickets.length?tickets.map(t=>`
-        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px">
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-            <div><strong>${t.subject||'—'}</strong><div style="font-size:.75rem;color:var(--text-muted)">${t.name||'—'} · ${t.phone||t.email||'—'}</div></div>
-            <span class="ticket-status ${t.status}">${t.status==='open'?'🟡 খোলা':t.status==='resolved'?'✅ সমাধান':'⚫ বন্ধ'}</span>
+            <div><strong>${t.subject||'—'}</strong><div style="font-size:.75rem;color:var(--text-muted)">${t.name||'—'} · ${t.phone||t.email||'—'} · ${new Date(t.createdAt).toLocaleDateString('bn-BD',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+            <span class="ticket-status ${t.status}">${statusLabels[t.status]||t.status}</span>
           </div>
           <div style="font-size:.85rem;color:var(--text);background:var(--bg);padding:10px;border-radius:6px;margin-bottom:8px">${t.message||''}</div>
-          <div style="display:flex;gap:8px">
-            ${t.status==='open'?`<button class="btn-sm btn-primary" onclick="updateTicketStatus('${t.id}','resolved')"><i class="fas fa-check"></i> সমাধান হয়েছে</button>`:''}
+          ${(t.replies||[]).length?`<div style="margin-bottom:8px;padding-left:12px;border-left:2px solid var(--border)">
+            ${t.replies.map(r=>`<div style="margin-bottom:6px">
+              <div style="font-size:.7rem;font-weight:700;color:${r.from==='admin'?'var(--green-dark)':'var(--text-muted)'}">${r.from==='admin'?'🛡️ অ্যাডমিন':'👤 গ্রাহক'} · ${new Date(r.date).toLocaleDateString('bn-BD',{day:'numeric',month:'short'})}</div>
+              <div style="font-size:.82rem;color:var(--text)">${r.text}</div>
+            </div>`).join('')}
+          </div>`:''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+            <input class="form-control" id="ticket-reply-${t.id}" placeholder="উত্তর লিখুন..." style="flex:1;min-width:180px;font-size:.82rem">
+            <button class="btn-sm btn-primary" onclick="submitTicketReply('${t.id}')"><i class="fas fa-reply"></i> পাঠান</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${t.status!=='resolved'?`<button class="btn-sm" style="background:#d4edda;color:#155724;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:.78rem" onclick="updateTicketStatus('${t.id}','resolved')"><i class="fas fa-check"></i> সমাধান হয়েছে</button>`:''}
+            ${t.status!=='closed'?`<button class="btn-sm" style="background:#f0f0f0;color:#888;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:.78rem" onclick="updateTicketStatus('${t.id}','closed')"><i class="fas fa-times"></i> বন্ধ করুন</button>`:''}
             ${t.phone?`<a href="tel:${t.phone}" class="btn-sm" style="background:var(--green-pale);color:var(--green-dark);border:none;padding:6px 12px;border-radius:6px;text-decoration:none;font-size:.78rem"><i class="fas fa-phone"></i> কল করুন</a>`:''}
           </div>
-        </div>`).join(''):'<div class="no-data" style="padding:30px;text-align:center">কোনো টিকেট নেই</div>'}
+        </div>`).join(''):'<div class="no-data" style="padding:30px;text-align:center">কোনো টিকেট পাওয়া যায়নি</div>'}
     </div>`;
+}
+function submitTicketReply(id){
+  const inp=document.getElementById(`ticket-reply-${id}`);
+  const text=(inp?.value||'').trim();
+  if(!text){showToast('উত্তর লিখুন','error');return;}
+  addTicketReply(id,text,'admin');
+  showToast('✅ উত্তর পাঠানো হয়েছে');
+  renderAdminTickets();
 }
 function updateTicketStatus(id,status){
   const tickets=getTickets();
@@ -10981,19 +11041,41 @@ function getNextInvoiceNumber(){
 // ============================================================
 let calendarMonth=new Date().getMonth();
 let calendarYear=new Date().getFullYear();
+let calendarViewMode='created'; // 'created' or 'delivery'
+function setCalendarViewMode(mode){
+  calendarViewMode=mode;
+  renderAdminCalendar();
+}
+function getOrderCalendarDate(o){
+  if(calendarViewMode==='delivery'){
+    // Estimate delivery date from order creation + district's delivery days
+    const est=estimateDelivery(o.district||'');
+    const d=new Date(o.createdAt);
+    d.setDate(d.getDate()+(est.days||3));
+    return d;
+  }
+  return new Date(o.createdAt);
+}
 function renderAdminCalendar(){
   const orders=getOrders();
   const firstDay=new Date(calendarYear,calendarMonth,1).getDay();
   const daysInMonth=new Date(calendarYear,calendarMonth+1,0).getDate();
   const monthName=new Date(calendarYear,calendarMonth).toLocaleDateString('bn-BD',{month:'long',year:'numeric'});
   const today=new Date();
+  const statusColors={pending:'#f4a40a',processing:'#3498db',shipped:'#9b59b6',delivered:'#27ae60',cancelled:'#e74c3c'};
 
-  const ordersByDay={};
+  const dayData={};
+  let monthOrderCount=0,monthRevenue=0;
   orders.forEach(o=>{
-    const d=new Date(o.createdAt);
+    const d=getOrderCalendarDate(o);
     if(d.getMonth()===calendarMonth&&d.getFullYear()===calendarYear){
       const day=d.getDate();
-      ordersByDay[day]=(ordersByDay[day]||0)+1;
+      if(!dayData[day]) dayData[day]={count:0,revenue:0,statuses:{}};
+      dayData[day].count++;
+      dayData[day].revenue+=o.status!=='cancelled'?(o.total||0):0;
+      dayData[day].statuses[o.status]=(dayData[day].statuses[o.status]||0)+1;
+      monthOrderCount++;
+      monthRevenue+=o.status!=='cancelled'?(o.total||0):0;
     }
   });
 
@@ -11001,10 +11083,14 @@ function renderAdminCalendar(){
   for(let i=0;i<firstDay;i++) cells+='<div class="calendar-cell empty"></div>';
   for(let d=1;d<=daysInMonth;d++){
     const isToday=today.getDate()===d&&today.getMonth()===calendarMonth&&today.getFullYear()===calendarYear;
-    const count=ordersByDay[d]||0;
-    cells+=`<div class="calendar-cell ${count>0?'has-orders':''} ${isToday?'today':''}" onclick="showDayOrders(${d})">
+    const info=dayData[d];
+    cells+=`<div class="calendar-cell ${info?'has-orders':''} ${isToday?'today':''}" onclick="showDayOrders(${d})">
       <span class="calendar-cell-num">${d}</span>
-      ${count>0?`<span class="calendar-cell-count">${count}</span>`:''}
+      ${info?`<span class="calendar-cell-count">${info.count}</span>
+      <div style="font-size:.6rem;color:var(--orange);font-weight:700;margin-top:1px">৳${info.revenue>=1000?Math.round(info.revenue/1000)+'k':info.revenue}</div>
+      <div style="display:flex;gap:2px;justify-content:center;margin-top:2px;flex-wrap:wrap">
+        ${Object.entries(info.statuses).map(([s,c])=>`<span style="width:5px;height:5px;border-radius:50%;background:${statusColors[s]||'#ccc'}" title="${s}: ${c}"></span>`).join('')}
+      </div>`:''}
     </div>`;
   }
 
@@ -11012,9 +11098,24 @@ function renderAdminCalendar(){
     <div class="admin-section">
       <div class="admin-section-header">
         <h3>🗓️ ${monthName}</h3>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;gap:4px;background:var(--bg-raised);border-radius:20px;padding:3px">
+            <button onclick="setCalendarViewMode('created')" style="background:${calendarViewMode==='created'?'var(--green-dark)':'transparent'};color:${calendarViewMode==='created'?'#fff':'var(--text)'};border:none;padding:6px 12px;border-radius:16px;font-size:.75rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-weight:600">অর্ডারের তারিখ</button>
+            <button onclick="setCalendarViewMode('delivery')" style="background:${calendarViewMode==='delivery'?'var(--green-dark)':'transparent'};color:${calendarViewMode==='delivery'?'#fff':'var(--text)'};border:none;padding:6px 12px;border-radius:16px;font-size:.75rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-weight:600">প্রত্যাশিত ডেলিভারি</button>
+          </div>
+          <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer" onclick="jumpToToday()">আজ</button>
           <button class="btn-sm btn-primary" onclick="changeCalendarMonth(-1)"><i class="fas fa-chevron-left"></i></button>
           <button class="btn-sm btn-primary" onclick="changeCalendarMonth(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px">
+        <div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--green-dark)">${monthOrderCount}</div>
+          <div style="font-size:.72rem;color:var(--text-muted)">এই মাসের অর্ডার</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--orange)">৳${monthRevenue.toLocaleString()}</div>
+          <div style="font-size:.72rem;color:var(--text-muted)">এই মাসের বিক্রয়</div>
         </div>
       </div>
       <div class="calendar-grid">
@@ -11024,6 +11125,12 @@ function renderAdminCalendar(){
       <div id="day-orders-detail" style="margin-top:16px"></div>
     </div>`;
 }
+function jumpToToday(){
+  const now=new Date();
+  calendarMonth=now.getMonth();
+  calendarYear=now.getFullYear();
+  renderAdminCalendar();
+}
 function changeCalendarMonth(dir){
   calendarMonth+=dir;
   if(calendarMonth<0){calendarMonth=11;calendarYear--;}
@@ -11032,18 +11139,21 @@ function changeCalendarMonth(dir){
 }
 function showDayOrders(day){
   const orders=getOrders().filter(o=>{
-    const d=new Date(o.createdAt);
+    const d=getOrderCalendarDate(o);
     return d.getDate()===day&&d.getMonth()===calendarMonth&&d.getFullYear()===calendarYear;
   });
   const el=document.getElementById('day-orders-detail');
   if(!el) return;
+  const statusLabels={pending:'অপেক্ষারত',processing:'প্রক্রিয়াধীন',shipped:'শিপড',delivered:'ডেলিভারড',cancelled:'বাতিল'};
   if(!orders.length){el.innerHTML='<div class="no-data">এই দিনে কোনো অর্ডার নেই</div>';return;}
-  el.innerHTML=`<h4 style="margin-bottom:10px;color:var(--green-dark)">${day} তারিখের অর্ডার (${orders.length}টি)</h4>
+  const dayRevenue=orders.reduce((s,o)=>s+(o.status!=='cancelled'?(o.total||0):0),0);
+  el.innerHTML=`<h4 style="margin-bottom:4px;color:var(--green-dark)">${day} তারিখের অর্ডার (${orders.length}টি) — ৳${dayRevenue.toLocaleString()}</h4>
+    <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:10px">${calendarViewMode==='delivery'?'📦 প্রত্যাশিত ডেলিভারির তারিখ অনুযায়ী':'🛒 অর্ডার করার তারিখ অনুযায়ী'}</div>
     <div class="table-wrapper"><table class="admin-table">
       <thead><tr><th>ID</th><th>কাস্টমার</th><th>মোট</th><th>স্ট্যাটাস</th></tr></thead>
       <tbody>${orders.map(o=>`<tr style="cursor:pointer" onclick="viewOrderDetail('${o.id}')">
         <td>${o.id.slice(-8)}</td><td>${o.userName}</td><td>৳${o.total}</td>
-        <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+        <td><span class="status-badge status-${o.status}">${statusLabels[o.status]||o.status}</span></td>
       </tr>`).join('')}</tbody>
     </table></div>`;
 }
@@ -14671,6 +14781,41 @@ function renderReferralTab(u){
       <div style="font-size:.75rem;color:var(--text-muted)">\u0995\u09CD\u09B2\u09BF\u0995 \u0995\u09B0\u09C7 \u0995\u09AA\u09BF \u0995\u09B0\u09C1\u09A8</div>
     </div>
   </div>`;
+}
+function renderMyTicketsTab(u){
+  const tickets=getMyTickets(u.phone);
+  const statusLabels={open:'🟡 খোলা',replied:'💬 উত্তর এসেছে',resolved:'✅ সমাধান হয়েছে',closed:'⚫ বন্ধ'};
+  if(!tickets.length) return `<div style="text-align:center;padding:40px 20px">
+    <div style="font-size:3rem;margin-bottom:12px">🎫</div>
+    <p style="color:var(--text-muted);font-size:.9rem">আপনার কোনো সাপোর্ট টিকেট নেই</p>
+    <p style="color:var(--text-muted);font-size:.78rem;margin-top:4px">কোনো অর্ডারে সমস্যা হলে "আমার অর্ডার" থেকে "সমস্যা রিপোর্ট করুন" ব্যবহার করুন</p>
+  </div>`;
+  return tickets.map(t=>`
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <div><strong style="font-size:.9rem">${t.subject||'—'}</strong><div style="font-size:.72rem;color:var(--text-muted)">${new Date(t.createdAt).toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}</div></div>
+        <span class="ticket-status ${t.status}">${statusLabels[t.status]||t.status}</span>
+      </div>
+      <div style="font-size:.85rem;color:var(--text);background:var(--bg);padding:10px;border-radius:6px;margin-bottom:8px">${t.message}</div>
+      ${(t.replies||[]).length?`<div style="margin-bottom:8px;padding-left:12px;border-left:2px solid var(--border)">
+        ${t.replies.map(r=>`<div style="margin-bottom:6px">
+          <div style="font-size:.7rem;font-weight:700;color:${r.from==='admin'?'var(--green-dark)':'var(--text-muted)'}">${r.from==='admin'?'🛡️ সাপোর্ট টিম':'আপনি'} · ${new Date(r.date).toLocaleDateString('bn-BD',{day:'numeric',month:'short'})}</div>
+          <div style="font-size:.82rem;color:var(--text)">${r.text}</div>
+        </div>`).join('')}
+      </div>`:''}
+      ${t.status!=='closed'?`<div style="display:flex;gap:8px">
+        <input class="form-control" id="my-ticket-reply-${t.id}" placeholder="আরও কিছু বলতে চান?" style="flex:1;font-size:.82rem">
+        <button class="btn-sm btn-primary" onclick="submitMyTicketReply('${t.id}')"><i class="fas fa-paper-plane"></i></button>
+      </div>`:'<div style="font-size:.75rem;color:var(--text-muted)">এই টিকেট বন্ধ করা হয়েছে</div>'}
+    </div>`).join('');
+}
+function submitMyTicketReply(id){
+  const inp=document.getElementById(`my-ticket-reply-${id}`);
+  const text=(inp?.value||'').trim();
+  if(!text){showToast('কিছু লিখুন','error');return;}
+  addTicketReply(id,text,'customer');
+  showToast('✅ পাঠানো হয়েছে');
+  renderProfileModal(getCurrentUser(),'tickets');
 }
 
 function renderBirthdayTab(u){
