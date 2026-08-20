@@ -5417,6 +5417,33 @@ function doRegister(){
       </div>
       <div id="admin-login-error" class="error-msg"></div>
       <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doAdminLogin()">প্রবেশ করুন</button>
+      <div style="text-align:center;margin-top:14px;font-size:.8rem;color:var(--text-muted)">
+        স্টাফ সদস্য? <a href="javascript:void(0)" onclick="closeModal('admin-login-modal');openModal('staff-login-modal')" style="color:var(--green-mid);font-weight:700;text-decoration:underline">এখানে লগইন করুন</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF LOGIN MODAL -->
+<div class="modal-overlay" id="staff-login-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3>👤 স্টাফ লগইন</h3>
+      <button class="modal-close" onclick="closeModal('staff-login-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div id="staff-login-error" class="error-msg"></div>
+      <div class="form-group"><label>ফোন নম্বর</label><input class="form-control" id="staff-login-phone" type="tel" placeholder="01XXXXXXXXX"></div>
+      <div class="form-group"><label>PIN কোড</label>
+        <div class="pw-wrap">
+          <input class="form-control" id="staff-login-pin" type="password" maxlength="6" inputmode="numeric" placeholder="৪-৬ ডিজিট PIN">
+          <button type="button" class="pw-eye-btn" onclick="togglePwVis('staff-login-pin',this)"><i class="fas fa-eye"></i></button>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doStaffLogin()">প্রবেশ করুন</button>
+      <div style="text-align:center;margin-top:14px;font-size:.8rem;color:var(--text-muted)">
+        মালিক/অ্যাডমিন? <a href="javascript:void(0)" onclick="closeModal('staff-login-modal');openModal('admin-login-modal')" style="color:var(--green-mid);font-weight:700;text-decoration:underline">এখানে লগইন করুন</a>
+      </div>
     </div>
   </div>
 </div>
@@ -5565,6 +5592,7 @@ function doRegister(){
         <h2><span id="admin-page-title">ড্যাশবোর্ড</span></h2>
       </div>
       <div class="admin-topbar-actions" style="display:flex;align-items:center;gap:8px">
+        <span id="admin-staff-badge" style="display:none;font-size:.72rem;background:var(--green-pale);color:var(--green-dark);padding:4px 10px;border-radius:14px;font-weight:700;align-items:center;gap:4px"><i class="fas fa-user-shield"></i> <span id="admin-staff-badge-name"></span></span>
         <span style="font-size:.75rem;color:var(--green-mid);display:flex;align-items:center;gap:4px">
           <span style="width:7px;height:7px;border-radius:50%;background:var(--green-mid);display:inline-block;animation:pulse 2s infinite"></span>
           <span class="hide-on-mobile">লাইভ</span>
@@ -7890,8 +7918,10 @@ function doAdminLogin(){
   if(email===admin.email&&pass===admin.password){
     saveAdminLoginLockout({attempts:0,until:0});
     if(lockMsg) lockMsg.style.display='none';
+    sessionStorage.removeItem('amb_staff_session');
     closeModal('admin-login-modal');openAdminPanel();
     try{applyMaintenanceMode();}catch(e){}
+    try{applyStaffUIRestrictions();}catch(e){}
   } else {
     const attempts=(lockout.attempts||0)+1;
     if(attempts>=5){
@@ -7902,6 +7932,68 @@ function doAdminLogin(){
       saveAdminLoginLockout({attempts,until:0});
       if(err) err.textContent=`ইমেইল বা পাসওয়ার্ড ভুল (${5-attempts}টি চেষ্টা বাকি)`;
     }
+  }
+}
+// ============================================================
+// STAFF LOGIN & ROLE-BASED PERMISSIONS
+// ============================================================
+const ROLE_PERMISSIONS={
+  admin:'all',
+  manager:['dashboard','products','orders','customers','staff','coupons','reviews','delivery','customize','flashsale','bulk','newsletter','loyalty','stockalerts','analytics','target','reports','giftcards','returns','messages','invoicesettings','expenses','invvalue','notiftemplates','preorders','profit','forecast','wholesale','segments','seasonal','todo','calendar','batches','tickets','zones'],
+  staff:['dashboard','orders','products','customers','coupons','messages','preorders','tickets','calendar','todo','reviews','stockalerts'],
+  delivery:['dashboard','orders','zones','calendar','tickets'],
+  support:['dashboard','messages','tickets','reviews','customers','returns']
+};
+function getRolePermissions(role){
+  return ROLE_PERMISSIONS[role]||ROLE_PERMISSIONS.staff;
+}
+function getStaffSession(){
+  try{return JSON.parse(sessionStorage.getItem('amb_staff_session')||'null');}catch(e){return null;}
+}
+function generateStaffPin(){
+  return String(Math.floor(1000+Math.random()*9000));
+}
+function doStaffLogin(){
+  const phone=(document.getElementById('staff-login-phone')?.value||'').trim();
+  const pin=(document.getElementById('staff-login-pin')?.value||'').trim();
+  const err=document.getElementById('staff-login-error');
+  if(!phone||!pin){if(err)err.textContent='ফোন ও PIN দিন';return;}
+  const staff=getStaff().find(s=>s.phone.replace(/\D/g,'')===phone.replace(/\D/g,'')&&String(s.pin||'')===pin);
+  if(!staff){if(err)err.textContent='ফোন বা PIN ভুল';return;}
+  if(staff.status==='inactive'){if(err)err.textContent='এই স্টাফ অ্যাকাউন্ট নিষ্ক্রিয় করা আছে';return;}
+  if(err) err.textContent='';
+  const perms=getRolePermissions(staff.role);
+  sessionStorage.setItem('amb_staff_session',JSON.stringify({id:staff.id,name:staff.name,role:staff.role,permissions:perms}));
+  closeModal('staff-login-modal');
+  const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
+  const firstTab=(perms==='all'||perms.includes('dashboard'))?'dashboard':(perms[0]||'dashboard');
+  openAdminPanel(firstTab);
+  applyStaffUIRestrictions();
+  showToast(`✅ স্বাগতম, ${staff.name}! (${roleLabels[staff.role]||staff.role})`,'success');
+  logActivity(`🔐 স্টাফ লগইন — ${staff.name}`,'🔐');
+}
+function canAccessTab(tab){
+  const session=getStaffSession();
+  if(!session) return true; // owner/admin — full access
+  if(session.permissions==='all') return true;
+  return session.permissions.includes(tab);
+}
+function applyStaffUIRestrictions(){
+  const session=getStaffSession();
+  const badge=document.getElementById('admin-staff-badge');
+  const badgeName=document.getElementById('admin-staff-badge-name');
+  if(session){
+    const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
+    if(badge){badge.style.display='inline-flex';}
+    if(badgeName) badgeName.textContent=`${session.name} · ${roleLabels[session.role]||session.role}`;
+    document.querySelectorAll('.admin-nav-item,.abn-item').forEach(btn=>{
+      const oc=btn.getAttribute('onclick')||'';
+      const m=oc.match(/showAdminTab\('(\w+)'\)/);
+      if(m&&!canAccessTab(m[1])){btn.style.display='none';}
+    });
+  } else {
+    if(badge) badge.style.display='none';
+    document.querySelectorAll('.admin-nav-item,.abn-item').forEach(btn=>{btn.style.display='';});
   }
 }
 function openAdminPanel(startTab){
@@ -7946,6 +8038,7 @@ function adminLogout(){
   hideAdminBottomNav();
   closeMobileAdminSidebar();
   stopAdminRefresh();showToast('অ্যাডমিন লগআউট সফল','success');
+  sessionStorage.removeItem('amb_staff_session');
   try{applyMaintenanceMode();}catch(e){}
 }
 let adminRefreshInterval=null;
@@ -7984,6 +8077,13 @@ let currentAdminTab='dashboard';
 // ADMIN TABS
 // ============================================================
 function showAdminTab(tab,silent=false){
+  if(!canAccessTab(tab)){
+    if(!silent) showToast('❌ এই সেকশনে আপনার অ্যাক্সেস নেই','error');
+    const session=getStaffSession();
+    const fallback=session&&session.permissions!=='all'?(session.permissions[0]||'dashboard'):'dashboard';
+    if(fallback!==tab){showAdminTab(fallback,true);}
+    return;
+  }
   currentAdminTab=tab;
   sessionStorage.setItem('amb_admin_tab',tab);
   document.querySelectorAll('.admin-nav-item').forEach(b=>b.classList.remove('active'));
@@ -9726,16 +9826,56 @@ function deleteWHTier(i){
 // ============================================================
 // CUSTOMER SEGMENTATION
 // ============================================================
+function getSegmentConfig(){
+  const def={vipSpend:5000,vipOrders:10,regularOrders:3,atRiskDays:60};
+  try{return {...def,...JSON.parse(localStorage.getItem('amb_segment_config')||'{}')};}catch(e){return def;}
+}
+function saveSegmentConfig(cfg){localStorage.setItem('amb_segment_config',JSON.stringify(cfg));}
 function getCustomerSegment(user){
+  const cfg=getSegmentConfig();
   const orders=getOrders().filter(o=>o.userPhone===user.phone&&o.status!=='cancelled');
   const total=orders.reduce((s,o)=>s+(o.total||0),0);
-  if(total>=5000||orders.length>=10) return{label:'VIP',badge:'segment-badge-vip',icon:'👑'};
-  if(orders.length>=3) return{label:'নিয়মিত',badge:'segment-badge-regular',icon:'⭐'};
-  if(orders.length>=1) return{label:'নতুন',badge:'segment-badge-new',icon:'🆕'};
-  return{label:'নিষ্ক্রিয়',badge:'segment-badge-inactive',icon:'💤'};
+  if(!orders.length) return{label:'নিষ্ক্রিয়',key:'inactive',badge:'segment-badge-inactive',icon:'💤'};
+  const lastOrder=orders.reduce((max,o)=>Math.max(max,new Date(o.createdAt).getTime()),0);
+  const daysSince=(Date.now()-lastOrder)/86400000;
+  const wasGoodCustomer=total>=cfg.vipSpend||orders.length>=cfg.regularOrders;
+  if(wasGoodCustomer&&daysSince>=cfg.atRiskDays) return{label:'ঝুঁকিতে','key':'atrisk',badge:'segment-badge-inactive',icon:'⚠️'};
+  if(total>=cfg.vipSpend||orders.length>=cfg.vipOrders) return{label:'VIP',key:'vip',badge:'segment-badge-vip',icon:'👑'};
+  if(orders.length>=cfg.regularOrders) return{label:'নিয়মিত',key:'regular',badge:'segment-badge-regular',icon:'⭐'};
+  return{label:'নতুন',key:'newcust',badge:'segment-badge-new',icon:'🆕'};
+}
+let segmentFilter='';
+function setSegmentFilter(key){segmentFilter=key;renderAdminSegments();}
+function saveSegmentConfigFromUI(){
+  const cfg={
+    vipSpend:Number(document.getElementById('seg-vip-spend')?.value)||5000,
+    vipOrders:Number(document.getElementById('seg-vip-orders')?.value)||10,
+    regularOrders:Number(document.getElementById('seg-regular-orders')?.value)||3,
+    atRiskDays:Number(document.getElementById('seg-atrisk-days')?.value)||60,
+  };
+  saveSegmentConfig(cfg);
+  showToast('✅ শ্রেণীর মানদণ্ড সংরক্ষিত হয়েছে');
+  renderAdminSegments();
+}
+function copySegmentPhones(key){
+  const users=getUsers().filter(u=>getCustomerSegment(u).key===key);
+  const phones=users.map(u=>u.phone).join(', ');
+  if(!phones){showToast('এই শ্রেণীতে কোনো কাস্টমার নেই','error');return;}
+  navigator.clipboard?.writeText(phones).then(()=>{
+    showToast(`✅ ${users.length}টি ফোন নম্বর কপি হয়েছে`);
+  }).catch(()=>{
+    showCustomAlert('ফোন নম্বর তালিকা',phones,'ঠিক আছে','info',()=>{});
+  });
 }
 function renderAdminSegments(){
   const users=getUsers();
+  const cfg=getSegmentConfig();
+  const segLabels={vip:'👑 VIP',regular:'⭐ নিয়মিত',newcust:'🆕 নতুন',atrisk:'⚠️ ঝুঁকিতে',inactive:'💤 নিষ্ক্রিয়'};
+  const segColors={vip:'#ffd700',regular:'#2d6a4f',newcust:'#1565c0',atrisk:'#e67e22',inactive:'#aaa'};
+  const counts={};Object.keys(segLabels).forEach(k=>counts[k]=0);
+  users.forEach(u=>{const k=getCustomerSegment(u).key;counts[k]=(counts[k]||0)+1;});
+  let filteredUsers=users;
+  if(segmentFilter) filteredUsers=users.filter(u=>getCustomerSegment(u).key===segmentFilter);
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
       <div class="admin-section-header">
@@ -9743,40 +9883,61 @@ function renderAdminSegments(){
         <button class="btn-add" onclick="exportSegmentsCSV()"><i class="fas fa-download"></i> CSV</button>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-        ${[['👑 VIP','#ffd700'],['⭐ নিয়মিত','#2d6a4f'],['🆕 নতুন','#1565c0'],['💤 নিষ্ক্রিয়','#aaa']].map(([l,c])=>`
-        <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 18px;text-align:center">
-          <div style="font-size:1.4rem;font-weight:800;color:${c}">${users.filter(u=>getCustomerSegment(u).label===l.split(' ').slice(1).join(' ')||getCustomerSegment(u).label===l.replace(/[👑⭐🆕💤] /,'')).length}</div>
+        <div onclick="setSegmentFilter('')" style="cursor:pointer;background:${!segmentFilter?'var(--green-pale)':'#fff'};border:1.5px solid ${!segmentFilter?'var(--green-mid)':'var(--border)'};border-radius:var(--radius-sm);padding:10px 18px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:800;color:var(--green-dark)">${users.length}</div>
+          <div style="font-size:.75rem;color:var(--text-muted)">সবাই</div>
+        </div>
+        ${Object.entries(segLabels).map(([key,l])=>`
+        <div onclick="setSegmentFilter('${key}')" style="cursor:pointer;background:${segmentFilter===key?segColors[key]+'22':'#fff'};border:1.5px solid ${segmentFilter===key?segColors[key]:'var(--border)'};border-radius:var(--radius-sm);padding:10px 18px;text-align:center">
+          <div style="font-size:1.4rem;font-weight:800;color:${segColors[key]}">${counts[key]||0}</div>
           <div style="font-size:.75rem;color:var(--text-muted)">${l}</div>
         </div>`).join('')}
       </div>
+      ${segmentFilter?`<div style="margin-bottom:14px"><button class="btn-secondary-btn" style="font-size:.78rem;padding:6px 14px" onclick="copySegmentPhones('${segmentFilter}')"><i class="fas fa-copy"></i> এই শ্রেণীর ফোন নম্বর কপি করুন (WhatsApp ব্রডকাস্টের জন্য)</button></div>`:''}
       <div class="table-wrapper">
         <table class="admin-table">
-          <thead><tr><th>নাম</th><th>ফোন</th><th>শ্রেণী</th><th>অর্ডার</th><th>মোট ব্যয়</th></tr></thead>
-          <tbody>${users.map(u=>{
+          <thead><tr><th>নাম</th><th>ফোন</th><th>শ্রেণী</th><th>অর্ডার</th><th>মোট ব্যয়</th><th>গড় অর্ডার</th><th>শেষ অর্ডার</th></tr></thead>
+          <tbody>${filteredUsers.map(u=>{
             const seg=getCustomerSegment(u);
             const uOrders=getOrders().filter(o=>o.userPhone===u.phone&&o.status!=='cancelled');
             const spent=uOrders.reduce((s,o)=>s+(o.total||0),0);
+            const avg=uOrders.length?Math.round(spent/uOrders.length):0;
+            const lastOrder=uOrders.length?Math.max(...uOrders.map(o=>new Date(o.createdAt).getTime())):null;
             return`<tr>
               <td><strong>${u.name}</strong></td>
               <td>${u.phone}</td>
               <td><span class="${seg.badge}">${seg.icon} ${seg.label}</span></td>
               <td>${uOrders.length}</td>
               <td><strong style="color:var(--orange)">৳${spent.toLocaleString()}</strong></td>
+              <td>৳${avg.toLocaleString()}</td>
+              <td style="font-size:.78rem;color:var(--text-muted)">${lastOrder?new Date(lastOrder).toLocaleDateString('en-GB'):'—'}</td>
             </tr>`;
-          }).join('')||'<tr><td colspan="5" class="no-data">কোনো কাস্টমার নেই</td></tr>'}
+          }).join('')||'<tr><td colspan="7" class="no-data">কোনো কাস্টমার নেই</td></tr>'}
           </tbody>
         </table>
       </div>
+    </div>
+    <div class="admin-section" style="margin-top:16px">
+      <div class="admin-section-header"><h3>⚙️ শ্রেণীর মানদণ্ড কাস্টমাইজ করুন</h3></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+        <div class="form-group"><label>VIP — সর্বনিম্ন খরচ (৳)</label><input class="form-control" id="seg-vip-spend" type="number" value="${cfg.vipSpend}"></div>
+        <div class="form-group"><label>VIP — সর্বনিম্ন অর্ডার সংখ্যা</label><input class="form-control" id="seg-vip-orders" type="number" value="${cfg.vipOrders}"></div>
+        <div class="form-group"><label>নিয়মিত — সর্বনিম্ন অর্ডার সংখ্যা</label><input class="form-control" id="seg-regular-orders" type="number" value="${cfg.regularOrders}"></div>
+        <div class="form-group"><label>ঝুঁকি — কতদিন অর্ডার না করলে (দিন)</label><input class="form-control" id="seg-atrisk-days" type="number" value="${cfg.atRiskDays}"></div>
+      </div>
+      <button class="btn-add" style="margin-top:10px" onclick="saveSegmentConfigFromUI()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+      <div style="margin-top:10px;font-size:.78rem;color:var(--text-muted)">💡 <strong>ঝুঁকিতে</strong> শ্রেণী মানে যারা আগে ভালো কাস্টমার ছিল (VIP/নিয়মিত মানদণ্ড পূরণ করত) কিন্তু নির্দিষ্ট দিনের মধ্যে অর্ডার করেনি — তাদের ফিরিয়ে আনতে বিশেষ অফার পাঠান।</div>
     </div>`;
 }
 function exportSegmentsCSV(){
   const users=getUsers();
-  const rows=[['নাম','ফোন','শ্রেণী','অর্ডার সংখ্যা','মোট ব্যয়']];
+  const rows=[['নাম','ফোন','শ্রেণী','অর্ডার সংখ্যা','মোট ব্যয়','গড় অর্ডার']];
   users.forEach(u=>{
     const seg=getCustomerSegment(u);
     const uOrders=getOrders().filter(o=>o.userPhone===u.phone&&o.status!=='cancelled');
     const spent=uOrders.reduce((s,o)=>s+(o.total||0),0);
-    rows.push([u.name,u.phone,seg.label,uOrders.length,spent]);
+    const avg=uOrders.length?Math.round(spent/uOrders.length):0;
+    rows.push([u.name,u.phone,seg.label,uOrders.length,spent,avg]);
   });
   const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
@@ -10767,11 +10928,13 @@ function addStaffMember(){
   const email=(document.getElementById('staff-email')?.value||'').trim();
   const role=document.getElementById('staff-role')?.value||'staff';
   const salary=(document.getElementById('staff-salary')?.value||'').trim();
+  const pin=(document.getElementById('staff-pin')?.value||'').trim();
   const note=(document.getElementById('staff-note')?.value||'').trim();
   if(!name||!phone){showToast('নাম ও ফোন নম্বর দিন','error');return;}
+  if(pin&&!/^\d{4,6}$/.test(pin)){showToast('PIN অবশ্যই ৪-৬ ডিজিটের হতে হবে','error');return;}
   const staff=getStaff();
   if(staff.find(s=>s.phone===phone)){showToast('এই ফোন নম্বর আগেই আছে','error');return;}
-  staff.push({id:Date.now(),name,phone,email,role,salary,note,joinDate:new Date().toISOString().slice(0,10),status:'active'});
+  staff.push({id:Date.now(),name,phone,email,role,salary,pin:pin||generateStaffPin(),note,joinDate:new Date().toISOString().slice(0,10),status:'active'});
   saveStaff(staff);
   showToast('✅ স্টাফ যোগ হয়েছে','success');
   logActivity('👤 নতুন স্টাফ যোগ: '+name,'👤');
@@ -10821,6 +10984,8 @@ function openEditStaff(id){
     </div>
     <div class="form-group"><label class="inv-label">যোগদানের তারিখ</label>
       <input id="edit-staff-joindate" class="form-control" type="date" value="${s.joinDate||''}"></div>
+    <div class="form-group"><label class="inv-label">লগইন PIN (৪-৬ ডিজিট) <button type="button" onclick="document.getElementById('edit-staff-pin').value=generateStaffPin()" style="border:none;background:none;color:var(--green-mid);font-size:.7rem;cursor:pointer;text-decoration:underline">নতুন তৈরি</button></label>
+      <input id="edit-staff-pin" class="form-control" maxlength="6" inputmode="numeric" value="${s.pin||''}"></div>
     <div class="form-group"><label class="inv-label">নোট</label>
       <textarea id="edit-staff-note" class="form-control" rows="2">${s.note||''}</textarea></div>
     <div style="display:flex;gap:8px;margin-top:16px">
@@ -10838,10 +11003,12 @@ function saveEditStaff(id){
   const role=document.getElementById('edit-staff-role')?.value||'staff';
   const salary=(document.getElementById('edit-staff-salary')?.value||'').trim();
   const joinDate=document.getElementById('edit-staff-joindate')?.value||'';
+  const pin=(document.getElementById('edit-staff-pin')?.value||'').trim();
   const note=(document.getElementById('edit-staff-note')?.value||'').trim();
   if(!name){showToast('নাম দিন','error');return;}
+  if(pin&&!/^\d{4,6}$/.test(pin)){showToast('PIN অবশ্যই ৪-৬ ডিজিটের হতে হবে','error');return;}
   const staff=getStaff().map(s=>{
-    if(s.id===id) return{...s,name,phone:phone||s.phone,email,role:s.id===1?'admin':role,salary,joinDate,note};
+    if(s.id===id) return{...s,name,phone:phone||s.phone,email,role:s.id===1?'admin':role,salary,joinDate,pin:pin||s.pin,note};
     return s;
   });
   saveStaff(staff);
@@ -11078,17 +11245,22 @@ function renderStaffListView(){
           </select></div>
         <div><label class="inv-label">মাসিক বেতন (৳)</label>
           <input class="form-control" id="staff-salary" type="number" placeholder="0"></div>
+        <div><label class="inv-label">লগইন PIN (৪ ডিজিট) <button type="button" onclick="document.getElementById('staff-pin').value=generateStaffPin()" style="border:none;background:none;color:var(--green-mid);font-size:.7rem;cursor:pointer;text-decoration:underline">স্বয়ংক্রিয় তৈরি</button></label>
+          <input class="form-control" id="staff-pin" maxlength="6" inputmode="numeric" placeholder="যেমন: 4821" value="${generateStaffPin()}"></div>
         <div><label class="inv-label">নোট</label>
           <input class="form-control" id="staff-note" placeholder="বিশেষ দায়িত্ব বা তথ্য..."></div>
+      </div>
+      <div style="background:var(--green-pale);border-radius:6px;padding:8px 12px;font-size:.72rem;color:var(--green-dark);margin-bottom:10px">
+        💡 এই ফোন নম্বর ও PIN দিয়ে স্টাফ নিজে অ্যাডমিন প্যানেলে "স্টাফ লগইন" থেকে প্রবেশ করতে পারবে — শুধু তার ভূমিকা অনুযায়ী নির্দিষ্ট সেকশন দেখতে পাবে।
       </div>
       <button class="btn-add" onclick="addStaffMember()"><i class="fas fa-plus"></i> যোগ করুন</button>
     </div>
 
     <!-- Role Permissions Guide -->
     <div style="margin-top:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
-      <div style="font-size:.82rem;font-weight:700;color:var(--green-dark);margin-bottom:8px"><i class="fas fa-shield-alt"></i> ভূমিকার অনুমতি</div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--green-dark);margin-bottom:8px"><i class="fas fa-shield-alt"></i> ভূমিকার অনুমতি (স্টাফ লগইন করলে যা দেখতে পাবে)</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;font-size:.75rem">
-        ${Object.entries({admin:'সব অ্যাক্সেস — সেটিংস সহ',manager:'অর্ডার, পণ্য, কাস্টমার',delivery:'শুধু শিপিং অর্ডার',support:'টিকিট ও মেসেজ',staff:'অর্ডার দেখা ও আপডেট'}).map(([role,perm])=>`
+        ${Object.entries({admin:'সব অ্যাক্সেস — সেটিংস সহ',manager:'অর্ডার, পণ্য, রিপোর্ট, বেতন — পেমেন্ট/OAuth সেটিংস ছাড়া',delivery:'শুধু অর্ডার, জোন, ক্যালেন্ডার, টিকিট',support:'মেসেজ, টিকিট, রিভিউ, রিটার্ন',staff:'অর্ডার, পণ্য, কাস্টমার, কুপন — আর্থিক তথ্য ছাড়া'}).map(([role,perm])=>`
         <div style="padding:8px;background:${roleColors[role]}12;border-left:3px solid ${roleColors[role]};border-radius:4px">
           <div style="font-weight:700;color:${roleColors[role]}">${roleLabels[role]}</div>
           <div style="color:var(--text-muted)">${perm}</div>
@@ -13363,6 +13535,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     const savedTab=sessionStorage.getItem('amb_admin_tab')||'dashboard';
     document.body.classList.add('admin-open');
     openAdminPanel(savedTab);
+    try{applyStaffUIRestrictions();}catch(e){}
   }
 });
 
@@ -16093,6 +16266,8 @@ function exportAllData(){
     expenses:JSON.parse(localStorage.getItem('amb_expenses')||'[]'),
     notifTemplates:JSON.parse(localStorage.getItem('amb_notif_tpl')||'{}'),
     returns:JSON.parse(localStorage.getItem('amb_returns')||'[]'),
+    staff:getStaff(),
+    segmentConfig:getSegmentConfig(),
     exportedAt:new Date().toISOString(),
     version:'v6'
   };
@@ -16317,6 +16492,8 @@ function importAllData(){
         if(data.expenses) localStorage.setItem('amb_expenses',JSON.stringify(data.expenses));
         if(data.notifTemplates) localStorage.setItem('amb_notif_tpl',JSON.stringify(data.notifTemplates));
         if(data.returns) localStorage.setItem('amb_returns',JSON.stringify(data.returns));
+        if(data.staff) localStorage.setItem('amb_staff',JSON.stringify(data.staff));
+        if(data.segmentConfig) localStorage.setItem('amb_segment_config',JSON.stringify(data.segmentConfig));
         showToast('✅ ডেটা সফলভাবে রিস্টোর হয়েছে! পেজ রিলোড হচ্ছে...');
         setTimeout(()=>location.reload(),1500);
       }catch(err){showToast('❌ ব্যাকআপ ফাইল সঠিক নয়','error');}
