@@ -53,7 +53,9 @@
   setInterval(()=>{
     const em=frames[i%frames.length];
     document.title=em+base;
-    if(fav) fav.href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+em+"</text></svg>";
+    let customFav='';
+    try{customFav=(JSON.parse(localStorage.getItem('amb_site_settings')||'{}').faviconImage)||'';}catch(e){}
+    if(fav&&!customFav) fav.href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>"+em+"</text></svg>";
     i++;
   },900);
 })();
@@ -4832,7 +4834,7 @@ function doRegister(){
     <div class="pwa-bar-sub">অ্যাপের মতো ব্যবহার করুন, নতুন অফার পান</div>
   </div>
   <button class="btn-pwa-install" id="btn-pwa-install" onclick="installPWA()">ইনস্টল করুন</button>
-  <button class="btn-pwa-close" onclick="document.getElementById('pwa-install-bar').classList.remove('visible')"><i class="fas fa-times"></i></button>
+  <button class="btn-pwa-close" onclick="dismissPWABar()"><i class="fas fa-times"></i></button>
 </div>
 
 <!-- KEYBOARD SHORTCUT PANEL -->
@@ -7889,6 +7891,7 @@ function doAdminLogin(){
     saveAdminLoginLockout({attempts:0,until:0});
     if(lockMsg) lockMsg.style.display='none';
     closeModal('admin-login-modal');openAdminPanel();
+    try{applyMaintenanceMode();}catch(e){}
   } else {
     const attempts=(lockout.attempts||0)+1;
     if(attempts>=5){
@@ -7943,6 +7946,7 @@ function adminLogout(){
   hideAdminBottomNav();
   closeMobileAdminSidebar();
   stopAdminRefresh();showToast('অ্যাডমিন লগআউট সফল','success');
+  try{applyMaintenanceMode();}catch(e){}
 }
 let adminRefreshInterval=null;
 // Only silently refresh stat numbers — never re-render the whole tab
@@ -8340,6 +8344,14 @@ function getSiteSettings(){
       showWishlist: d.showWishlist!==false,
       showShare: d.showShare!==false,
       customCSS: d.customCSS||'',
+      logoImage: d.logoImage||'',
+      faviconImage: d.faviconImage||'',
+      metaDescription: d.metaDescription||'বাংলাদেশের সেরা বাগান থেকে তাজা আম সরাসরি আপনার দরজায়। রাজশাহী ও চাঁপাইনবাবগঞ্জের প্রিমিয়াম আম অর্ডার করুন।',
+      metaKeywords: d.metaKeywords||'আম, mango, বাংলাদেশ আম, রাজশাহী আম, অনলাইন আম অর্ডার',
+      ogImage: d.ogImage||'',
+      footerCopyright: d.footerCopyright||'',
+      maintenanceMode: d.maintenanceMode||false,
+      maintenanceMsg: d.maintenanceMsg||'আমরা সাইটটি আরও ভালো করতে কাজ করছি। শীঘ্রই ফিরে আসব! 🥭',
     };
   }catch{return {};}
 }
@@ -8518,6 +8530,74 @@ function applySettings(s){
   // ── Exit popup coupon ──
   const exitCode=document.getElementById('exit-coupon-code');
   if(exitCode&&s.exitCoupon) exitCode.textContent=s.exitCoupon;
+
+  // ── Logo image (replaces emoji if uploaded) ──
+  const navLogoWrap=document.querySelector('.nav-logo');
+  if(navLogoWrap){
+    const emojiSpan=navLogoWrap.querySelector('span');
+    if(s.logoImage){
+      let img=navLogoWrap.querySelector('img.custom-logo-img');
+      if(!img){
+        img=document.createElement('img');
+        img.className='custom-logo-img';
+        img.style.cssText='height:34px;width:34px;object-fit:contain;border-radius:8px';
+        navLogoWrap.insertBefore(img,navLogoWrap.firstChild);
+      }
+      img.src=s.logoImage;
+      if(emojiSpan) emojiSpan.style.display='none';
+    } else {
+      const img=navLogoWrap.querySelector('img.custom-logo-img');
+      if(img) img.remove();
+      if(emojiSpan) emojiSpan.style.display='';
+    }
+  }
+
+  // ── Favicon image (replaces emoji favicon if uploaded) ──
+  const favEl=document.getElementById('favicon');
+  if(favEl&&s.faviconImage) favEl.href=s.faviconImage;
+
+  // ── SEO meta tags ──
+  function setMeta(name,content,isProperty){
+    if(!content) return;
+    const attr=isProperty?'property':'name';
+    let tag=document.querySelector(`meta[${attr}="${name}"]`);
+    if(!tag){tag=document.createElement('meta');tag.setAttribute(attr,name);document.head.appendChild(tag);}
+    tag.setAttribute('content',content);
+  }
+  setMeta('description',s.metaDescription);
+  setMeta('keywords',s.metaKeywords);
+  setMeta('og:title',s.siteName,true);
+  setMeta('og:description',s.metaDescription,true);
+  if(s.ogImage) setMeta('og:image',s.ogImage,true);
+
+  // ── Footer copyright ──
+  const copyEl=document.querySelector('.footer-bottom p, .footer-copyright');
+  if(copyEl&&s.footerCopyright) copyEl.textContent=s.footerCopyright;
+
+  // ── Maintenance mode ──
+  applyMaintenanceMode(s);
+}
+function applyMaintenanceMode(s){
+  s=s||getSiteSettings();
+  const isAdminSession=sessionStorage.getItem('amb_admin_open')==='1';
+  let overlay=document.getElementById('maintenance-overlay');
+  if(s.maintenanceMode&&!isAdminSession){
+    if(!overlay){
+      overlay=document.createElement('div');
+      overlay.id='maintenance-overlay';
+      overlay.style.cssText='position:fixed;inset:0;z-index:3000;background:linear-gradient(135deg,#1b4332,#2d6a4f);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;font-family:"Hind Siliguri",sans-serif';
+      document.body.appendChild(overlay);
+    }
+    overlay.innerHTML=`<div style="font-size:4rem;margin-bottom:16px">🥭🛠️</div>
+      <h1 style="font-size:1.5rem;margin-bottom:10px">${s.siteName||'আমের হাট বাজার'}</h1>
+      <p style="max-width:420px;font-size:.95rem;opacity:.9;line-height:1.7">${s.maintenanceMsg}</p>
+      <a href="tel:${(s.phoneNumber||'').replace(/[^+\d]/g,'')}" style="margin-top:20px;background:#fff;color:var(--green-dark);padding:10px 22px;border-radius:24px;font-weight:700;text-decoration:none;font-size:.85rem"><i class="fas fa-phone"></i> ${s.phoneNumber||''}</a>
+      <button onclick="openAdminLogin()" style="margin-top:14px;background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 16px;border-radius:20px;font-size:.72rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🔑 অ্যাডমিন লগইন</button>`;
+    document.body.style.overflow='hidden';
+  } else if(overlay){
+    overlay.remove();
+    document.body.style.overflow='';
+  }
 }
 
 // Helper: lighten a hex color by percent
@@ -8540,17 +8620,18 @@ function livePreview(key,val){
 }
 function saveAllCustomize(){
   const existing=getSiteSettings();
-  const textIds=['siteName','siteTagline','heroTitle','heroSubtext','ctaText','footerAbout',
+  const textIds=['siteName','siteTagline','heroTitle','heroSubtext','ctaText','footerAbout','footerCopyright',
     'primaryColor','accentColor','accentColor2','bgColor','paleColor','navBg','heroBg1','heroBg2',
     'fontFamily','phoneNumber','email','address','fbLink','igLink','ytLink','waLink',
-    'bannerText','bannerColor','customCSS','exitCoupon','waNumber'];
+    'bannerText','bannerColor','customCSS','exitCoupon','waNumber',
+    'metaDescription','metaKeywords','ogImage','maintenanceMsg'];
   textIds.forEach(k=>{
     const el=document.getElementById('cs-'+k);
     if(el) existing[k]=el.value;
   });
   ['showBanner','showReviews','showWishlist','showShare',
    'showCountdown','showTrust','flashVisible','showTestimonials','showNewsletter',
-   'loyaltyEnabled','showCompare','showExitPopup','showCookieBanner'].forEach(k=>{
+   'loyaltyEnabled','showCompare','showExitPopup','showCookieBanner','maintenanceMode'].forEach(k=>{
     const el=document.getElementById('cs-'+k);
     if(el) existing[k]=el.checked;
   });
@@ -8608,7 +8689,7 @@ function renderCustomizeSettings(){
   const FONTS=['Hind Siliguri','Noto Sans Bengali','Poppins','Arial','Georgia'];
   document.getElementById('admin-main').innerHTML=`
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px" id="cust-tabs">
-    ${[['general','🏷️ সাধারণ'],['colors','🎨 রঙ'],['content','📝 কন্টেন্ট'],['contact','📞 যোগাযোগ'],['social','📱 সোশ্যাল'],['banner','📢 ব্যানার'],['features','⚙️ ফিচার'],['code','💻 কাস্টম CSS']].map(([k,l])=>
+    ${[['general','🏷️ সাধারণ'],['colors','🎨 রঙ'],['content','📝 কন্টেন্ট'],['seo','🔍 SEO'],['contact','📞 যোগাযোগ'],['social','📱 সোশ্যাল'],['banner','📢 ব্যানার'],['features','⚙️ ফিচার'],['code','💻 কাস্টম CSS']].map(([k,l])=>
       `<button onclick="switchCustTab('${k}')" id="custtab-${k}" style="padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--text-muted);transition:all .2s;font-family:'Hind Siliguri',sans-serif">${l}</button>`).join('')}
   </div>
   <div id="cust-content" style="max-width:700px"></div>
@@ -8631,6 +8712,26 @@ function renderCustomizeSettings(){
           </select>
         </div>
         <div class="form-group"><label>Footer পরিচিতি</label><textarea id="cs-footerAbout" rows="2" style="width:100%">${s.footerAbout}</textarea></div>
+        <div class="form-group"><label>Footer কপিরাইট লাইন</label><input id="cs-footerCopyright" value="${s.footerCopyright||''}" placeholder="© ২০২৬ আমের হাট বাজার। সর্বস্বত্ব সংরক্ষিত।"></div>
+        <div class="form-group"><label>🖼️ সাইট লোগো (ইমেজ)</label>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div id="logo-preview" style="width:50px;height:50px;border-radius:10px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg)">
+              ${s.logoImage?`<img src="${s.logoImage}" style="width:100%;height:100%;object-fit:contain">`:'<span style="font-size:1.5rem">🥭</span>'}
+            </div>
+            <input type="file" accept="image/*" onchange="uploadLogoImage(this)" style="font-size:.78rem">
+            ${s.logoImage?'<button class="btn-secondary-btn" style="font-size:.75rem;padding:6px 10px" onclick="clearLogoImage()"><i class="fas fa-trash"></i> মুছুন</button>':''}
+          </div>
+          <div style="font-size:.72rem;color:var(--text-muted);margin-top:4px">না দিলে ডিফল্ট 🥭 ইমোজি দেখাবে। PNG/SVG (স্বচ্ছ ব্যাকগ্রাউন্ড) সবচেয়ে ভালো দেখাবে।</div>
+        </div>
+        <div class="form-group"><label>🔖 কাস্টম ফেভিকন</label>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:32px;height:32px;border-radius:6px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg)">
+              ${s.faviconImage?`<img src="${s.faviconImage}" style="width:100%;height:100%;object-fit:contain">`:'<span>🥭</span>'}
+            </div>
+            <input type="file" accept="image/*" onchange="uploadFaviconImage(this)" style="font-size:.78rem">
+            ${s.faviconImage?'<button class="btn-secondary-btn" style="font-size:.75rem;padding:6px 10px" onclick="clearFaviconImage()"><i class="fas fa-trash"></i> মুছুন</button>':''}
+          </div>
+        </div>
       </div></div>`,
 
     colors:`
@@ -8675,6 +8776,24 @@ function renderCustomizeSettings(){
         <div class="form-group"><label>📍 অফিসের ঠিকানা</label><input id="cs-address" value="${s.address}"></div>
       </div></div>`,
 
+    seo:`
+      <div class="admin-section"><div class="admin-section-header"><h3>🔍 SEO ও সার্চ ইঞ্জিন</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label>Meta বিবরণ (Google সার্চে দেখাবে)</label>
+          <textarea id="cs-metaDescription" rows="3" style="width:100%" maxlength="160" oninput="document.getElementById('meta-char-count').textContent=this.value.length">${s.metaDescription}</textarea>
+          <div style="font-size:.7rem;color:var(--text-muted);margin-top:2px"><span id="meta-char-count">${(s.metaDescription||'').length}</span>/160 অক্ষর — ১৬০-এর মধ্যে রাখা ভালো</div>
+        </div>
+        <div class="form-group"><label>Meta কীওয়ার্ড (কমা দিয়ে আলাদা করুন)</label>
+          <input id="cs-metaKeywords" value="${s.metaKeywords}" placeholder="আম, mango, বাংলাদেশ আম">
+        </div>
+        <div class="form-group"><label>Social Share ইমেজ URL (Facebook/WhatsApp-এ লিংক শেয়ারে দেখাবে)</label>
+          <input id="cs-ogImage" value="${s.ogImage||''}" placeholder="https://example.com/share-image.jpg">
+        </div>
+        <div style="background:var(--green-pale);border-radius:8px;padding:12px;font-size:.82rem;color:var(--green-dark)">
+          <strong>💡 টিপস:</strong> ভালো Meta বিবরণে দাম, এলাকা ও বিশেষত্ব উল্লেখ করলে সার্চে ক্লিক বাড়ে।
+        </div>
+      </div></div>`,
+
     social:`
       <div class="admin-section"><div class="admin-section-header"><h3>📱 সোশ্যাল মিডিয়া লিংক</h3></div>
       <div class="admin-form">
@@ -8716,6 +8835,11 @@ function renderCustomizeSettings(){
         <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);margin:14px 0 4px;text-transform:uppercase;letter-spacing:.5px">শপিং ফিচার</div>
         ${mkToggle('loyaltyEnabled','🌟 লয়্যালটি পয়েন্ট সিস্টেম',s.loyaltyEnabled!==false,'প্রতি কেনাকাটায় পয়েন্ট অর্জন')}
         ${mkToggle('showCompare','⚖️ পণ্য তুলনা ফিচার',s.showCompare!==false,'পণ্য কার্ডে compare বাটন')}
+        <div style="font-size:.82rem;font-weight:700;color:#e74c3c;margin:14px 0 4px;text-transform:uppercase;letter-spacing:.5px">⚠️ সাইট স্ট্যাটাস</div>
+        ${mkToggle('maintenanceMode','🛠️ রক্ষণাবেক্ষণ মোড',s.maintenanceMode||false,'চালু করলে সাধারণ ভিজিটররা পুরো সাইটের বদলে একটি বার্তা দেখবে (অ্যাডমিন লগইন করলে সাইট দেখতে পাবে)')}
+        <div class="form-group" style="margin-top:8px"><label>রক্ষণাবেক্ষণ বার্তা</label>
+          <textarea id="cs-maintenanceMsg" rows="2" style="width:100%">${s.maintenanceMsg}</textarea>
+        </div>
         <div style="font-size:.82rem;font-weight:700;color:var(--text-muted);margin:14px 0 4px;text-transform:uppercase;letter-spacing:.5px">পপআপ ও নোটিফিকেশন</div>
         ${mkToggle('showExitPopup','😢 এক্সিট ইন্টেন্ট পপআপ',s.showExitPopup!==false,'ব্রাউজার ছাড়ার সময় কুপন অফার')}
         ${mkToggle('showCookieBanner','🍪 কুকি কনসেন্ট ব্যানার',s.showCookieBanner!==false,'GDPR কুকি অনুমতি ব্যানার')}
@@ -8747,6 +8871,56 @@ function renderCustomizeSettings(){
   switchCustTab('general');
 }
 
+function uploadLogoImage(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>1024*1024){showToast('ইমেজ সাইজ ১MB এর কম হতে হবে','error');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const s=getSiteSettings();
+    s.logoImage=e.target.result;
+    saveSiteSettings(s);
+    applySettings(s);
+    showToast('✅ লোগো আপলোড হয়েছে');
+    renderCustomizeSettings();
+    switchCustTab('general');
+  };
+  reader.readAsDataURL(file);
+}
+function clearLogoImage(){
+  const s=getSiteSettings();
+  s.logoImage='';
+  saveSiteSettings(s);
+  applySettings(s);
+  showToast('লোগো মুছে ফেলা হয়েছে');
+  renderCustomizeSettings();
+  switchCustTab('general');
+}
+function uploadFaviconImage(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>512*1024){showToast('ফেভিকন সাইজ ৫১২KB এর কম হতে হবে','error');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const s=getSiteSettings();
+    s.faviconImage=e.target.result;
+    saveSiteSettings(s);
+    applySettings(s);
+    showToast('✅ ফেভিকন আপলোড হয়েছে');
+    renderCustomizeSettings();
+    switchCustTab('general');
+  };
+  reader.readAsDataURL(file);
+}
+function clearFaviconImage(){
+  const s=getSiteSettings();
+  s.faviconImage='';
+  saveSiteSettings(s);
+  applySettings(s);
+  showToast('ফেভিকন মুছে ফেলা হয়েছে');
+  renderCustomizeSettings();
+  switchCustTab('general');
+}
 function switchCustTab(key){
   const content=document.getElementById('cust-content');
   if(content&&window._custTabs) content.innerHTML=window._custTabs[key]||'';
@@ -13130,6 +13304,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{ updateFreeDeliveryBar(); }catch(e){}
   try{ updateMsgBadge(); }catch(e){}
   try{ updateReturnsBadge(); }catch(e){}
+  try{ initPWAInstallPrompt(); }catch(e){}
   try{ initTypewriter(); }catch(e){}
   try{ initParticles(); }catch(e){}
   try{ initLiveTicker(); }catch(e){}
@@ -14593,6 +14768,7 @@ function purchaseGiftCard(){
   showToast(`🎁 গিফট কার্ড তৈরি হয়েছে! কোড: ${code}`);
   renderMyGiftCards();
 }
+var deferredPrompt=null;
 function installPWA(){
   if(!deferredPrompt) return;
   deferredPrompt.prompt();
@@ -14601,6 +14777,29 @@ function installPWA(){
     deferredPrompt=null;
     localStorage.setItem('amb_pwa_dismissed','1');
     document.getElementById('pwa-install-bar').classList.remove('visible');
+  });
+}
+function dismissPWABar(){
+  document.getElementById('pwa-install-bar')?.classList.remove('visible');
+  localStorage.setItem('amb_pwa_dismissed',String(Date.now()));
+}
+function initPWAInstallPrompt(){
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    deferredPrompt=e;
+    const dismissed=Number(localStorage.getItem('amb_pwa_dismissed'))||0;
+    const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+    const daysSinceDismiss=(Date.now()-dismissed)/86400000;
+    if(!isStandalone&&(!dismissed||daysSinceDismiss>14)){
+      setTimeout(()=>{
+        document.getElementById('pwa-install-bar')?.classList.add('visible');
+      },4000);
+    }
+  });
+  window.addEventListener('appinstalled',()=>{
+    deferredPrompt=null;
+    document.getElementById('pwa-install-bar')?.classList.remove('visible');
+    showToast('✅ অ্যাপ সফলভাবে ইনস্টল হয়েছে!');
   });
 }
 function openQuickView(pid){
@@ -16110,7 +16309,7 @@ function importAllData(){
         if(data.orders) localStorage.setItem('amb_orders',JSON.stringify(data.orders));
         if(data.users) localStorage.setItem('amb_users',JSON.stringify(data.users));
         if(data.coupons) localStorage.setItem('amb_coupons',JSON.stringify(data.coupons));
-        if(data.settings) localStorage.setItem('amb_settings',JSON.stringify(data.settings));
+        if(data.settings) localStorage.setItem('amb_site_settings',JSON.stringify(data.settings));
         if(data.reviews) localStorage.setItem('amb_reviews',JSON.stringify(data.reviews));
         if(data.newsletter) localStorage.setItem('amb_nl',JSON.stringify(data.newsletter));
         if(data.bulkOrders) localStorage.setItem('amb_bulk_orders',JSON.stringify(data.bulkOrders));
