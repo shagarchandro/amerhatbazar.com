@@ -71,6 +71,15 @@
 <meta property="og:title" content="আমের হাট বাজার — তাজা আম, সেরা দাম">
 <meta property="og:description" content="বাংলাদেশের সেরা বাগান থেকে তাজা আম সরাসরি আপনার দরজায়।">
 <meta property="og:type" content="website">
+<meta property="og:image" id="og-image-meta" content="">
+<meta property="og:url" id="og-url-meta" content="">
+<meta property="og:locale" content="bn_BD">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" id="twitter-title-meta" content="আমের হাট বাজার — তাজা আম, সেরা দাম">
+<meta name="twitter:description" id="twitter-desc-meta" content="বাংলাদেশের সেরা বাগান থেকে তাজা আম সরাসরি আপনার দরজায়।">
+<meta name="twitter:image" id="twitter-image-meta" content="">
+<meta name="robots" content="index, follow">
+<link rel="canonical" id="canonical-link" href="">
 <!-- Prevent FOUC for dark mode -->
 <script>
 (function(){const t=localStorage.getItem('amb_theme');if(t)document.documentElement.setAttribute('data-theme',t);})();
@@ -6070,6 +6079,7 @@ function doLogin(){
   if(!u){err.textContent='ইমেইল বা পাসওয়ার্ড ভুল';return;}
   setCurrentUser(u);updateNavAuth();closeModal('login-modal');
   showToast(`স্বাগতম, ${u.name}! 👋`,'success');updateCartCount();renderCart();
+  setTimeout(requestBrowserNotifPermission,1500);
 }
 function doRegister(){
   const name=document.getElementById('reg-name').value.trim();
@@ -6086,6 +6096,7 @@ function doRegister(){
   const u={id:Date.now(),name,email,phone,password:pass,createdAt:Date.now()};
   users.push(u);saveUsers(users);setCurrentUser(u);updateNavAuth();
   closeModal('login-modal');showToast(`রেজিস্ট্রেশন সফল! স্বাগতম, ${name}! 🎉`,'success');updateCartCount();
+  setTimeout(requestBrowserNotifPermission,1500);
 }
 function updateNavAuth(){
   const u=getCurrentUser();
@@ -8244,6 +8255,17 @@ function renderDashboard(){
   const shipped=orders.filter(o=>o.status==='shipped').length;
   const todayOrders=orders.filter(o=>{const d=new Date(o.createdAt);const n=new Date();return d.toDateString()===n.toDateString();});
   const todayRevenue=todayOrders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
+  // ── Yesterday comparison (for % change badges) ──
+  const yesterdayDate=new Date();yesterdayDate.setDate(yesterdayDate.getDate()-1);
+  const yesterdayOrders=orders.filter(o=>new Date(o.createdAt).toDateString()===yesterdayDate.toDateString());
+  const yesterdayRevenue=yesterdayOrders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
+  function pctChangeBadge(today,yesterday){
+    if(yesterday<=0) return today>0?'<span style="color:var(--green-mid);font-weight:700"><i class="fas fa-arrow-up"></i> নতুন</span>':'';
+    const pct=Math.round(((today-yesterday)/yesterday)*100);
+    if(pct===0) return '<span style="color:var(--text-muted)"><i class="fas fa-minus"></i> ০%</span>';
+    const up=pct>0;
+    return `<span style="color:${up?'var(--green-mid)':'#e74c3c'};font-weight:700"><i class="fas fa-arrow-${up?'up':'down'}"></i> ${Math.abs(pct)}%</span>`;
+  }
   // Mini bar data: last 7 days order count
   const bars=[];
   for(let i=6;i>=0;i--){
@@ -8269,13 +8291,13 @@ function renderDashboard(){
         <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
         <div class="stat-card-label">মোট অর্ডার</div>
         <div class="stat-card-value">${orders.length}</div>
-        <div style="font-size:.75rem;color:var(--green-mid);margin-top:4px">আজ: ${todayOrders.length}টি নতুন</div>
+        <div style="font-size:.75rem;color:var(--green-mid);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>আজ: ${todayOrders.length}টি নতুন</span> ${pctChangeBadge(todayOrders.length,yesterdayOrders.length)}</div>
       </div>
       <div class="stat-card" style="cursor:pointer" onclick="showAdminTab('orders')">
         <div class="stat-card-icon"><i class="fas fa-coins"></i></div>
         <div class="stat-card-label">মোট বিক্রয়</div>
         <div class="stat-card-value">৳${totalRevenue.toLocaleString()}</div>
-        <div style="font-size:.75rem;color:var(--yellow);margin-top:4px">আজ: ৳${todayRevenue.toLocaleString()}</div>
+        <div style="font-size:.75rem;color:var(--yellow);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>আজ: ৳${todayRevenue.toLocaleString()}</span> ${pctChangeBadge(todayRevenue,yesterdayRevenue)}</div>
       </div>
       <div class="stat-card" style="cursor:pointer" onclick="showAdminTab('products')">
         <div class="stat-card-icon"><i class="fas fa-box"></i></div>
@@ -8668,7 +8690,15 @@ function applySettings(s){
   setMeta('keywords',s.metaKeywords);
   setMeta('og:title',s.siteName,true);
   setMeta('og:description',s.metaDescription,true);
-  if(s.ogImage) setMeta('og:image',s.ogImage,true);
+  if(s.ogImage){setMeta('og:image',s.ogImage,true);setMeta('twitter:image',s.ogImage);}
+  if(s.siteName) setMeta('twitter:title',s.siteName);
+  if(s.metaDescription) setMeta('twitter:description',s.metaDescription);
+  try{
+    const curUrl=window.location.origin+window.location.pathname;
+    setMeta('og:url',curUrl,true);
+    const canon=document.getElementById('canonical-link');
+    if(canon) canon.setAttribute('href',curUrl);
+  }catch(e){}
 
   // ── Footer copyright ──
   const copyEl=document.querySelector('.footer-bottom p, .footer-copyright');
@@ -9202,10 +9232,11 @@ function renderProductRows(products,orders){
     </tr>`;
   }).join('');
 }
-function searchAdminProducts(q){
+function _searchAdminProductsImpl(q){
   const lq=(q||'').toLowerCase();
   applyProductFilter(getProducts().filter(p=>!lq||(p.name||'').toLowerCase().includes(lq)||(p.origin||'').toLowerCase().includes(lq)||(p.desc||'').toLowerCase().includes(lq)),document.getElementById('prod-filter')?.value||'all');
 }
+const searchAdminProducts=debounce(_searchAdminProductsImpl,200);
 function filterAdminProducts(f){
   const q=(document.getElementById('prod-search')?.value||'').toLowerCase();
   applyProductFilter(getProducts().filter(p=>!q||(p.name||'').toLowerCase().includes(q)),f);
@@ -10343,9 +10374,10 @@ function filterMessages(filter){
   if(list) list.innerHTML=renderMessageCards(msgs);
 }
 
-function searchMessages(q){
+function _searchMessagesImpl(q){
   filterMessages(document.getElementById('msg-filter')?.value||'all');
 }
+const searchMessages=debounce(_searchMessagesImpl,200);
 
 function showReplyBox(msgId){
   const box=document.getElementById('reply-box-'+msgId);
@@ -14408,11 +14440,19 @@ function goToPage(k,p){
   if(_pg[k]===undefined) return;
   _pg[k]=p;
   if(k==='orders') renderAdminOrders();
-  else if(k==='customers') renderAdminCustomers();
+  else if(k==='customers') refreshCustomersTable();
   else if(k==='products') renderAdminProducts();
 }
 
 // XSS PROTECTION
+// ── Debounce utility (performance: avoid re-filtering/re-rendering on every keystroke) ──
+function debounce(fn,wait=200){
+  let timer=null;
+  return function(...args){
+    clearTimeout(timer);
+    timer=setTimeout(()=>fn.apply(this,args),wait);
+  };
+}
 function sanitizeInput(s){
   return String(s||'')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
@@ -14494,7 +14534,47 @@ function initOrderStatusAutoRefresh(){
       var u=getCurrentUser();
       if(u&&typeof updateTrackingDisplay==='function') updateTrackingDisplay(u);
     }
+    checkOrderStatusChangesForNotif();
   },30000);
+}
+
+// ── BROWSER PUSH NOTIFICATIONS FOR ORDER STATUS ──
+// Lets logged-in customers get a native browser notification when their
+// order status changes, even if the tab is in the background.
+function requestBrowserNotifPermission(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission==='default'){
+    Notification.requestPermission().then(function(perm){
+      if(perm==='granted') showToast('অর্ডার আপডেট নোটিফিকেশন চালু হয়েছে 🔔');
+    }).catch(function(){});
+  }
+}
+function fireBrowserNotification(title,body){
+  try{
+    if('Notification' in window && Notification.permission==='granted'){
+      new Notification(title,{body:body,icon:'https://cdn-icons-png.flaticon.com/512/415/415733.png'});
+    }
+  }catch(e){}
+}
+function checkOrderStatusChangesForNotif(){
+  try{
+    const u=getCurrentUser();
+    if(!u) return;
+    const myOrders=getOrders().filter(o=>(u.email&&o.userEmail===u.email)||(u.phone&&o.userPhone===u.phone));
+    if(!myOrders.length) return;
+    const key='amb_order_notif_snapshot_'+(u.phone||u.email);
+    let snap={};
+    try{snap=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){snap={};}
+    let dirty=false;
+    myOrders.forEach(o=>{
+      if(snap[o.id]!==undefined && snap[o.id]!==o.status){
+        fireBrowserNotification('🥭 অর্ডার আপডেট',`আপনার অর্ডার #${o.id.slice(-8)} এখন "${statusLabel(o.status)}"`);
+        dirty=true;
+      }
+      if(snap[o.id]!==o.status){snap[o.id]=o.status;dirty=true;}
+    });
+    if(dirty) localStorage.setItem(key,JSON.stringify(snap));
+  }catch(e){}
 }
 
 // EXTEND showAdminTab
@@ -15874,6 +15954,7 @@ function renderAdminCustomers(){
   const socialCount=users.filter(u=>u.provider).length;
   const totalRevenue=orders.reduce((s,o)=>s+(o.total||0),0);
   const avgOrderVal=orders.length?Math.round(totalRevenue/orders.length):0;
+  _pg.customers=1;
 
   document.getElementById('admin-main').innerHTML=`
   <div class="admin-section">
@@ -15884,14 +15965,22 @@ function renderAdminCustomers(){
       </h3>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <input class="search-bar" id="cust-search" placeholder="নাম, ইমেইল, ফোন, জেলা..." oninput="searchCustomers(this.value)" style="width:200px">
-        <select class="form-control" id="cust-filter" onchange="filterCustomers(this.value)" style="width:130px;font-size:.8rem">
+        <select class="form-control" id="cust-filter" onchange="filterCustomers(this.value)" style="width:150px;font-size:.8rem">
           <option value="all">সবাই</option>
           <option value="active">সক্রিয়</option>
           <option value="social">সোশ্যাল লগইন</option>
           <option value="with-orders">অর্ডার আছে</option>
           <option value="no-orders">অর্ডার নেই</option>
           <option value="high-value">টপ কাস্টমার</option>
+          <optgroup label="শ্রেণী অনুযায়ী">
+            <option value="vip">👑 VIP</option>
+            <option value="regular">⭐ নিয়মিত</option>
+            <option value="newcust">🆕 নতুন</option>
+            <option value="atrisk">⚠️ ঝুঁকিতে</option>
+            <option value="inactive">💤 নিষ্ক্রিয়</option>
+          </optgroup>
         </select>
+        <button onclick="copyFilteredCustomerPhones()" style="background:var(--bg-raised);color:var(--text);border:1px solid var(--border);padding:7px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;font-family:'Hind Siliguri',sans-serif;white-space:nowrap" title="ফিল্টার করা কাস্টমারদের ফোন নম্বর কপি করুন"><i class="fas fa-phone"></i> নম্বর কপি</button>
         <button onclick="exportCustomersCSV()" style="background:var(--green-dark);color:#fff;border:none;padding:7px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;font-family:'Hind Siliguri',sans-serif;white-space:nowrap"><i class="fas fa-download"></i> CSV</button>
       </div>
     </div>
@@ -15910,21 +15999,24 @@ function renderAdminCustomers(){
       </div>`).join('')}
     </div>
 
+    <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:6px">💡 কলামের নামে ক্লিক করে সাজান (sort)</div>
     <div class="table-wrapper">
       <table class="admin-table">
         <thead><tr>
-          <th>কাস্টমার</th>
+          <th class="cust-sort-th" data-sortkey="name" onclick="sortCustomers('name')" style="cursor:pointer;user-select:none">কাস্টমার <span class="sort-arrow"></span></th>
           <th>যোগাযোগ</th>
           <th>ঠিকানা</th>
-          <th>যোগদান</th>
-          <th>অর্ডার</th>
-          <th>মোট ব্যয়</th>
+          <th class="cust-sort-th" data-sortkey="joinDate" onclick="sortCustomers('joinDate')" style="cursor:pointer;user-select:none">যোগদান <span class="sort-arrow"></span></th>
+          <th class="cust-sort-th" data-sortkey="orders" onclick="sortCustomers('orders')" style="cursor:pointer;user-select:none">অর্ডার <span class="sort-arrow"></span></th>
+          <th class="cust-sort-th" data-sortkey="spent" onclick="sortCustomers('spent')" style="cursor:pointer;user-select:none">মোট ব্যয় <span class="sort-arrow"></span></th>
           <th>অ্যাকশন</th>
         </tr></thead>
-        <tbody id="customers-tbody">${renderCustomerRows(users,orders)}</tbody>
+        <tbody id="customers-tbody"></tbody>
       </table>
     </div>
+    <div id="customers-pagination"></div>
   </div>`;
+  refreshCustomersTable();
 }
 
 function renderAdminOrders(){
@@ -16936,7 +17028,7 @@ function renderAdminStockAlerts(){
 }
 function renderCustomerRows(users,orders){
   if(!users.length) return '<tr><td colspan="7" class="no-data">কোনো কাস্টমার নেই</td></tr>';
-  return users.slice().reverse().map(u=>{
+  return users.map(u=>{
     const pic=u.avatar||u.picture||'';
     const initials=(u.name||'?').slice(0,1).toUpperCase();
     const avatarEl=pic
@@ -16954,6 +17046,8 @@ function renderCustomerRows(users,orders){
     const permAddr=u.permDistrict?[u.permUpazila,u.permDistrict].filter(Boolean).join(', '):'';
     const isHighValue=totalSpent>=5000;
     const joinDate=u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—';
+    let seg=null;
+    try{seg=getCustomerSegment(u);}catch(e){}
     return `<tr style="cursor:pointer" onclick="viewCustomerDetail('${u.phone||u.email}')">
       <td>
         <div style="display:flex;align-items:center;gap:8px">
@@ -16963,7 +17057,10 @@ function renderCustomerRows(users,orders){
           </div>
           <div>
             <div style="font-weight:700;font-size:.85rem">${u.name||'—'}${providerBadge}</div>
-            ${u.birthday?`<div style="font-size:.62rem;color:#9d50bb">🎂 ${new Date(u.birthday).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div>`:''}
+            <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:2px">
+              ${seg?`<span class="${seg.badge}" style="font-size:.6rem;padding:1px 6px">${seg.icon} ${seg.label}</span>`:''}
+              ${u.birthday?`<span style="font-size:.62rem;color:#9d50bb">🎂 ${new Date(u.birthday).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</span>`:''}
+            </div>
           </div>
         </div>
       </td>
@@ -16988,6 +17085,7 @@ function renderCustomerRows(users,orders){
         <div style="display:flex;gap:4px;flex-wrap:wrap">
           ${u.phone?`<a href="tel:${u.phone}" class="btn-sm btn-primary" style="text-decoration:none;padding:5px 7px" title="কল"><i class="fas fa-phone"></i></a>`:''}
           ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 7px;border-radius:6px;text-decoration:none" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
+          <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:5px 7px;border-radius:6px" onclick="openEditCustomerModal('${u.phone||u.email}')" title="সম্পাদনা"><i class="fas fa-pen"></i></button>
           <button class="btn-sm btn-danger" onclick="deleteCustomer('${u.phone||u.email}')" title="মুছুন"><i class="fas fa-trash"></i></button>
         </div>
       </td>
@@ -17296,9 +17394,10 @@ function saveZoneSettings(){
   showToast('জোন চার্জ ও সময় সংরক্ষিত ✅ ('+Object.keys(zones).length+'টি জেলা)','success');
   renderDeliverySettings();
 }
-function searchCustomers(q){
+function _searchCustomersImpl(q){
   filterCustomers(document.getElementById('cust-filter')?.value||'all');
 }
+const searchCustomers=debounce(_searchCustomersImpl,200);
 
 function showCouponForm(){
   document.getElementById('coupon-form-area').innerHTML=`
@@ -17537,29 +17636,72 @@ function closeAdminPanel(){
   if(bnav) bnav.style.display='none';
   closeMobileAdminSidebar();
 }
-function filterCustomers(filter){
+let custSortKey='joinDate', custSortDir='desc';
+function getCustomerOrdersList(u,orders){return (orders||getOrders()).filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email));}
+function getCustomerSpend(u,orders){return getCustomerOrdersList(u,orders).reduce((s,o)=>s+(o.total||0),0);}
+function getFilteredSortedCustomers(){
+  const filter=document.getElementById('cust-filter')?.value||'all';
   const q=(document.getElementById('cust-search')?.value||'').toLowerCase();
-  let users=getUsers();
   const orders=getOrders();
+  let users=getUsers();
   if(filter==='social') users=users.filter(u=>u.provider);
-  else if(filter==='with-orders') users=users.filter(u=>orders.some(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email)));
-  else if(filter==='no-orders') users=users.filter(u=>!orders.some(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email)));
-  else if(filter==='high-value') {
-    users=users.filter(u=>{
-      const spent=orders.filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email)).reduce((s,o)=>s+(o.total||0),0);
-      return spent>=5000;
-    }).sort((a,b)=>{
-      const sa=orders.filter(o=>o.userPhone===a.phone||(a.email&&o.userEmail===a.email)).reduce((s,o)=>s+(o.total||0),0);
-      const sb=orders.filter(o=>o.userPhone===b.phone||(b.email&&o.userEmail===b.email)).reduce((s,o)=>s+(o.total||0),0);
-      return sb-sa;
-    });
-  } else if(filter==='active'){
+  else if(filter==='with-orders') users=users.filter(u=>getCustomerOrdersList(u,orders).length>0);
+  else if(filter==='no-orders') users=users.filter(u=>getCustomerOrdersList(u,orders).length===0);
+  else if(filter==='high-value') users=users.filter(u=>getCustomerSpend(u,orders)>=5000);
+  else if(filter==='active'){
     const activePhones=new Set(orders.map(o=>o.userPhone).filter(Boolean));
     users=users.filter(u=>activePhones.has(u.phone));
+  } else if(['vip','regular','newcust','atrisk','inactive'].includes(filter)){
+    users=users.filter(u=>{try{return getCustomerSegment(u).key===filter;}catch(e){return false;}});
   }
   if(q) users=users.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||(u.phone||'').includes(q)||(u.district||'').includes(q)||(u.permDistrict||'').includes(q));
+  users=users.slice().sort((a,b)=>{
+    let va,vb;
+    if(custSortKey==='name'){va=(a.name||'').toLowerCase();vb=(b.name||'').toLowerCase();}
+    else if(custSortKey==='orders'){va=getCustomerOrdersList(a,orders).length;vb=getCustomerOrdersList(b,orders).length;}
+    else if(custSortKey==='spent'){va=getCustomerSpend(a,orders);vb=getCustomerSpend(b,orders);}
+    else {va=new Date(a.joinDate||a.createdAt||0).getTime();vb=new Date(b.joinDate||b.createdAt||0).getTime();}
+    if(va<vb) return custSortDir==='asc'?-1:1;
+    if(va>vb) return custSortDir==='asc'?1:-1;
+    return 0;
+  });
+  return {users,orders};
+}
+function refreshCustomersTable(){
+  const {users,orders}=getFilteredSortedCustomers();
+  const pg=paginate(users,'customers');
   const tbody=document.getElementById('customers-tbody');
-  if(tbody) tbody.innerHTML=renderCustomerRows(users,orders);
+  if(tbody) tbody.innerHTML=renderCustomerRows(pg.items,orders);
+  const pager=document.getElementById('customers-pagination');
+  if(pager) pager.innerHTML=renderPagination('customers',pg.pages,pg.current);
+  updateSortArrows();
+}
+function updateSortArrows(){
+  document.querySelectorAll('.cust-sort-th').forEach(th=>{
+    const arrow=th.querySelector('.sort-arrow');
+    if(!arrow) return;
+    arrow.textContent=th.dataset.sortkey===custSortKey?(custSortDir==='asc'?'▲':'▼'):'';
+  });
+}
+function sortCustomers(key){
+  if(custSortKey===key) custSortDir=custSortDir==='asc'?'desc':'asc';
+  else{custSortKey=key;custSortDir=key==='name'?'asc':'desc';}
+  _pg.customers=1;
+  refreshCustomersTable();
+}
+function copyFilteredCustomerPhones(){
+  const {users}=getFilteredSortedCustomers();
+  const phones=users.map(u=>u.phone).filter(Boolean).join(', ');
+  if(!phones){showToast('কোনো ফোন নম্বর পাওয়া যায়নি','error');return;}
+  navigator.clipboard?.writeText(phones).then(()=>{
+    showToast(`✅ ${users.length}টি ফোন নম্বর কপি হয়েছে`);
+  }).catch(()=>{
+    showCustomAlert('ফোন নম্বর তালিকা',phones,'ঠিক আছে','info',()=>{});
+  });
+}
+function filterCustomers(filter){
+  _pg.customers=1;
+  refreshCustomersTable();
 }
 
 function exportCustomersCSV(){
@@ -17629,6 +17771,62 @@ function viewCustomerDetail(phoneOrEmail){
   </div>`;
   document.body.appendChild(ov);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+}
+
+// ── ADMIN: EDIT CUSTOMER INFO ──
+function openEditCustomerModal(phoneOrEmail){
+  const u=getUsers().find(x=>x.phone===phoneOrEmail||x.email===phoneOrEmail);
+  if(!u) return;
+  const ov=document.createElement('div');
+  ov.id='edit-customer-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px';
+  ov.innerHTML=`<div style="background:var(--bg-card);border-radius:16px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto">
+    <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <h3 style="margin:0;font-size:1rem;color:var(--green-dark)"><i class="fas fa-user-pen"></i> কাস্টমার তথ্য সম্পাদনা</h3>
+      <button onclick="document.getElementById('edit-customer-overlay').remove()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-muted)">×</button>
+    </div>
+    <div style="padding:20px">
+      <div class="form-group" style="margin-bottom:12px"><label>নাম</label>
+        <input id="ec-name" class="form-control" value="${(u.name||'').replace(/"/g,'&quot;')}"></div>
+      <div class="form-group" style="margin-bottom:12px"><label>ফোন</label>
+        <input id="ec-phone" class="form-control" value="${(u.phone||'').replace(/"/g,'&quot;')}"></div>
+      <div class="form-group" style="margin-bottom:12px"><label>ইমেইল</label>
+        <input id="ec-email" class="form-control" value="${(u.email||'').replace(/"/g,'&quot;')}"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="form-group" style="margin:0"><label>জেলা</label>
+          <input id="ec-district" class="form-control" value="${(u.district||'').replace(/"/g,'&quot;')}"></div>
+        <div class="form-group" style="margin:0"><label>উপজেলা</label>
+          <input id="ec-upazila" class="form-control" value="${(u.upazila||'').replace(/"/g,'&quot;')}"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:6px"><label>এলাকা / ঠিকানা</label>
+        <input id="ec-area" class="form-control" value="${(u.area||'').replace(/"/g,'&quot;')}"></div>
+      <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:14px"><i class="fas fa-circle-info"></i> ফোন/ইমেইল পরিবর্তন করলে এই কাস্টমারের পুরনো অর্ডারের সাথে মিল নাও হতে পারে।</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-add" style="flex:1;justify-content:center" onclick="saveCustomerEdit('${(u.phone||u.email).replace(/'/g,"\\'")}')"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+        <button onclick="document.getElementById('edit-customer-overlay').remove()" style="padding:10px 18px;background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'Hind Siliguri',sans-serif">বাতিল</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+function saveCustomerEdit(origKey){
+  const users=getUsers();
+  const idx=users.findIndex(x=>x.phone===origKey||x.email===origKey);
+  if(idx===-1){showToast('কাস্টমার পাওয়া যায়নি','error');return;}
+  const name=document.getElementById('ec-name').value.trim();
+  const phone=document.getElementById('ec-phone').value.trim();
+  const email=document.getElementById('ec-email').value.trim();
+  if(!name||(!phone&&!email)){showToast('নাম এবং অন্তত একটি ফোন/ইমেইল আবশ্যক','error');return;}
+  users[idx]={...users[idx],
+    name,phone,email,
+    district:document.getElementById('ec-district').value.trim(),
+    upazila:document.getElementById('ec-upazila').value.trim(),
+    area:document.getElementById('ec-area').value.trim()
+  };
+  saveUsers(users);
+  document.getElementById('edit-customer-overlay')?.remove();
+  showToast('✅ কাস্টমার তথ্য আপডেট হয়েছে');
+  renderAdminCustomers();
 }
 
 function renderProductDetail(id){
