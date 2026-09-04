@@ -8474,6 +8474,8 @@ function getSiteSettings(){
       footerCopyright: d.footerCopyright||'',
       maintenanceMode: d.maintenanceMode||false,
       maintenanceMsg: d.maintenanceMsg||'আমরা সাইটটি আরও ভালো করতে কাজ করছি। শীঘ্রই ফিরে আসব! 🥭',
+      gaId: d.gaId||'',
+      fbPixelId: d.fbPixelId||'',
     };
   }catch{return {};}
 }
@@ -8706,6 +8708,36 @@ function applySettings(s){
 
   // ── Maintenance mode ──
   applyMaintenanceMode(s);
+
+  // ── Analytics / Pixel tracking ──
+  injectTrackingScripts(s);
+}
+// Injects Google Analytics (GA4) and/or Facebook Pixel only if the admin has
+// entered an ID in Site Customize → ট্র্যাকিং. Safe no-op otherwise, and avoids
+// re-injecting the same script tag on every settings save/live-preview call.
+function injectTrackingScripts(s){
+  try{
+    if(s.gaId&&window._ambGaLoadedId!==s.gaId){
+      document.querySelectorAll('script[data-amb-ga]').forEach(el=>el.remove());
+      const sc=document.createElement('script');
+      sc.async=true;sc.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(s.gaId);
+      sc.setAttribute('data-amb-ga','1');
+      document.head.appendChild(sc);
+      window.dataLayer=window.dataLayer||[];
+      window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};
+      window.gtag('js',new Date());
+      window.gtag('config',s.gaId);
+      window._ambGaLoadedId=s.gaId;
+    }
+    if(s.fbPixelId&&window._ambFbPixelLoadedId!==s.fbPixelId){
+      if(!window.fbq){
+        (function(f,b,e,v,n,t,s2){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s2=b.getElementsByTagName(e)[0];s2.parentNode.insertBefore(t,s2)})(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      }
+      window.fbq('init',s.fbPixelId);
+      window.fbq('track','PageView');
+      window._ambFbPixelLoadedId=s.fbPixelId;
+    }
+  }catch(e){}
 }
 function applyMaintenanceMode(s){
   s=s||getSiteSettings();
@@ -8754,7 +8786,7 @@ function saveAllCustomize(){
     'primaryColor','accentColor','accentColor2','bgColor','paleColor','navBg','heroBg1','heroBg2',
     'fontFamily','phoneNumber','email','address','fbLink','igLink','ytLink','waLink',
     'bannerText','bannerColor','customCSS','exitCoupon','waNumber',
-    'metaDescription','metaKeywords','ogImage','maintenanceMsg'];
+    'metaDescription','metaKeywords','ogImage','maintenanceMsg','gaId','fbPixelId'];
   textIds.forEach(k=>{
     const el=document.getElementById('cs-'+k);
     if(el) existing[k]=el.value;
@@ -8785,6 +8817,37 @@ function resetAllSettings(){
     localStorage.removeItem('amb_site_settings'); applySettings(getSiteSettings()); renderCustomizeSettings();
     showToast('সব সেটিংস রিসেট হয়েছে','success');
   });
+}
+// ── Export/Import just the Site Customize design (separate from full-data backup) ──
+function exportCustomizeSettings(){
+  const s=getSiteSettings();
+  const blob=new Blob([JSON.stringify(s,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='site_design_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  showToast('✅ সাইট ডিজাইন এক্সপোর্ট হয়েছে');
+}
+function importCustomizeSettings(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const imported=JSON.parse(e.target.result);
+      if(typeof imported!=='object'||Array.isArray(imported)) throw new Error('bad format');
+      const existing=getSiteSettings();
+      const merged={...existing,...imported};
+      saveSiteSettings(merged);
+      applySettings(merged);
+      showToast('✅ সাইট ডিজাইন ইমপোর্ট হয়েছে');
+      renderCustomizeSettings();
+    }catch(err){
+      showToast('ফাইলটি সঠিক নয়','error');
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
 }
 function csToggle(key,el){
   const checked=el.checked;
@@ -8819,13 +8882,19 @@ function renderCustomizeSettings(){
   const FONTS=['Hind Siliguri','Noto Sans Bengali','Poppins','Arial','Georgia'];
   document.getElementById('admin-main').innerHTML=`
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px" id="cust-tabs">
-    ${[['general','🏷️ সাধারণ'],['colors','🎨 রঙ'],['content','📝 কন্টেন্ট'],['seo','🔍 SEO'],['contact','📞 যোগাযোগ'],['social','📱 সোশ্যাল'],['banner','📢 ব্যানার'],['features','⚙️ ফিচার'],['code','💻 কাস্টম CSS']].map(([k,l])=>
+    ${[['general','🏷️ সাধারণ'],['colors','🎨 রঙ'],['content','📝 কন্টেন্ট'],['seo','🔍 SEO'],['tracking','📈 ট্র্যাকিং'],['contact','📞 যোগাযোগ'],['social','📱 সোশ্যাল'],['banner','📢 ব্যানার'],['features','⚙️ ফিচার'],['code','💻 কাস্টম CSS']].map(([k,l])=>
       `<button onclick="switchCustTab('${k}')" id="custtab-${k}" style="padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--text-muted);transition:all .2s;font-family:'Hind Siliguri',sans-serif">${l}</button>`).join('')}
   </div>
   <div id="cust-content" style="max-width:700px"></div>
-  <div style="margin-top:20px;display:flex;gap:10px;align-items:center">
+  <div style="margin-top:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
     <button onclick="saveAllCustomize()" style="background:var(--green-mid);color:#fff;border:none;padding:12px 28px;border-radius:var(--radius-sm);font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-save"></i> সব সংরক্ষণ করুন</button>
     <button onclick="resetAllSettings()" class="btn-secondary-btn" style="padding:12px 18px"><i class="fas fa-undo"></i> রিসেট</button>
+    <button onclick="window.open(window.location.origin+window.location.pathname,'_blank')" class="btn-secondary-btn" style="padding:12px 18px"><i class="fas fa-eye"></i> লাইভ প্রিভিউ</button>
+    <button onclick="exportCustomizeSettings()" class="btn-secondary-btn" style="padding:12px 18px"><i class="fas fa-file-export"></i> এক্সপোর্ট</button>
+    <label class="btn-secondary-btn" style="padding:12px 18px;cursor:pointer">
+      <i class="fas fa-file-import"></i> ইমপোর্ট
+      <input type="file" accept=".json" onchange="importCustomizeSettings(this)" style="display:none">
+    </label>
     <span style="font-size:.78rem;color:var(--green-mid)">💡 রঙ পরিবর্তন তাৎক্ষণিক</span>
   </div>`;
 
@@ -8835,14 +8904,14 @@ function renderCustomizeSettings(){
       <div class="admin-form">
         <div class="form-group"><label>সাইটের নাম</label><input id="cs-siteName" value="${s.siteName}" oninput="livePreview('siteName',this.value)"></div>
         <div class="form-group"><label>ট্যাগলাইন</label><input id="cs-siteTagline" value="${s.siteTagline}" oninput="livePreview('siteTagline',this.value)"></div>
-        <div class="form-group"><label>CTA বাটন টেক্সট</label><input id="cs-ctaText" value="${s.ctaText}"></div>
+        <div class="form-group"><label>CTA বাটন টেক্সট</label><input id="cs-ctaText" value="${s.ctaText}" oninput="livePreview('ctaText',this.value)"></div>
         <div class="form-group"><label>ফন্ট</label>
           <select id="cs-fontFamily" onchange="livePreview('fontFamily',this.value)" style="width:100%;padding:9px;border:1.5px solid var(--border);border-radius:6px;font-size:.9rem">
             ${FONTS.map(f=>`<option value="${f}" ${s.fontFamily===f?'selected':''}>${f}</option>`).join('')}
           </select>
         </div>
-        <div class="form-group"><label>Footer পরিচিতি</label><textarea id="cs-footerAbout" rows="2" style="width:100%">${s.footerAbout}</textarea></div>
-        <div class="form-group"><label>Footer কপিরাইট লাইন</label><input id="cs-footerCopyright" value="${s.footerCopyright||''}" placeholder="© ২০২৬ আমের হাট বাজার। সর্বস্বত্ব সংরক্ষিত।"></div>
+        <div class="form-group"><label>Footer পরিচিতি</label><textarea id="cs-footerAbout" rows="2" style="width:100%" oninput="livePreview('footerAbout',this.value)">${s.footerAbout}</textarea></div>
+        <div class="form-group"><label>Footer কপিরাইট লাইন</label><input id="cs-footerCopyright" value="${s.footerCopyright||''}" placeholder="© ২০২৬ আমের হাট বাজার। সর্বস্বত্ব সংরক্ষিত।" oninput="livePreview('footerCopyright',this.value)"></div>
         <div class="form-group"><label>🖼️ সাইট লোগো (ইমেজ)</label>
           <div style="display:flex;align-items:center;gap:12px">
             <div id="logo-preview" style="width:50px;height:50px;border-radius:10px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg)">
@@ -8901,9 +8970,9 @@ function renderCustomizeSettings(){
     contact:`
       <div class="admin-section"><div class="admin-section-header"><h3>📞 যোগাযোগ তথ্য</h3></div>
       <div class="admin-form">
-        <div class="form-group"><label>📞 ফোন নম্বর</label><input id="cs-phoneNumber" value="${s.phoneNumber}"></div>
-        <div class="form-group"><label>📧 ইমেইল ঠিকানা</label><input id="cs-email" value="${s.email}"></div>
-        <div class="form-group"><label>📍 অফিসের ঠিকানা</label><input id="cs-address" value="${s.address}"></div>
+        <div class="form-group"><label>📞 ফোন নম্বর</label><input id="cs-phoneNumber" value="${s.phoneNumber}" oninput="livePreview('phoneNumber',this.value)"></div>
+        <div class="form-group"><label>📧 ইমেইল ঠিকানা</label><input id="cs-email" value="${s.email}" oninput="livePreview('email',this.value)"></div>
+        <div class="form-group"><label>📍 অফিসের ঠিকানা</label><input id="cs-address" value="${s.address}" oninput="livePreview('address',this.value)"></div>
       </div></div>`,
 
     seo:`
@@ -8917,10 +8986,32 @@ function renderCustomizeSettings(){
           <input id="cs-metaKeywords" value="${s.metaKeywords}" placeholder="আম, mango, বাংলাদেশ আম">
         </div>
         <div class="form-group"><label>Social Share ইমেজ URL (Facebook/WhatsApp-এ লিংক শেয়ারে দেখাবে)</label>
-          <input id="cs-ogImage" value="${s.ogImage||''}" placeholder="https://example.com/share-image.jpg">
+          <input id="cs-ogImage" value="${s.ogImage||''}" placeholder="https://example.com/share-image.jpg" oninput="document.getElementById('og-image-preview').src=this.value">
+          <div style="margin-top:8px">
+            <img id="og-image-preview" src="${s.ogImage||''}" style="max-width:200px;max-height:110px;border-radius:8px;border:1.5px solid var(--border);${s.ogImage?'':'display:none'}" onerror="this.style.display='none'" onload="this.style.display='block'">
+          </div>
         </div>
         <div style="background:var(--green-pale);border-radius:8px;padding:12px;font-size:.82rem;color:var(--green-dark)">
           <strong>💡 টিপস:</strong> ভালো Meta বিবরণে দাম, এলাকা ও বিশেষত্ব উল্লেখ করলে সার্চে ক্লিক বাড়ে।
+        </div>
+      </div></div>`,
+
+    tracking:`
+      <div class="admin-section"><div class="admin-section-header"><h3>📈 অ্যানালিটিক্স ও ট্র্যাকিং</h3></div>
+      <div class="admin-form">
+        <div class="form-group"><label>Google Analytics (GA4) Measurement ID</label>
+          <input id="cs-gaId" value="${s.gaId||''}" placeholder="G-XXXXXXXXXX">
+          <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px">Google Analytics-এ Admin → Data Streams থেকে পাবেন। খালি রাখলে ট্র্যাকিং যোগ হবে না।</div>
+        </div>
+        <div class="form-group"><label>Facebook Pixel ID</label>
+          <input id="cs-fbPixelId" value="${s.fbPixelId||''}" placeholder="123456789012345">
+          <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px">Facebook Events Manager থেকে Pixel ID কপি করুন।</div>
+        </div>
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;font-size:.82rem;color:#856404">
+          ⚠️ সেভ করার পর সাইট রিলোড করলে ট্র্যাকিং কার্যকর হবে। ID ভুল দিলে অ্যানালিটিক্স ডেটা রেকর্ড হবে না।
+        </div>
+        <div style="font-size:.78rem;color:var(--text-muted);margin-top:10px">
+          বর্তমান অবস্থা: GA ${s.gaId?'<span style="color:#27ae60;font-weight:700">চালু ✓</span>':'<span style="color:#999">বন্ধ</span>'} &nbsp;|&nbsp; Facebook Pixel ${s.fbPixelId?'<span style="color:#27ae60;font-weight:700">চালু ✓</span>':'<span style="color:#999">বন্ধ</span>'}
         </div>
       </div></div>`,
 
