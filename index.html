@@ -6331,7 +6331,8 @@ function getPaymentSettings(){
     instructions:{bkash:'',nagad:'',rocket:'',upay:''},
     qrImages:{bkash:'',nagad:'',rocket:'',upay:''},
     bankName:'Dutch-Bangla Bank',bankAcc:'1234567890',bankRouting:'090261539',
-    codLimit:0 // 0 = no limit; otherwise max order total allowed for COD
+    codLimit:0, // 0 = no limit; otherwise max order total allowed for COD
+    minOrderAmount:0 // 0 = no minimum
   };
   try{
     const saved=JSON.parse(localStorage.getItem('amb_payment_settings')||'{}');
@@ -6440,6 +6441,11 @@ function placeOrder(isBuyNow){
   if(isBuyNow&&buyNowProduct){items=[{...buyNowProduct,qty:buyNowQty||1}];}
   else{items=getMyCart();if(!items.length){showToast('কার্ট খালি','warning');return;}}
   const t=calcCartTotals(items,district);
+  const _ps=getPaymentSettings();
+  if(_ps.minOrderAmount>0&&t.total<_ps.minOrderAmount){
+    showToast(`সর্বনিম্ন অর্ডার মূল্য ৳${_ps.minOrderAmount} — আরও পণ্য যোগ করুন`,'error');
+    return;
+  }
   const payNum=document.getElementById('pay-number')?.value||'';
   const payTxn=document.getElementById('pay-txnid')?.value||'';
   const order={
@@ -8197,7 +8203,7 @@ function viewOrderDetail(id){
         <h4>💳 পেমেন্ট তথ্য</h4>
         <div class="detail-row"><span>পেমেন্ট পদ্ধতি</span><span>${payLabel[o.payment]||o.payment}</span></div>
         ${o.paymentRef?`<div class="detail-row"><span>পেমেন্ট নম্বর</span><span style="font-size:.82rem;font-weight:600">${o.paymentRef}</span></div>`:''}
-        ${o.paymentTxn?`<div class="detail-row"><span>ট্রানজেকশন আইডি</span><span style="font-size:.82rem;font-weight:700;color:var(--green-dark);background:var(--green-pale);padding:2px 8px;border-radius:6px">${o.paymentTxn}</span></div>`:''}
+        ${o.paymentTxn?`<div class="detail-row"><span>ট্রানজেকশন আইডি</span><span style="font-size:.82rem;font-weight:700;color:var(--green-dark);background:var(--green-pale);padding:2px 8px;border-radius:6px">${o.paymentTxn}</span> ${o.paymentVerified?'<span style="font-size:.7rem;color:#27ae60;font-weight:700">✓ যাচাইকৃত</span>':'<span style="font-size:.7rem;color:#e74c3c;font-weight:700">⏳ যাচাই বাকি</span>'}</div>`:''}
         ${o.coupon?`<div class="detail-row"><span>কুপন ব্যবহার</span><span style="background:#fff3cd;padding:2px 8px;border-radius:10px;font-size:.8rem;font-weight:600">${o.coupon}</span></div>`:''}
         <div class="detail-row"><span>সাবটোটাল</span><span>৳${o.subtotal}</span></div>
         ${o.discount>0?`<div class="detail-row"><span>কুপন ছাড়</span><span style="color:#e74c3c">−৳${o.discount}</span></div>`:''}
@@ -11628,7 +11634,7 @@ function renderStaffCheckInOutView(){
         <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer" onclick="exportCheckinMonthCSV('${monthKey}')"><i class="fas fa-file-csv"></i> মাসের CSV</button>
       </div>
     </div>
-    <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:10px">💡 স্টাফ নিজে টপবারের "চেক-ইন/চেক-আউট" বাটন দিয়ে পাঞ্চ করতে পারবে, অথবা এখান থেকে আপনি নিজে সময় বসিয়ে দিতে পারেন।</div>
+    <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:10px">💡 স্টাফ নিজে টপবারের "চেক-ইন/চেক-আউট" বাটন দিয়ে পাঞ্চ করতে পারবে, অথবা আপনি নিজে "কুইক অ্যাকশন" বাটনে ক্লিক করে (বর্তমান সময় দিয়ে) অথবা সময় বসিয়ে ম্যানুয়ালি চেক-ইন/আউট করে দিতে পারেন।</div>
 
     <!-- Shift Settings -->
     <div style="background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
@@ -11645,7 +11651,7 @@ function renderStaffCheckInOutView(){
     ${!staff.length?'<div class="no-data" style="padding:24px;text-align:center">কোনো সক্রিয় স্টাফ নেই</div>':`
     <div class="table-wrapper">
       <table class="admin-table">
-        <thead><tr><th>স্টাফ</th><th>চেক-ইন</th><th>চেক-আউট</th><th>মোট সময়</th><th></th></tr></thead>
+        <thead><tr><th>স্টাফ</th><th>চেক-ইন</th><th>চেক-আউট</th><th>মোট সময়</th><th>কুইক অ্যাকশন</th><th></th></tr></thead>
         <tbody>
         ${staff.map(s=>{
           const rec=allClockins.find(c=>c.staffId===s.id&&c.date===date);
@@ -11654,6 +11660,16 @@ function renderStaffCheckInOutView(){
           const worked=rec&&rec.checkIn?fmtMinutes(getWorkedMinutes(rec)):'—';
           const lateMin=rec?getLateMinutes(rec,shift):0;
           const ot=rec&&rec.checkIn?isOvertime(rec,shift):false;
+          let quickAction='<span style="font-size:.7rem;color:var(--text-muted)">—</span>';
+          if(date===todayStr){
+            if(!rec||!rec.checkIn){
+              quickAction=`<button class="btn-sm" style="background:var(--green-mid);color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:700" onclick="staffCheckIn(${s.id});renderStaffCheckInOutView()"><i class="fas fa-sign-in-alt"></i> চেক-ইন</button>`;
+            } else if(!rec.checkOut){
+              quickAction=`<button class="btn-sm" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:700" onclick="staffCheckOut(${s.id});renderStaffCheckInOutView()"><i class="fas fa-sign-out-alt"></i> চেক-আউট</button>`;
+            } else {
+              quickAction='<span style="font-size:.72rem;color:#27ae60;font-weight:700">✓ সম্পন্ন</span>';
+            }
+          }
           return `<tr>
             <td><strong>${s.name}</strong></td>
             <td>
@@ -11664,6 +11680,7 @@ function renderStaffCheckInOutView(){
             <td style="font-weight:700;color:${rec&&rec.checkIn&&!rec.checkOut?'#e74c3c':'var(--green-dark)'}">${worked}${rec&&rec.checkIn&&!rec.checkOut?' <span style="font-size:.65rem;font-weight:400">(চলমান)</span>':''}
               ${ot?'<div style="font-size:.62rem;color:#8e44ad;font-weight:700">➕ ওভারটাইম</div>':''}
             </td>
+            <td>${quickAction}</td>
             <td>${rec?`<button class="btn-delete-sm" onclick="deleteClockinRecord(${s.id},'${date}')" title="মুছুন"><i class="fas fa-trash"></i></button>`:''}</td>
           </tr>`;
         }).join('')}
@@ -17648,7 +17665,7 @@ function renderOrdersRows(orders){
     </td>
     <td style="font-size:.82rem">
       ${o.paymentTxn
-        ?`<span style="background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:6px;font-weight:600;font-size:.78rem">${o.paymentTxn}</span>`
+        ?`<span style="background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:6px;font-weight:600;font-size:.78rem">${o.paymentTxn}</span> <span title="${o.paymentVerified?'যাচাইকৃত':'যাচাই বাকি'}" style="color:${o.paymentVerified?'#27ae60':'#e74c3c'}">${o.paymentVerified?'✓':'⏳'}</span>`
         :`<span style="color:#bbb;font-size:.75rem">N/A</span>`}
     </td>
     <td>
@@ -17803,6 +17820,18 @@ function renderAdminPaymentSettings(){
       <div style="background:var(--yellow-light);border:1px solid var(--yellow);border-radius:6px;padding:9px 13px;font-size:.82rem;color:#856404;max-width:600px">
         💡 এর বেশি মূল্যের অর্ডারে গ্রাহক ক্যাশ অন ডেলিভারি নির্বাচন করতে পারবেন না, শুধু অগ্রিম পেমেন্ট (বিকাশ/নগদ/ব্যাংক) দিতে হবে। প্রতারণা/ফেক অর্ডার কমাতে সহায়ক। 0 দিলে কোনো সীমা থাকবে না।
       </div>
+      <div class="form-group" style="max-width:320px;margin-top:14px">
+        <label>সর্বনিম্ন অর্ডার মূল্য (৳)</label>
+        <input type="number" class="form-control" id="pm-min-order" value="${ps.minOrderAmount||0}" placeholder="0 = সীমা নেই">
+      </div>
+      <div style="background:var(--green-pale);border-radius:6px;padding:9px 13px;font-size:.82rem;color:var(--green-dark);max-width:600px">
+        💡 এর কম মূল্যের অর্ডার গ্রাহক বসাতে পারবেন না — ছোট/লোকসানি অর্ডার এড়াতে সহায়ক। 0 দিলে কোনো সীমা থাকবে না।
+      </div>
+    </div>
+
+    <div class="admin-section" style="margin-top:16px">
+      <div class="admin-section-header"><h3>✅ পেমেন্ট যাচাইকরণ (Transaction Verification)</h3></div>
+      ${renderPaymentVerificationQueue()}
     </div>
 
     <div style="margin-top:16px">
@@ -17826,6 +17855,7 @@ function saveAdminPaymentSettings(){
   ps.bankAcc=document.getElementById('pm-bank-acc')?.value?.trim()||ps.bankAcc;
   ps.bankRouting=document.getElementById('pm-bank-routing')?.value?.trim()||ps.bankRouting;
   ps.codLimit=Number(document.getElementById('pm-cod-limit')?.value)||0;
+  ps.minOrderAmount=Number(document.getElementById('pm-min-order')?.value)||0;
   if(!Object.values(ps.enabled).some(Boolean)){
     showToast('অন্তত একটা পেমেন্ট পদ্ধতি সক্রিয় রাখতে হবে','error');
     return;
@@ -17833,6 +17863,57 @@ function saveAdminPaymentSettings(){
   savePaymentSettingsData(ps);
   logActivity('💳 পেমেন্ট সেটিংস আপডেট হয়েছে','💳');
   showToast('✅ পেমেন্ট সেটিংস সংরক্ষিত হয়েছে','success');
+}
+// ── PAYMENT VERIFICATION QUEUE (manual bKash/Nagad/Rocket/Upay transaction check) ──
+function renderPaymentVerificationQueue(){
+  const orders=getOrders().filter(o=>o.paymentTxn).sort((a,b)=>b.createdAt-a.createdAt);
+  if(!orders.length) return '<div class="no-data" style="padding:20px;text-align:center;font-size:.85rem">এখনো ট্রানজেকশন আইডি সহ কোনো অর্ডার নেই</div>';
+  const txnCounts={};
+  orders.forEach(o=>{txnCounts[o.paymentTxn]=(txnCounts[o.paymentTxn]||0)+1;});
+  const unverifiedCount=orders.filter(o=>!o.paymentVerified).length;
+  const recent=orders.slice(0,25);
+  return `
+    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:10px">সাম্প্রতিক ${recent.length}টি লেনদেন দেখাচ্ছে${unverifiedCount?` · <strong style="color:#e74c3c">${unverifiedCount}টি যাচাই বাকি</strong>`:' · <strong style="color:#27ae60">সব যাচাইকৃত ✓</strong>'}</div>
+    <div class="table-wrapper">
+      <table class="admin-table">
+        <thead><tr><th>অর্ডার</th><th>মেথড</th><th>Txn ID</th><th>পরিমাণ</th><th>স্ট্যাটাস</th><th></th></tr></thead>
+        <tbody>
+        ${recent.map(o=>{
+          const dup=txnCounts[o.paymentTxn]>1;
+          return `<tr style="${dup?'background:#fff3cd':''}">
+            <td><span style="font-family:monospace;font-size:.8rem">#${o.id.slice(-8)}</span><div style="font-size:.65rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleDateString('en-GB')}</div></td>
+            <td style="font-size:.82rem">${(PAYMENT_METHODS[o.payment]&&PAYMENT_METHODS[o.payment].name)||o.payment}</td>
+            <td><span style="font-weight:700;font-size:.82rem">${o.paymentTxn}</span>${dup?'<div style="font-size:.62rem;color:#e74c3c;font-weight:700">⚠️ ডুপ্লিকেট Txn ID!</div>':''}</td>
+            <td style="font-weight:700;color:var(--orange)">৳${o.total}</td>
+            <td>${o.paymentVerified?'<span style="color:#27ae60;font-weight:700;font-size:.8rem">✓ যাচাইকৃত</span>':'<span style="color:#e74c3c;font-weight:700;font-size:.8rem">⏳ বাকি</span>'}</td>
+            <td>${!o.paymentVerified
+              ?`<button class="btn-sm btn-primary" onclick="verifyOrderPayment('${o.id}')" style="font-size:.75rem"><i class="fas fa-check"></i> যাচাই করুন</button>`
+              :`<button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);font-size:.75rem" onclick="unverifyOrderPayment('${o.id}')">বাতিল করুন</button>`}</td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+function verifyOrderPayment(orderId){
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===orderId);
+  if(!o) return;
+  o.paymentVerified=true;
+  o.paymentVerifiedAt=Date.now();
+  saveOrders(orders);
+  logActivity(`✅ পেমেন্ট যাচাই — অর্ডার #${orderId.slice(-8)}`,'✅');
+  showToast('✅ পেমেন্ট যাচাই সম্পন্ন হয়েছে','success');
+  renderAdminPaymentSettings();
+}
+function unverifyOrderPayment(orderId){
+  const orders=getOrders();
+  const o=orders.find(x=>x.id===orderId);
+  if(!o) return;
+  o.paymentVerified=false;
+  saveOrders(orders);
+  showToast('যাচাই বাতিল করা হয়েছে','success');
+  renderAdminPaymentSettings();
 }
 function uploadPaymentQR(input,key){
   const file=input.files[0];
