@@ -5602,6 +5602,7 @@ function doRegister(){
       </div>
       <div class="admin-topbar-actions" style="display:flex;align-items:center;gap:8px">
         <span id="admin-staff-badge" style="display:none;font-size:.72rem;background:var(--green-pale);color:var(--green-dark);padding:4px 10px;border-radius:14px;font-weight:700;align-items:center;gap:4px"><i class="fas fa-user-shield"></i> <span id="admin-staff-badge-name"></span></span>
+        <button id="clock-btn" onclick="handleClockButtonClick()" style="display:none;font-size:.72rem;border:none;padding:6px 12px;border-radius:14px;font-weight:700;cursor:pointer;align-items:center;gap:5px;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif"><i class="fas fa-clock"></i> <span id="clock-btn-label">চেক-ইন করুন</span></button>
         <span style="font-size:.75rem;color:var(--green-mid);display:flex;align-items:center;gap:4px">
           <span style="width:7px;height:7px;border-radius:50%;background:var(--green-mid);display:inline-block;animation:pulse 2s infinite"></span>
           <span class="hide-on-mobile">লাইভ</span>
@@ -6325,12 +6326,23 @@ function getPaymentSettings(){
   const defaults={
     enabled:{cod:true,bkash:true,nagad:true,rocket:true,upay:true,bank:true},
     numbers:{bkash:'01305-144356',nagad:'01305-144356',rocket:'01305-144356',upay:'01305-144356'},
+    receiverNames:{bkash:'',nagad:'',rocket:'',upay:''},
+    accountTypes:{bkash:'personal',nagad:'personal',rocket:'personal',upay:'personal'},
+    instructions:{bkash:'',nagad:'',rocket:'',upay:''},
+    qrImages:{bkash:'',nagad:'',rocket:'',upay:''},
     bankName:'Dutch-Bangla Bank',bankAcc:'1234567890',bankRouting:'090261539',
     codLimit:0 // 0 = no limit; otherwise max order total allowed for COD
   };
   try{
     const saved=JSON.parse(localStorage.getItem('amb_payment_settings')||'{}');
-    return {...defaults,...saved,enabled:{...defaults.enabled,...(saved.enabled||{})},numbers:{...defaults.numbers,...(saved.numbers||{})}};
+    return {...defaults,...saved,
+      enabled:{...defaults.enabled,...(saved.enabled||{})},
+      numbers:{...defaults.numbers,...(saved.numbers||{})},
+      receiverNames:{...defaults.receiverNames,...(saved.receiverNames||{})},
+      accountTypes:{...defaults.accountTypes,...(saved.accountTypes||{})},
+      instructions:{...defaults.instructions,...(saved.instructions||{})},
+      qrImages:{...defaults.qrImages,...(saved.qrImages||{})},
+    };
   }catch(e){return defaults;}
 }
 function savePaymentSettingsData(s){localStorage.setItem('amb_payment_settings',JSON.stringify(s));}
@@ -6342,6 +6354,10 @@ function getActivePaymentMethods(){
     const copy={...pm};
     if(ps.numbers[key]){copy.number=ps.numbers[key];copy.hint=copy.hint.replace(/01305-144356/,ps.numbers[key]);}
     if(key==='bank') copy.hint=`ব্যাংক: ${ps.bankName} | A/C: ${ps.bankAcc} | Routing: ${ps.bankRouting}`;
+    if(ps.instructions&&ps.instructions[key]) copy.hint=ps.instructions[key];
+    if(ps.accountTypes&&ps.accountTypes[key]) copy.accountType=ps.accountTypes[key];
+    if(ps.receiverNames&&ps.receiverNames[key]) copy.receiverName=ps.receiverNames[key];
+    if(ps.qrImages&&ps.qrImages[key]) copy.qrImage=ps.qrImages[key];
     merged[key]=copy;
   });
   return merged;
@@ -6358,11 +6374,15 @@ function selectPayment(method){
   const pm=getActivePaymentMethods()[method];
   if(!pm) return;
   if(!pm.needsTxn){detail.innerHTML='';return;}
+  const accountTypeLabel=pm.accountType==='merchant'?'মার্চেন্ট নম্বর':'পার্সোনাল নম্বর';
   detail.innerHTML=`
     <div style="background:#f9f5e7;border-radius:8px;padding:12px;border:1px solid #e0d8c8">
       <div style="font-size:.82rem;color:#666;margin-bottom:8px;line-height:1.6">
         <i class="fas fa-info-circle" style="color:${pm.color}"></i> ${pm.hint}
+        ${pm.accountType?`<span style="margin-left:6px;background:${pm.color}18;color:${pm.color};padding:1px 8px;border-radius:8px;font-size:.7rem;font-weight:700">${accountTypeLabel}</span>`:''}
       </div>
+      ${pm.receiverName?`<div style="font-size:.78rem;color:#555;margin-bottom:8px"><i class="fas fa-user"></i> প্রাপকের নাম: <strong>${pm.receiverName}</strong></div>`:''}
+      ${pm.qrImage?`<div style="text-align:center;margin-bottom:10px"><img src="${pm.qrImage}" style="max-width:140px;max-height:140px;border-radius:8px;border:1.5px solid ${pm.color}40" alt="QR code"><div style="font-size:.68rem;color:#888;margin-top:4px">QR কোড স্ক্যান করে পেমেন্ট করুন</div></div>`:''}
       <input class="form-control" id="pay-number" placeholder="${t('পেমেন্ট নম্বর (যেটা থেকে পাঠিয়েছেন)')}">
       <input class="form-control" id="pay-txnid" placeholder="${t('ট্রানজেকশন আইডি / রেফারেন্স নম্বর')} *" style="margin-top:8px;border-color:${pm.color}40">
       <div style="font-size:.75rem;color:#e74c3c;margin-top:4px">* ${t('ট্রানজেকশন আইডি ছাড়া অর্ডার নিশ্চিত হবে না')}</div>
@@ -8006,6 +8026,7 @@ function applyStaffUIRestrictions(){
     if(badge) badge.style.display='none';
     document.querySelectorAll('.admin-nav-item,.abn-item').forEach(btn=>{btn.style.display='';});
   }
+  updateClockButtonUI();
 }
 function openAdminPanel(startTab){
   const _panel=document.getElementById('admin-panel');
@@ -10971,6 +10992,17 @@ function getStaff(){
   return JSON.parse(localStorage.getItem('amb_staff')||JSON.stringify(def));
 }
 function saveStaff(s){localStorage.setItem('amb_staff',JSON.stringify(s));}
+function getUpcomingStaffBirthdays(staffList,daysAhead){
+  daysAhead=daysAhead||7;
+  const today=new Date();today.setHours(0,0,0,0);
+  return staffList.filter(s=>s.birthday).map(s=>{
+    const bd=new Date(s.birthday);
+    let next=new Date(today.getFullYear(),bd.getMonth(),bd.getDate());
+    if(next<today) next=new Date(today.getFullYear()+1,bd.getMonth(),bd.getDate());
+    const diffDays=Math.round((next-today)/86400000);
+    return {...s,daysUntil:diffDays};
+  }).filter(s=>s.daysUntil>=0&&s.daysUntil<=daysAhead).sort((a,b)=>a.daysUntil-b.daysUntil);
+}
 
 // ── STAFF ATTENDANCE ──
 function getAttendance(){try{return JSON.parse(localStorage.getItem('amb_attendance')||'[]');}catch(e){return [];}}
@@ -10994,6 +11026,168 @@ function getAttendanceSummary(staffId,yearMonth){
   const summary={present:0,absent:0,leave:0,halfday:0};
   recs.forEach(r=>{if(summary[r.status]!==undefined) summary[r.status]++;});
   return summary;
+}
+
+// ── STAFF CHECK-IN / CHECK-OUT (time clock) ──
+function getClockins(){try{return JSON.parse(localStorage.getItem('amb_clockins')||'[]');}catch(e){return [];}}
+function saveClockins(c){localStorage.setItem('amb_clockins',JSON.stringify(c));}
+function getTodayClockin(staffId,date){
+  date=date||new Date().toISOString().slice(0,10);
+  return getClockins().find(c=>c.staffId===staffId&&c.date===date)||null;
+}
+function getWorkedMinutes(rec){
+  if(!rec||!rec.checkIn) return 0;
+  const end=rec.checkOut?new Date(rec.checkOut):new Date();
+  return Math.max(0,Math.round((end-new Date(rec.checkIn))/60000));
+}
+function fmtMinutes(mins){
+  const h=Math.floor(mins/60),m=mins%60;
+  return `${h}ঘ ${m}মি`;
+}
+function staffCheckIn(staffId){
+  const date=new Date().toISOString().slice(0,10);
+  const all=getClockins();
+  const existing=all.find(c=>c.staffId===staffId&&c.date===date);
+  if(existing&&existing.checkIn){showToast('আজকে ইতিমধ্যে চেক-ইন করা হয়েছে','error');return;}
+  const now=new Date().toISOString();
+  if(existing) existing.checkIn=now;
+  else all.push({staffId,date,checkIn:now,checkOut:null});
+  saveClockins(all);
+  markAttendance(staffId,date,'present');
+  const staffName=getStaff().find(s=>s.id===staffId)?.name||'';
+  logActivity(`⏱️ চেক-ইন — ${staffName} (${new Date(now).toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'})})`,'⏱️');
+  showToast('✅ চেক-ইন সম্পন্ন হয়েছে!','success');
+}
+function staffCheckOut(staffId){
+  const date=new Date().toISOString().slice(0,10);
+  const all=getClockins();
+  const rec=all.find(c=>c.staffId===staffId&&c.date===date);
+  if(!rec||!rec.checkIn){showToast('আগে চেক-ইন করুন','error');return;}
+  if(rec.checkOut){showToast('আজকে ইতিমধ্যে চেক-আউট করা হয়েছে','error');return;}
+  rec.checkOut=new Date().toISOString();
+  saveClockins(all);
+  const staffName=getStaff().find(s=>s.id===staffId)?.name||'';
+  logActivity(`⏱️ চেক-আউট — ${staffName} (মোট ${fmtMinutes(getWorkedMinutes(rec))})`,'⏱️');
+  showToast(`✅ চেক-আউট সম্পন্ন! কাজের সময়: ${fmtMinutes(getWorkedMinutes(rec))}`,'success');
+}
+function handleClockButtonClick(){
+  const session=getStaffSession();
+  if(!session) return;
+  const rec=getTodayClockin(session.id);
+  if(!rec||!rec.checkIn) staffCheckIn(session.id);
+  else if(!rec.checkOut) staffCheckOut(session.id);
+  else {showToast('আজকের কাজ ইতিমধ্যে সম্পন্ন হয়েছে ✓','success');}
+  updateClockButtonUI();
+  if(staffSubTab==='checkinout'&&document.getElementById('staff-subtab-body')) renderStaffCheckInOutView();
+}
+function updateClockButtonUI(){
+  const session=getStaffSession();
+  const btn=document.getElementById('clock-btn');
+  const label=document.getElementById('clock-btn-label');
+  if(!btn||!label) return;
+  if(!session){btn.style.display='none';return;}
+  const rec=getTodayClockin(session.id);
+  btn.style.display='inline-flex';
+  if(!rec||!rec.checkIn){
+    label.textContent='চেক-ইন করুন';
+    btn.style.background='var(--green-mid)';btn.style.color='#fff';
+  } else if(!rec.checkOut){
+    const late=getLateMinutes(rec);
+    label.textContent='চেক-আউট করুন ('+new Date(rec.checkIn).toLocaleTimeString('bn-BD',{hour:'2-digit',minute:'2-digit'})+' থেকে'+(late>0?`, ${late}মি দেরি`:'')+')';
+    btn.style.background='#e74c3c';btn.style.color='#fff';
+  } else {
+    label.textContent='আজ সম্পন্ন ✓ ('+fmtMinutes(getWorkedMinutes(rec))+')';
+    btn.style.background='var(--bg-raised)';btn.style.color='var(--text-muted)';
+  }
+}
+function manualSetClockTime(staffId,date,field,timeStr){
+  const all=getClockins();
+  let rec=all.find(c=>c.staffId===staffId&&c.date===date);
+  if(!rec){rec={staffId,date,checkIn:null,checkOut:null};all.push(rec);}
+  if(!timeStr){rec[field]=null;}
+  else{
+    const iso=`${date}T${timeStr}:00`;
+    const d=new Date(iso);
+    if(isNaN(d.getTime())){showToast('সময় সঠিক নয়','error');return;}
+    rec[field]=d.toISOString();
+  }
+  saveClockins(all);
+  if(field==='checkIn'&&timeStr) markAttendance(staffId,date,'present');
+  renderStaffCheckInOutView();
+}
+function deleteClockinRecord(staffId,date){
+  saveClockins(getClockins().filter(c=>!(c.staffId===staffId&&c.date===date)));
+  renderStaffCheckInOutView();
+}
+// ── Shift settings (used for late-arrival / overtime detection) ──
+function getShiftSettings(){
+  try{
+    const d=JSON.parse(localStorage.getItem('amb_shift_settings')||'{}');
+    return {startTime:d.startTime||'09:00',standardHours:Number(d.standardHours)||8};
+  }catch(e){return {startTime:'09:00',standardHours:8};}
+}
+function saveShiftSettings(){
+  const startTime=document.getElementById('shift-start-time')?.value||'09:00';
+  const standardHours=Number(document.getElementById('shift-standard-hours')?.value)||8;
+  localStorage.setItem('amb_shift_settings',JSON.stringify({startTime,standardHours}));
+  showToast('✅ শিফট সেটিংস সংরক্ষিত হয়েছে','success');
+  renderStaffCheckInOutView();
+}
+function getLateMinutes(rec,shift){
+  if(!rec||!rec.checkIn) return 0;
+  shift=shift||getShiftSettings();
+  const shiftStart=new Date(`${rec.date}T${shift.startTime}:00`);
+  const diff=Math.round((new Date(rec.checkIn)-shiftStart)/60000);
+  return diff>0?diff:0;
+}
+function isOvertime(rec,shift){
+  shift=shift||getShiftSettings();
+  return getWorkedMinutes(rec)>(shift.standardHours*60);
+}
+function exportCheckinCSV(date){
+  const staff=getStaff().filter(s=>s.status!=='inactive');
+  const all=getClockins();
+  const shift=getShiftSettings();
+  const rows=[['স্টাফ','তারিখ','চেক-ইন','চেক-আউট','মোট সময়','দেরি (মিনিট)','ওভারটাইম']];
+  staff.forEach(s=>{
+    const rec=all.find(c=>c.staffId===s.id&&c.date===date);
+    if(!rec||!rec.checkIn) return;
+    rows.push([s.name,date,
+      new Date(rec.checkIn).toTimeString().slice(0,5),
+      rec.checkOut?new Date(rec.checkOut).toTimeString().slice(0,5):'চলমান',
+      fmtMinutes(getWorkedMinutes(rec)),
+      getLateMinutes(rec,shift)||0,
+      isOvertime(rec,shift)?'হ্যাঁ':'না'
+    ]);
+  });
+  if(rows.length<2){showToast('এই তারিখে কোনো রেকর্ড নেই','error');return;}
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`checkinout_${date}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+function exportCheckinMonthCSV(monthKey){
+  const staff=getStaff().filter(s=>s.status!=='inactive');
+  const all=getClockins().filter(c=>c.date.startsWith(monthKey)&&c.checkIn);
+  if(!all.length){showToast('এই মাসে কোনো রেকর্ড নেই','error');return;}
+  const rows=[['স্টাফ','মোট দিন','মোট কর্মঘণ্টা','গড়/দিন']];
+  staff.forEach(s=>{
+    const recs=all.filter(c=>c.staffId===s.id);
+    if(!recs.length) return;
+    const totalMins=recs.reduce((sum,r)=>sum+getWorkedMinutes(r),0);
+    const avg=recs.length?Math.round(totalMins/recs.length):0;
+    rows.push([s.name,recs.length,fmtMinutes(totalMins),fmtMinutes(avg)]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`checkinout_monthly_${monthKey}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('CSV ডাউনলোড হচ্ছে...');
 }
 
 // ── STAFF SALARY / PAYROLL ──
@@ -11051,13 +11245,14 @@ function addStaffMember(){
   const email=(document.getElementById('staff-email')?.value||'').trim();
   const role=document.getElementById('staff-role')?.value||'staff';
   const salary=(document.getElementById('staff-salary')?.value||'').trim();
+  const birthday=document.getElementById('staff-birthday')?.value||'';
   const pin=(document.getElementById('staff-pin')?.value||'').trim();
   const note=(document.getElementById('staff-note')?.value||'').trim();
   if(!name||!phone){showToast('নাম ও ফোন নম্বর দিন','error');return;}
   if(pin&&!/^\d{4,6}$/.test(pin)){showToast('PIN অবশ্যই ৪-৬ ডিজিটের হতে হবে','error');return;}
   const staff=getStaff();
   if(staff.find(s=>s.phone===phone)){showToast('এই ফোন নম্বর আগেই আছে','error');return;}
-  staff.push({id:Date.now(),name,phone,email,role,salary,pin:pin||generateStaffPin(),note,joinDate:new Date().toISOString().slice(0,10),status:'active'});
+  staff.push({id:Date.now(),name,phone,email,role,salary,birthday,pin:pin||generateStaffPin(),note,joinDate:new Date().toISOString().slice(0,10),status:'active'});
   saveStaff(staff);
   showToast('✅ স্টাফ যোগ হয়েছে','success');
   logActivity('👤 নতুন স্টাফ যোগ: '+name,'👤');
@@ -11105,8 +11300,12 @@ function openEditStaff(id){
       <div class="form-group"><label class="inv-label">বেতন (৳)</label>
         <input id="edit-staff-salary" class="form-control" type="number" value="${s.salary||''}"></div>
     </div>
-    <div class="form-group"><label class="inv-label">যোগদানের তারিখ</label>
-      <input id="edit-staff-joindate" class="form-control" type="date" value="${s.joinDate||''}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="inv-label">যোগদানের তারিখ</label>
+        <input id="edit-staff-joindate" class="form-control" type="date" value="${s.joinDate||''}"></div>
+      <div class="form-group"><label class="inv-label">জন্মতারিখ</label>
+        <input id="edit-staff-birthday" class="form-control" type="date" value="${s.birthday||''}"></div>
+    </div>
     <div class="form-group"><label class="inv-label">লগইন PIN (৪-৬ ডিজিট) <button type="button" onclick="document.getElementById('edit-staff-pin').value=generateStaffPin()" style="border:none;background:none;color:var(--green-mid);font-size:.7rem;cursor:pointer;text-decoration:underline">নতুন তৈরি</button></label>
       <input id="edit-staff-pin" class="form-control" maxlength="6" inputmode="numeric" value="${s.pin||''}"></div>
     <div class="form-group"><label class="inv-label">নোট</label>
@@ -11126,12 +11325,13 @@ function saveEditStaff(id){
   const role=document.getElementById('edit-staff-role')?.value||'staff';
   const salary=(document.getElementById('edit-staff-salary')?.value||'').trim();
   const joinDate=document.getElementById('edit-staff-joindate')?.value||'';
+  const birthday=document.getElementById('edit-staff-birthday')?.value||'';
   const pin=(document.getElementById('edit-staff-pin')?.value||'').trim();
   const note=(document.getElementById('edit-staff-note')?.value||'').trim();
   if(!name){showToast('নাম দিন','error');return;}
   if(pin&&!/^\d{4,6}$/.test(pin)){showToast('PIN অবশ্যই ৪-৬ ডিজিটের হতে হবে','error');return;}
   const staff=getStaff().map(s=>{
-    if(s.id===id) return{...s,name,phone:phone||s.phone,email,role:s.id===1?'admin':role,salary,joinDate,pin:pin||s.pin,note};
+    if(s.id===id) return{...s,name,phone:phone||s.phone,email,role:s.id===1?'admin':role,salary,joinDate,birthday,pin:pin||s.pin,note};
     return s;
   });
   saveStaff(staff);
@@ -11249,14 +11449,16 @@ function switchStaffSubTab(tab){
   renderAdminStaff();
 }
 function renderAdminStaff(){
-  const tabs=[['list','👥 তালিকা'],['attendance','📅 হাজিরা'],['payroll','💰 বেতন']];
+  const tabs=[['list','👥 তালিকা'],['attendance','📅 হাজিরা'],['checkinout','⏱️ চেক-ইন/আউট'],['payroll','💰 বেতন'],['performance','🏆 পারফরম্যান্স']];
   document.getElementById('admin-main').innerHTML=`
     <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">
       ${tabs.map(([key,label])=>`<button onclick="switchStaffSubTab('${key}')" style="background:${staffSubTab===key?'var(--green-dark)':'var(--bg-card)'};color:${staffSubTab===key?'#fff':'var(--text)'};border:1px solid var(--border);padding:8px 16px;border-radius:20px;font-size:.82rem;cursor:pointer;font-family:'Hind Siliguri','Noto Sans Bengali',sans-serif;font-weight:600" onclick="switchStaffSubTab('${key}')">${label}</button>`).join('')}
     </div>
     <div id="staff-subtab-body"></div>`;
   if(staffSubTab==='attendance') renderStaffAttendanceView();
+  else if(staffSubTab==='checkinout') renderStaffCheckInOutView();
   else if(staffSubTab==='payroll') renderStaffPayrollView();
+  else if(staffSubTab==='performance') renderStaffPerformanceView();
   else renderStaffListView();
 }
 function renderStaffListView(){
@@ -11284,6 +11486,14 @@ function renderStaffListView(){
         <button class="btn-add" onclick="document.getElementById('add-staff-form').scrollIntoView({behavior:'smooth'})"><i class="fas fa-plus"></i> নতুন স্টাফ</button>
       </div>
     </div>
+    ${(()=>{
+      const bdays=getUpcomingStaffBirthdays(allStaff,7);
+      if(!bdays.length) return '';
+      return `<div style="background:linear-gradient(135deg,#fdf0ff,#fff7e6);border:1px solid #f0d0f5;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:.82rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <span style="font-weight:700;color:#9d50bb">🎂 আসন্ন জন্মদিন:</span>
+        ${bdays.map(b=>`<span style="background:#fff;padding:3px 10px;border-radius:12px;border:1px solid #f0d0f5">${b.name} — ${b.daysUntil===0?'আজ! 🎉':b.daysUntil===1?'আগামীকাল':`${b.daysUntil} দিন পর`}</span>`).join('')}
+      </div>`;
+    })()}
 
     <!-- Search & Filter -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
@@ -11338,7 +11548,7 @@ function renderStaffListView(){
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
             <button class="btn-sm btn-primary" onclick="openEditStaff(${s.id})" title="সম্পাদনা"><i class="fas fa-edit"></i></button>
-            <button class="btn-sm" onclick="openStaffNotesModal(${s.id})" style="background:#fff8e6;color:#b8860b;border:1px solid #f0dca0;padding:5px 8px;border-radius:6px;cursor:pointer" title="মন্তব্য/নোট"><i class="fas fa-sticky-note"></i></button>
+            <button class="btn-sm" onclick="openStaffNotesModal(${s.id})" style="background:#fff8e6;color:#b8860b;border:1px solid #f0dca0;padding:5px 8px;border-radius:6px;cursor:pointer;position:relative" title="মন্তব্য/নোট"><i class="fas fa-sticky-note"></i>${getStaffNotes(s.id).length?`<span style="position:absolute;top:-6px;right:-6px;background:#e74c3c;color:#fff;font-size:.55rem;font-weight:700;border-radius:8px;padding:0 4px;line-height:1.4">${getStaffNotes(s.id).length}</span>`:''}</button>
             ${s.phone?`<a href="tel:${s.phone}" class="btn-sm" style="background:var(--green-pale);color:var(--green-dark);border:none;padding:5px 8px;border-radius:6px;text-decoration:none;display:flex;align-items:center;justify-content:center" title="কল"><i class="fas fa-phone"></i></a>`:''}
             ${s.phone?`<a href="https://wa.me/880${s.phone.replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#e8fdf0;color:#25d366;border:none;padding:5px 8px;border-radius:6px;text-decoration:none;display:flex;align-items:center;justify-content:center" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
             ${s.id!==1?`<button class="btn-sm" onclick="toggleStaffStatus(${s.id})" style="background:${isActive?'#fef0f0':'#e8fdf0'};color:${isActive?'#e74c3c':'#27ae60'};border:1px solid ${isActive?'#fcc':'#b7f5d0'};padding:5px 8px;border-radius:6px;cursor:pointer" title="${isActive?'নিষ্ক্রিয়':'সক্রিয়'} করুন"><i class="fas fa-${isActive?'ban':'check'}"></i></button>`:''}
@@ -11368,6 +11578,8 @@ function renderStaffListView(){
           </select></div>
         <div><label class="inv-label">মাসিক বেতন (৳)</label>
           <input class="form-control" id="staff-salary" type="number" placeholder="0"></div>
+        <div><label class="inv-label">জন্মতারিখ</label>
+          <input class="form-control" id="staff-birthday" type="date"></div>
         <div><label class="inv-label">লগইন PIN (৪ ডিজিট) <button type="button" onclick="document.getElementById('staff-pin').value=generateStaffPin()" style="border:none;background:none;color:var(--green-mid);font-size:.7rem;cursor:pointer;text-decoration:underline">স্বয়ংক্রিয় তৈরি</button></label>
           <input class="form-control" id="staff-pin" maxlength="6" inputmode="numeric" placeholder="যেমন: 4821" value="${generateStaffPin()}"></div>
         <div><label class="inv-label">নোট</label>
@@ -11390,6 +11602,88 @@ function renderStaffListView(){
         </div>`).join('')}
       </div>
     </div>
+  </div>`;
+}
+
+let checkinSelectedDate=new Date().toISOString().slice(0,10);
+function setCheckinDate(d){checkinSelectedDate=d;renderStaffCheckInOutView();}
+function renderStaffCheckInOutView(){
+  const staff=getStaff().filter(s=>s.status!=='inactive');
+  const date=checkinSelectedDate;
+  const monthKey=date.slice(0,7);
+  const allClockins=getClockins();
+  const shift=getShiftSettings();
+  const todayStr=new Date().toISOString().slice(0,10);
+  const notCheckedIn=date===todayStr?staff.filter(s=>{
+    const rec=allClockins.find(c=>c.staffId===s.id&&c.date===date);
+    return !rec||!rec.checkIn;
+  }):[];
+  document.getElementById('staff-subtab-body').innerHTML=`
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <h3>⏱️ চেক-ইন / চেক-আউট লগ</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="date" class="form-control" style="width:auto" value="${date}" max="${todayStr}" onchange="setCheckinDate(this.value)">
+        <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer" onclick="exportCheckinCSV('${date}')"><i class="fas fa-file-csv"></i> দিনের CSV</button>
+        <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:6px 12px;border-radius:6px;cursor:pointer" onclick="exportCheckinMonthCSV('${monthKey}')"><i class="fas fa-file-csv"></i> মাসের CSV</button>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:10px">💡 স্টাফ নিজে টপবারের "চেক-ইন/চেক-আউট" বাটন দিয়ে পাঞ্চ করতে পারবে, অথবা এখান থেকে আপনি নিজে সময় বসিয়ে দিতে পারেন।</div>
+
+    <!-- Shift Settings -->
+    <div style="background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
+      <div><label class="inv-label">⏰ শিফট শুরুর সময়</label><input type="time" id="shift-start-time" class="form-control" style="width:120px" value="${shift.startTime}"></div>
+      <div><label class="inv-label">📏 মান কর্মঘণ্টা/দিন</label><input type="number" id="shift-standard-hours" class="form-control" style="width:90px" min="1" max="24" value="${shift.standardHours}"></div>
+      <button class="btn-sm btn-primary" onclick="saveShiftSettings()" style="padding:8px 14px"><i class="fas fa-save"></i> সংরক্ষণ</button>
+      <div style="font-size:.68rem;color:var(--text-muted);flex-basis:100%">এই সময়ের পরে চেক-ইন করলে "দেরি" এবং মান কর্মঘণ্টার বেশি কাজ করলে "ওভারটাইম" দেখাবে।</div>
+    </div>
+
+    ${notCheckedIn.length?`<div style="background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#856404">
+      ⚠️ <strong>এখনো চেক-ইন করেননি (আজ):</strong> ${notCheckedIn.map(s=>s.name).join(', ')}
+    </div>`:''}
+
+    ${!staff.length?'<div class="no-data" style="padding:24px;text-align:center">কোনো সক্রিয় স্টাফ নেই</div>':`
+    <div class="table-wrapper">
+      <table class="admin-table">
+        <thead><tr><th>স্টাফ</th><th>চেক-ইন</th><th>চেক-আউট</th><th>মোট সময়</th><th></th></tr></thead>
+        <tbody>
+        ${staff.map(s=>{
+          const rec=allClockins.find(c=>c.staffId===s.id&&c.date===date);
+          const inTime=rec&&rec.checkIn?new Date(rec.checkIn).toTimeString().slice(0,5):'';
+          const outTime=rec&&rec.checkOut?new Date(rec.checkOut).toTimeString().slice(0,5):'';
+          const worked=rec&&rec.checkIn?fmtMinutes(getWorkedMinutes(rec)):'—';
+          const lateMin=rec?getLateMinutes(rec,shift):0;
+          const ot=rec&&rec.checkIn?isOvertime(rec,shift):false;
+          return `<tr>
+            <td><strong>${s.name}</strong></td>
+            <td>
+              <input type="time" class="form-control" style="width:120px;padding:5px" value="${inTime}" onchange="manualSetClockTime(${s.id},'${date}','checkIn',this.value)">
+              ${lateMin>0?`<div style="font-size:.62rem;color:#e74c3c;font-weight:700;margin-top:2px">⚠️ ${lateMin} মিনিট দেরি</div>`:''}
+            </td>
+            <td><input type="time" class="form-control" style="width:120px;padding:5px" value="${outTime}" onchange="manualSetClockTime(${s.id},'${date}','checkOut',this.value)"></td>
+            <td style="font-weight:700;color:${rec&&rec.checkIn&&!rec.checkOut?'#e74c3c':'var(--green-dark)'}">${worked}${rec&&rec.checkIn&&!rec.checkOut?' <span style="font-size:.65rem;font-weight:400">(চলমান)</span>':''}
+              ${ot?'<div style="font-size:.62rem;color:#8e44ad;font-weight:700">➕ ওভারটাইম</div>':''}
+            </td>
+            <td>${rec?`<button class="btn-delete-sm" onclick="deleteClockinRecord(${s.id},'${date}')" title="মুছুন"><i class="fas fa-trash"></i></button>`:''}</td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="admin-section-header" style="margin-top:20px"><h3>📊 এই মাসের মোট কর্মঘণ্টা (${monthKey})</h3></div>
+    <div class="table-wrapper">
+      <table class="admin-table">
+        <thead><tr><th>স্টাফ</th><th>মোট দিন</th><th>মোট কর্মঘণ্টা</th><th>গড়/দিন</th><th>দেরি হয়েছে</th><th>ওভারটাইম দিন</th></tr></thead>
+        <tbody>${staff.map(s=>{
+          const recs=allClockins.filter(c=>c.staffId===s.id&&c.date.startsWith(monthKey)&&c.checkIn);
+          const totalMins=recs.reduce((sum,r)=>sum+getWorkedMinutes(r),0);
+          const avg=recs.length?Math.round(totalMins/recs.length):0;
+          const lateDays=recs.filter(r=>getLateMinutes(r,shift)>0).length;
+          const otDays=recs.filter(r=>isOvertime(r,shift)).length;
+          return `<tr><td><strong>${s.name}</strong></td><td>${recs.length}</td><td style="font-weight:700;color:var(--green-dark)">${fmtMinutes(totalMins)}</td><td>${fmtMinutes(avg)}</td><td>${lateDays?`<span style="color:#e74c3c;font-weight:700">${lateDays} দিন</span>`:'—'}</td><td>${otDays?`<span style="color:#8e44ad;font-weight:700">${otDays} দিন</span>`:'—'}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`}
   </div>`;
 }
 
@@ -11532,6 +11826,70 @@ function confirmDeleteSalaryPayment(staffId,month){
     showToast('পেমেন্ট রেকর্ড মুছে ফেলা হয়েছে','success');
     renderStaffPayrollView();
   });
+}
+
+// ── STAFF PERFORMANCE OVERVIEW (attendance rate + notes leaderboard) ──
+let perfSelectedMonth=new Date().toISOString().slice(0,7);
+function setPerfMonth(m){perfSelectedMonth=m;renderStaffPerformanceView();}
+function renderStaffPerformanceView(){
+  const staff=getStaff().filter(s=>s.status!=='inactive');
+  const monthKey=perfSelectedMonth;
+  const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
+  const rows=staff.map(s=>{
+    const sum=getAttendanceSummary(s.id,monthKey);
+    const marked=sum.present+sum.absent+sum.leave+sum.halfday;
+    const rate=marked?Math.round(((sum.present+sum.halfday*0.5)/marked)*100):null;
+    const notesCount=getStaffNotes(s.id).length;
+    return {s,sum,marked,rate,notesCount};
+  }).sort((a,b)=>{
+    if(a.rate===null&&b.rate===null) return 0;
+    if(a.rate===null) return 1;
+    if(b.rate===null) return -1;
+    return b.rate-a.rate;
+  });
+  const withRate=rows.filter(r=>r.rate!==null);
+  const avgRate=withRate.length?Math.round(withRate.reduce((s,r)=>s+r.rate,0)/withRate.length):0;
+  document.getElementById('staff-subtab-body').innerHTML=`
+  <div class="admin-section">
+    <div class="admin-section-header">
+      <h3>🏆 স্টাফ পারফরম্যান্স</h3>
+      <input type="month" class="form-control" style="width:auto" value="${monthKey}" max="${new Date().toISOString().slice(0,7)}" onchange="setPerfMonth(this.value)">
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px">
+      ${[
+        {icon:'👥',label:'সক্রিয় স্টাফ',val:staff.length,color:'var(--green-dark)'},
+        {icon:'📈',label:'গড় হাজিরার হার',val:avgRate+'%',color:'#27ae60'},
+        {icon:'📝',label:'মোট মন্তব্য',val:rows.reduce((s,r)=>s+r.notesCount,0),color:'var(--orange)'},
+      ].map(x=>`<div style="text-align:center;padding:10px;background:var(--bg-raised);border-radius:var(--radius-sm)">
+        <div style="font-size:1.3rem">${x.icon}</div>
+        <div style="font-size:1rem;font-weight:800;color:${x.color}">${x.val}</div>
+        <div style="font-size:.7rem;color:var(--text-muted)">${x.label}</div>
+      </div>`).join('')}
+    </div>
+    ${!rows.length?'<div class="no-data" style="padding:24px;text-align:center">কোনো সক্রিয় স্টাফ নেই</div>':`
+    <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:8px">💡 হাজিরার হার অনুযায়ী সাজানো (হাফ ডে = অর্ধেক গণনা)</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${rows.map((r,idx)=>{
+        const medal=idx===0&&r.rate!==null?'🥇':idx===1&&r.rate!==null?'🥈':idx===2&&r.rate!==null?'🥉':'';
+        const barColor=r.rate===null?'#ccc':r.rate>=90?'#27ae60':r.rate>=70?'#f39c12':'#e74c3c';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);flex-wrap:wrap">
+          <div style="width:28px;text-align:center;font-size:1.1rem">${medal||(idx+1)}</div>
+          <div style="flex:1;min-width:120px">
+            <div style="font-weight:700;font-size:.88rem">${r.s.name} <span style="font-size:.65rem;color:var(--text-muted);font-weight:400">(${roleLabels[r.s.role]||r.s.role})</span></div>
+            <div style="display:flex;gap:8px;font-size:.7rem;color:var(--text-muted);margin-top:2px">
+              <span>✅${r.sum.present}</span><span>❌${r.sum.absent}</span><span>🌴${r.sum.leave}</span><span>🌓${r.sum.halfday}</span>
+              ${r.notesCount?`<span>📝${r.notesCount} মন্তব্য</span>`:''}
+            </div>
+          </div>
+          <div style="width:140px;flex-shrink:0">
+            ${r.rate===null?'<div style="font-size:.72rem;color:var(--text-muted);text-align:right">হাজিরা নেই</div>':`
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:3px"><span style="font-weight:700;color:${barColor}">${r.rate}%</span></div>
+            <div style="height:8px;background:var(--bg-raised);border-radius:4px;overflow:hidden"><div style="height:100%;width:${r.rate}%;background:${barColor}"></div></div>`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`}
+  </div>`;
 }
 
 // ============================================================
@@ -17393,12 +17751,36 @@ function renderAdminPaymentSettings(){
     </div>
 
     <div class="admin-section" style="margin-top:16px">
-      <div class="admin-section-header"><h3>📱 মোবাইল ব্যাংকিং নম্বর</h3></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 0">
+      <div class="admin-section-header"><h3>📱 মোবাইল ব্যাংকিং তথ্য</h3></div>
+      <div style="display:flex;flex-direction:column;gap:14px;padding:4px 0">
         ${['bkash','nagad','rocket','upay'].map(key=>`
-          <div class="form-group">
-            <label>${methodLabels[key]} নম্বর</label>
-            <input class="form-control" id="pm-number-${key}" value="${ps.numbers[key]||''}" placeholder="01XXXXXXXXX">
+          <div style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;background:var(--bg-card)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <div style="width:26px;height:26px">${PAYMENT_METHODS[key].icon}</div>
+              <strong style="font-size:.9rem">${methodLabels[key]}</strong>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-group"><label>নম্বর</label>
+                <input class="form-control" id="pm-number-${key}" value="${ps.numbers[key]||''}" placeholder="01XXXXXXXXX"></div>
+              <div class="form-group"><label>অ্যাকাউন্ট ধরন</label>
+                <select class="form-control" id="pm-acctype-${key}">
+                  <option value="personal" ${ps.accountTypes[key]!=='merchant'?'selected':''}>পার্সোনাল</option>
+                  <option value="merchant" ${ps.accountTypes[key]==='merchant'?'selected':''}>মার্চেন্ট</option>
+                </select></div>
+              <div class="form-group"><label>প্রাপকের নাম (ঐচ্ছিক)</label>
+                <input class="form-control" id="pm-recname-${key}" value="${ps.receiverNames[key]||''}" placeholder="যেমন: আমের হাট বাজার"></div>
+              <div class="form-group"><label>QR কোড (ঐচ্ছিক)</label>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div id="qr-preview-${key}" style="width:44px;height:44px;border-radius:6px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg);flex-shrink:0">
+                    ${ps.qrImages[key]?`<img src="${ps.qrImages[key]}" style="width:100%;height:100%;object-fit:contain">`:'<i class="fas fa-qrcode" style="color:var(--text-muted)"></i>'}
+                  </div>
+                  <input type="file" accept="image/*" onchange="uploadPaymentQR(this,'${key}')" style="font-size:.72rem;flex:1">
+                  ${ps.qrImages[key]?`<button type="button" class="btn-secondary-btn" style="font-size:.7rem;padding:5px 8px" onclick="clearPaymentQR('${key}')"><i class="fas fa-trash"></i></button>`:''}
+                </div>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:8px;margin-bottom:0"><label>কাস্টম নির্দেশনা (খালি রাখলে ডিফল্ট বার্তা দেখাবে)</label>
+              <input class="form-control" id="pm-instructions-${key}" value="${ps.instructions[key]||''}" placeholder="যেমন: ${PAYMENT_METHODS[key].hint}"></div>
           </div>`).join('')}
       </div>
     </div>
@@ -17435,6 +17817,10 @@ function saveAdminPaymentSettings(){
   ['bkash','nagad','rocket','upay'].forEach(key=>{
     const val=document.getElementById(`pm-number-${key}`)?.value?.trim();
     if(val) ps.numbers[key]=val;
+    const acctype=document.getElementById(`pm-acctype-${key}`)?.value;
+    if(acctype) ps.accountTypes[key]=acctype;
+    ps.receiverNames[key]=(document.getElementById(`pm-recname-${key}`)?.value||'').trim();
+    ps.instructions[key]=(document.getElementById(`pm-instructions-${key}`)?.value||'').trim();
   });
   ps.bankName=document.getElementById('pm-bank-name')?.value?.trim()||ps.bankName;
   ps.bankAcc=document.getElementById('pm-bank-acc')?.value?.trim()||ps.bankAcc;
@@ -17447,6 +17833,27 @@ function saveAdminPaymentSettings(){
   savePaymentSettingsData(ps);
   logActivity('💳 পেমেন্ট সেটিংস আপডেট হয়েছে','💳');
   showToast('✅ পেমেন্ট সেটিংস সংরক্ষিত হয়েছে','success');
+}
+function uploadPaymentQR(input,key){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>1024*1024){showToast('QR ইমেজ সাইজ ১MB এর কম হতে হবে','error');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const ps=getPaymentSettings();
+    ps.qrImages[key]=e.target.result;
+    savePaymentSettingsData(ps);
+    showToast('✅ QR কোড আপলোড হয়েছে');
+    renderAdminPaymentSettings();
+  };
+  reader.readAsDataURL(file);
+}
+function clearPaymentQR(key){
+  const ps=getPaymentSettings();
+  ps.qrImages[key]='';
+  savePaymentSettingsData(ps);
+  showToast('QR কোড মুছে ফেলা হয়েছে');
+  renderAdminPaymentSettings();
 }
 function saveDeliverySettings(){
   const current=getDelivery();
