@@ -352,15 +352,24 @@ i.fab,[class*="fa-brands"]{font-family:'Font Awesome 6 Brands' !important;font-w
 .mob-lang-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.7);padding:4px 10px;border-radius:14px;font-size:.75rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;transition:all .2s}
 .mob-lang-btn.active{background:var(--yellow);color:var(--green-dark);font-weight:700}
 /* Responsive breakpoint */
-@media(max-width:768px){
+/* Navbar switches to compact/hamburger mode starting at 1024px (not just 768px)
+   so tablets (iPad, small laptops) don't get an overcrowded desktop nav —
+   the mobile drawer already has full feature parity (nav links, search,
+   wishlist, dark mode, language, login/register), so this is a safe upgrade. */
+@media(max-width:1024px){
   .hide-mobile{display:none!important}
   .show-mobile{display:flex!important}
   .hamburger{display:flex!important}
   #navbar .nav-links{display:none!important}
+  .nav-search-box{display:none!important}
+  #nav-search-wrap{display:none!important}
+  .nav-inner{padding:0 16px}
+}
+@media(max-width:768px){
   .nav-inner{padding:0 12px}
   .nav-logo>div>div:last-child{display:none}
 }
-@media(min-width:769px){
+@media(min-width:1025px){
   .mob-drawer,#mob-drawer-overlay{display:none!important}
 }
 @supports(padding:max(0px)){
@@ -1106,6 +1115,17 @@ body.admin-open #pwa-install-bar{display:none!important}
 
 /* ── 380px: Very Small Phone (iPhone SE 1st gen, Galaxy A03) ── */
 @media(max-width:380px){
+  /* Navbar — shrink logo/buttons and truncate long site-name text so nothing overflows or wraps */
+  .nav-inner{padding:0 8px}
+  .nav-logo{font-size:1rem;gap:6px;min-width:0;flex:1}
+  .nav-logo span{font-size:1.3rem;flex-shrink:0}
+  .nav-logo>div{min-width:0;overflow:hidden}
+  .nav-logo>div>div:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.85rem}
+  .nav-right{gap:6px}
+  .cart-btn{width:36px;height:36px;font-size:1rem}
+  .search-open-btn{width:34px;height:34px;font-size:.85rem}
+  .hamburger{padding:5px}
+
   .product-grid{grid-template-columns:1fr 1fr;gap:8px}
   .flash-grid{grid-template-columns:1fr}
   .rv-grid{grid-template-columns:repeat(2,1fr);gap:6px}
@@ -1137,6 +1157,10 @@ body.admin-open #pwa-install-bar{display:none!important}
 
 /* ── Landscape Phone (horizontal) ── */
 @media(max-width:768px) and (orientation:landscape){
+  .nav-inner{height:52px}
+  .nav-logo{font-size:1.05rem}
+  .nav-logo span{font-size:1.3rem}
+  #hero{margin-top:52px}
   section#hero{padding:30px 20px 25px}
   .hero-text h1{font-size:1.6rem}
   #mobile-bottom-nav{display:none}
