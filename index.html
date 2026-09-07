@@ -125,6 +125,14 @@
   --radius:       14px;
   --radius-sm:    8px;
   --radius-xs:    5px;
+
+  /* Real rendered height of #mobile-bottom-nav, kept in sync by JS (see
+     updateMbnHeightVar) so floating buttons above it (back-to-top, FAB
+     group, sticky cart bar) always clear it — including on phones with a
+     large safe-area-inset-bottom (notch/gesture bar), where a flat pixel
+     offset would otherwise make the nav bar grow tall enough to overlap
+     them. 65px is just the pre-JS fallback for the very first paint. */
+  --mbn-height:   65px;
 }
 
 /* ===== DARK MODE ===== */
@@ -924,17 +932,22 @@ body.admin-open #pwa-install-bar{display:none!important}
   /* Loyalty */
   .loyalty-info-box{padding:12px}
 
-  /* Mobile nav & floating elements */
+  /* Mobile nav & floating elements
+     bottom offsets below are anchored to var(--mbn-height) — the bottom
+     nav's actual rendered height — rather than a flat px value, so these
+     buttons keep a consistent gap above the nav on every phone, including
+     ones with a tall safe-area-inset-bottom where the nav bar itself grows
+     taller than the old fixed 65px assumption. */
   #mobile-bottom-nav{display:block}
-  body{padding-bottom:65px}
-  #sticky-cart-bar{bottom:65px}
-  #wa-float,#faq-chatbot-btn,#click-to-call,#fab-main-toggle{bottom:85px;right:12px}
+  body{padding-bottom:var(--mbn-height)}
+  #sticky-cart-bar{bottom:var(--mbn-height)}
+  #wa-float,#faq-chatbot-btn,#click-to-call,#fab-main-toggle{bottom:calc(var(--mbn-height) + 20px);right:12px}
   #wa-float .wa-float-btn{width:48px;height:48px;font-size:1.3rem}
-  body.fab-open #wa-float{bottom:280px}
-  body.fab-open #faq-chatbot-btn{bottom:215px}
-  body.fab-open #click-to-call{bottom:150px}
-  #back-to-top{bottom:85px;left:12px;right:auto;width:40px;height:40px}
-  #pwa-install-bar{bottom:72px;left:10px;right:10px}
+  body.fab-open #wa-float{bottom:calc(var(--mbn-height) + 215px)}
+  body.fab-open #faq-chatbot-btn{bottom:calc(var(--mbn-height) + 150px)}
+  body.fab-open #click-to-call{bottom:calc(var(--mbn-height) + 85px)}
+  #back-to-top{bottom:calc(var(--mbn-height) + 20px);left:12px;right:auto;width:40px;height:40px}
+  #pwa-install-bar{bottom:calc(var(--mbn-height) + 7px);left:10px;right:10px}
 
   /* Notification dropdown */
   .notif-dropdown{right:-60px;width:280px}
@@ -1322,6 +1335,29 @@ body.fab-open #fab-main-toggle .fab-badge{opacity:0}
 #back-to-top{position:fixed;bottom:20px;left:20px;z-index:1250;width:44px;height:44px;border-radius:50%;background:var(--green-dark);color:#fff;border:none;font-size:1.1rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(27,67,50,.35);cursor:pointer;opacity:0;transform:translateY(20px);transition:all .3s;pointer-events:none}
 #back-to-top.visible{opacity:1;transform:translateY(0);pointer-events:all}
 #back-to-top:hover{background:var(--green-mid);transform:translateY(-3px)}
+
+/* ===== MOBILE KEYBOARD-OPEN FIX =====
+   On phones, when a user taps a text field the on-screen keyboard shrinks the
+   visible viewport. Because #mobile-bottom-nav, #back-to-top, #fab-main-toggle,
+   #wa-float, #faq-chatbot-btn, #click-to-call, #sticky-cart-bar and
+   #pwa-install-bar are all position:fixed to the bottom of the viewport, the
+   browser ends up pinning them to the new (shrunk) bottom edge, which visually
+   lands them in the middle of the screen on top of page content — exactly the
+   overlap seen in mobile testing. JS below toggles body.keyboard-open while a
+   field is focused / the keyboard is detected as open, so these floating
+   elements simply hide until the keyboard closes, instead of misplacing
+   themselves. Desktop is untouched since the class is only ever added below
+   the 768px breakpoint. */
+body.keyboard-open #mobile-bottom-nav,
+body.keyboard-open #back-to-top,
+body.keyboard-open #fab-main-toggle,
+body.keyboard-open #wa-float,
+body.keyboard-open #faq-chatbot-btn,
+body.keyboard-open #click-to-call,
+body.keyboard-open #sticky-cart-bar,
+body.keyboard-open #pwa-install-bar{
+  display:none!important;
+}
 
 /* ===== REAL-TIME INPUT VALIDATION ===== */
 .form-control.valid{border-color:#2d6a4f!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232d6a4f' stroke-width='3'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:34px}
@@ -2013,10 +2049,14 @@ button,a[role="button"]{-webkit-tap-highlight-color:transparent;user-select:none
 /* ── PROFIT CALCULATOR ── */
 .profit-calc{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
 [data-theme="dark"] .profit-calc{background:#1a2e1f;border-color:#2d4a35}
-.profit-result{background:linear-gradient(135deg,var(--green-pale),#d8f3dc);border-radius:var(--radius-sm);padding:14px;margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.profit-result{background:linear-gradient(135deg,var(--green-pale),#d8f3dc);border-radius:var(--radius-sm);padding:14px;margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:10px}
 .profit-result-item{text-align:center}
 .profit-result-val{font-size:1.2rem;font-weight:800}
 .profit-result-lbl{font-size:.72rem;color:var(--text-muted);margin-top:2px}
+.profit-result.is-loss{background:linear-gradient(135deg,#ffe8e8,#ffd6d6)}
+[data-theme="dark"] .profit-result.is-loss{background:#3a1a1a}
+.profit-bar-track{height:10px;border-radius:6px;background:#e74c3c30;overflow:hidden;margin-top:12px}
+.profit-bar-fill{height:100%;background:var(--green-mid);border-radius:6px;transition:width .35s ease}
 [data-theme="dark"] .profit-result{background:#1a3523}
 
 /* ── CUSTOMER SEGMENTATION ── */
@@ -9877,30 +9917,61 @@ function saveTarget(){
 // ============================================================
 // PROFIT CALCULATOR
 // ============================================================
+function getProfitCalcDraft(){
+  try{ return JSON.parse(localStorage.getItem('amb_profit_calc_draft')||'{}'); }catch(e){ return {}; }
+}
+function saveProfitCalcDraft(){
+  const ids=['pc-product','pc-cost','pc-sell','pc-qty','pc-waste','pc-delivery','pc-pack','pc-other','pc-disc'];
+  const draft={};
+  ids.forEach(id=>{ const el=document.getElementById(id); if(el) draft[id]=el.value; });
+  try{ localStorage.setItem('amb_profit_calc_draft',JSON.stringify(draft)); }catch(e){}
+}
 function renderAdminProfit(){
+  const draft=getProfitCalcDraft();
+  const v=(id,def='')=>draft[id]!==undefined?draft[id]:def;
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
       <div class="admin-section-header"><h3>💰 মুনাফা ক্যালকুলেটর</h3></div>
       <div class="profit-calc">
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="admin-form-label">পণ্য থেকে দাম আনুন (ঐচ্ছিক)</label>
+          <select class="form-control" id="pc-product" onchange="pcApplyProduct()">
+            <option value="">— নিজে থেকে মূল্য দিন —</option>
+            ${getProducts().map(p=>`<option value="${p.id}" ${v('pc-product')==String(p.id)?'selected':''}>${p.name} (স্টক: ${p.stock} কেজি)</option>`).join('')}
+          </select>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
           <div><label class="admin-form-label">পণ্যের ক্রয়মূল্য (৳/কেজি)</label>
-            <input type="number" class="form-control" id="pc-cost" placeholder="যেমন: ২০০" oninput="calcProfit()"></div>
+            <input type="number" class="form-control" id="pc-cost" placeholder="যেমন: ২০০" value="${v('pc-cost')}" oninput="calcProfit()"></div>
           <div><label class="admin-form-label">বিক্রয়মূল্য (৳/কেজি)</label>
-            <input type="number" class="form-control" id="pc-sell" placeholder="যেমন: ৩৫০" oninput="calcProfit()"></div>
+            <input type="number" class="form-control" id="pc-sell" placeholder="যেমন: ৩৫০" value="${v('pc-sell')}" oninput="calcProfit()"></div>
           <div><label class="admin-form-label">পরিমাণ (কেজি)</label>
-            <input type="number" class="form-control" id="pc-qty" placeholder="যেমন: ৫০" oninput="calcProfit()"></div>
+            <input type="number" class="form-control" id="pc-qty" placeholder="যেমন: ৫০" value="${v('pc-qty')}" oninput="calcProfit()"></div>
+          <div><label class="admin-form-label">অপচয়/নষ্ট (%)</label>
+            <input type="number" class="form-control" id="pc-waste" placeholder="যেমন: ৫" value="${v('pc-waste')}" oninput="calcProfit()"></div>
           <div><label class="admin-form-label">ডেলিভারি খরচ (৳)</label>
-            <input type="number" class="form-control" id="pc-delivery" placeholder="যেমন: ৫০০" oninput="calcProfit()"></div>
+            <input type="number" class="form-control" id="pc-delivery" placeholder="যেমন: ৫০০" value="${v('pc-delivery')}" oninput="calcProfit()"></div>
           <div><label class="admin-form-label">প্যাকেজিং খরচ (৳)</label>
-            <input type="number" class="form-control" id="pc-pack" placeholder="যেমন: ২০০" oninput="calcProfit()"></div>
+            <input type="number" class="form-control" id="pc-pack" placeholder="যেমন: ২০০" value="${v('pc-pack')}" oninput="calcProfit()"></div>
+          <div><label class="admin-form-label">অন্যান্য খরচ (৳)</label>
+            <input type="number" class="form-control" id="pc-other" placeholder="যেমন: পরিবহন/কমিশন" value="${v('pc-other')}" oninput="calcProfit()"></div>
           <div><label class="admin-form-label">ছাড় (%)</label>
-            <input type="number" class="form-control" id="pc-disc" placeholder="যেমন: ১০" oninput="calcProfit()"></div>
+            <input type="number" class="form-control" id="pc-disc" placeholder="যেমন: ১০" value="${v('pc-disc')}" oninput="calcProfit()"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="resetProfitCalc()"><i class="fas fa-rotate-left"></i> রিসেট</button>
         </div>
         <div class="profit-result" id="profit-result" style="display:none">
           <div class="profit-result-item"><div class="profit-result-val" id="pr-revenue" style="color:var(--green-mid)">—</div><div class="profit-result-lbl">মোট বিক্রয়</div></div>
           <div class="profit-result-item"><div class="profit-result-val" id="pr-cost" style="color:#e74c3c">—</div><div class="profit-result-lbl">মোট খরচ</div></div>
           <div class="profit-result-item"><div class="profit-result-val" id="pr-profit" style="color:var(--orange)">—</div><div class="profit-result-lbl">নিট মুনাফা</div></div>
+          <div class="profit-result-item"><div class="profit-result-val" id="pr-margin" style="color:var(--green-dark)">—</div><div class="profit-result-lbl">মুনাফার হার</div></div>
+          <div class="profit-result-item"><div class="profit-result-val" id="pr-perkg" style="color:var(--green-dark)">—</div><div class="profit-result-lbl">প্রতি কেজি মুনাফা</div></div>
+          <div class="profit-result-item"><div class="profit-result-val" id="pr-roi" style="color:var(--green-dark)">—</div><div class="profit-result-lbl">ROI (বিনিয়োগে ফেরত)</div></div>
+          <div class="profit-result-item"><div class="profit-result-val" id="pr-breakeven" style="color:var(--green-dark)">—</div><div class="profit-result-lbl">ব্রেক-ইভেন পরিমাণ</div></div>
         </div>
+        <div class="profit-bar-track" id="profit-bar-track" style="display:none"><div class="profit-bar-fill" id="profit-bar-fill" style="width:0%"></div></div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px" id="profit-bar-caption"></div>
       </div>
       <div class="admin-section" style="margin-top:16px">
         <div class="admin-section-header"><h3>📊 পণ্যভিত্তিক মুনাফা বিশ্লেষণ</h3></div>
@@ -9918,23 +9989,75 @@ function renderAdminProfit(){
         </div>
       </div>
     </div>`;
+  calcProfit();
+}
+function pcApplyProduct(){
+  const id=Number(document.getElementById('pc-product')?.value);
+  const p=getProducts().find(x=>x.id===id);
+  if(!p) return;
+  const sellEl=document.getElementById('pc-sell');
+  const qtyEl=document.getElementById('pc-qty');
+  const discEl=document.getElementById('pc-disc');
+  if(sellEl) sellEl.value=p.price;
+  if(qtyEl&&!qtyEl.value) qtyEl.value=p.stock;
+  if(discEl) discEl.value=p.discount||0;
+  calcProfit();
+}
+function resetProfitCalc(){
+  try{ localStorage.removeItem('amb_profit_calc_draft'); }catch(e){}
+  renderAdminProfit();
 }
 function calcProfit(){
+  saveProfitCalcDraft();
   const cost=Number(document.getElementById('pc-cost')?.value)||0;
   const sell=Number(document.getElementById('pc-sell')?.value)||0;
   const qty=Number(document.getElementById('pc-qty')?.value)||0;
+  const waste=Math.min(100,Math.max(0,Number(document.getElementById('pc-waste')?.value)||0));
   const delivery=Number(document.getElementById('pc-delivery')?.value)||0;
   const pack=Number(document.getElementById('pc-pack')?.value)||0;
+  const other=Number(document.getElementById('pc-other')?.value)||0;
   const disc=Number(document.getElementById('pc-disc')?.value)||0;
-  if(!cost||!sell||!qty) return;
-  const revenue=sell*qty*(1-disc/100);
-  const totalCost=cost*qty+delivery+pack;
-  const profit=revenue-totalCost;
   const res=document.getElementById('profit-result');
+  const barTrack=document.getElementById('profit-bar-track');
+  const caption=document.getElementById('profit-bar-caption');
+  if(!cost||!sell||!qty){
+    if(res) res.style.display='none';
+    if(barTrack) barTrack.style.display='none';
+    if(caption) caption.textContent='';
+    return;
+  }
+  const netSell=sell*(1-disc/100);
+  const sellableQty=qty*(1-waste/100);
+  const revenue=netSell*sellableQty;
+  const fixedCosts=delivery+pack+other;
+  const totalCost=cost*qty+fixedCosts;
+  const profit=revenue-totalCost;
+  const margin=revenue>0?(profit/revenue*100):0;
+  const perKg=qty>0?(profit/qty):0;
+  const roi=totalCost>0?(profit/totalCost*100):0;
+  // Break-even: kg (purchased, before wastage) needed so revenue == totalCost,
+  // i.e. cost*x + fixedCosts = netSell*x*(1-waste/100)
+  const contribPerKg=netSell*(1-waste/100)-cost;
+  const breakevenQty=contribPerKg>0?(fixedCosts/contribPerKg):null;
+
   if(res) res.style.display='grid';
+  res.classList.toggle('is-loss',profit<0);
   document.getElementById('pr-revenue').textContent='৳'+Math.round(revenue).toLocaleString();
   document.getElementById('pr-cost').textContent='৳'+Math.round(totalCost).toLocaleString();
   document.getElementById('pr-profit').textContent='৳'+Math.round(profit).toLocaleString()+(profit<0?' ⚠️':'');
+  document.getElementById('pr-profit').style.color=profit<0?'#e74c3c':'var(--orange)';
+  document.getElementById('pr-margin').textContent=margin.toFixed(1)+'%';
+  document.getElementById('pr-perkg').textContent='৳'+Math.round(perKg).toLocaleString();
+  document.getElementById('pr-roi').textContent=roi.toFixed(1)+'%';
+  document.getElementById('pr-breakeven').textContent=breakevenQty!==null?Math.ceil(breakevenQty)+' কেজি':'সম্ভব না';
+
+  if(barTrack){
+    barTrack.style.display='block';
+    const fillPct=revenue+totalCost>0?Math.round(revenue/(revenue+totalCost)*100):0;
+    document.getElementById('profit-bar-fill').style.width=fillPct+'%';
+    document.getElementById('profit-bar-fill').style.background=profit<0?'#e74c3c':'var(--green-mid)';
+    caption.textContent=`বিক্রয় ৳${Math.round(revenue).toLocaleString()} বনাম খরচ ৳${Math.round(totalCost).toLocaleString()}${waste>0?` · অপচয়ের কারণে বিক্রয়যোগ্য পরিমাণ ${sellableQty.toFixed(1)} কেজি`:''}`;
+  }
 }
 
 // ============================================================
@@ -11310,9 +11433,10 @@ function openEditStaff(id){
   if(!s) return;
   const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
   const ov=document.createElement('div');
+  ov.className='staff-edit-overlay';
   ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:16px';
   ov.innerHTML=`<div style="background:var(--bg-card);border-radius:var(--radius);padding:24px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;position:relative">
-    <button onclick="this.closest('[style]').remove()" style="position:absolute;top:12px;right:12px;background:var(--bg-raised);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;color:var(--text-muted)">×</button>
+    <button onclick="this.closest('.staff-edit-overlay').remove()" style="position:absolute;top:12px;right:12px;background:var(--bg-raised);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;color:var(--text-muted)">×</button>
     <h3 style="color:var(--green-dark);margin-bottom:16px;font-size:1rem"><i class="fas fa-user-edit"></i> স্টাফ সম্পাদনা</h3>
     <div class="form-group"><label class="inv-label">নাম <span class="req-star">*</span></label>
       <input id="edit-staff-name" class="form-control" value="${s.name}"></div>
@@ -11342,7 +11466,7 @@ function openEditStaff(id){
       <textarea id="edit-staff-note" class="form-control" rows="2">${s.note||''}</textarea></div>
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn-primary" style="flex:1" onclick="saveEditStaff(${id})"><i class="fas fa-save"></i> সংরক্ষণ</button>
-      <button onclick="this.closest('[style]').remove()" style="flex:1;background:var(--bg-raised);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.85rem;color:var(--text)">বাতিল</button>
+      <button onclick="this.closest('.staff-edit-overlay').remove()" style="flex:1;background:var(--bg-raised);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-size:.85rem;color:var(--text)">বাতিল</button>
     </div>
   </div>`;
   document.body.appendChild(ov);
@@ -13990,6 +14114,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{ autoSlideTestimonials(); }catch(e){}
   try{ initSearchReveal(); }catch(e){}
   try{ initBackToTop(); }catch(e){}
+  try{ initMbnHeightSync(); }catch(e){}
   try{ initExitIntent(); }catch(e){}
   try{ initCookieConsent(); }catch(e){}
   try{ initSwipeGesture(); }catch(e){}
@@ -14667,11 +14792,12 @@ function showOrderQR(orderId){
   const order=getOrders().find(o=>o.id===orderId);
   if(!order) return;
   const ov=document.createElement('div');
+  ov.className='qr-order-overlay';
   ov.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.7);'
     +'display:flex;align-items:center;justify-content:center;padding:20px';
   ov.innerHTML='<div style="background:#fff;border-radius:16px;padding:24px;max-width:300px;'
     +'width:100%;text-align:center;position:relative">'
-    +'<button onclick="this.closest(\'[style]\').remove()" style="position:absolute;top:12px;'
+    +'<button onclick="this.closest(\'.qr-order-overlay\').remove()" style="position:absolute;top:12px;'
     +'right:12px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#888">×</button>'
     +'<h3 style="margin-bottom:14px;color:#1b4332">📱 অর্ডার QR কোড</h3>'
     +'<div class="qr-code-box"><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent('Order:'+orderId+' | '+order.userName+' | Tk'+order.total)+'" width="200" height="200" alt="Order QR" style="border-radius:8px"></div>'
@@ -14681,6 +14807,10 @@ function showOrderQR(orderId){
     +'background:#1b4332;color:#fff;border:none;border-radius:20px;cursor:pointer;'
     +'font-family:\'Hind Siliguri\',sans-serif;font-size:.85rem;font-weight:700">'
     +'<i class="fas fa-print"></i> শিপিং লেবেল</button></div>';
+  ov.addEventListener('click',function(e){ if(e.target===ov) ov.remove(); });
+  document.addEventListener('keydown',function escClose(e){
+    if(e.key==='Escape'){ ov.remove(); document.removeEventListener('keydown',escClose); }
+  });
   document.body.appendChild(ov);
 }
 
@@ -16016,6 +16146,23 @@ function initBackToTop(){
     btn.classList.toggle('visible',window.scrollY>400);
     updatePageProgress();
   },{passive:true});
+}
+// Keeps --mbn-height synced to the bottom nav's real rendered height (which
+// varies by device — phones with a tall safe-area-inset-bottom render a
+// taller nav) so back-to-top / FAB / sticky-cart-bar / pwa-install-bar,
+// which are all positioned via calc(var(--mbn-height) + Npx), keep a clean
+// gap above it instead of overlapping it.
+function updateMbnHeightVar(){
+  const nav=document.getElementById('mobile-bottom-nav');
+  if(!nav) return;
+  const visible=getComputedStyle(nav).display!=='none';
+  document.documentElement.style.setProperty('--mbn-height',visible?nav.offsetHeight+'px':'0px');
+}
+function initMbnHeightSync(){
+  updateMbnHeightVar();
+  window.addEventListener('resize',updateMbnHeightVar,{passive:true});
+  window.addEventListener('orientationchange',updateMbnHeightVar);
+  if(window.visualViewport) window.visualViewport.addEventListener('resize',updateMbnHeightVar);
 }
 function initExitIntent(){
   if(sessionStorage.getItem('amb_exit_shown')) return;
@@ -18615,10 +18762,7 @@ function setReportQuickRange(kind){
   reportToDate=today.toISOString().slice(0,10);
   renderAdminReports();
 }
-function getReportData(){
-  const def=reportDefaultDates();
-  const from=reportFromDate||def.from, to=reportToDate||def.to;
-  const fromD=new Date(from+'T00:00:00'), toD=new Date(to+'T23:59:59');
+function computePeriodStats(fromD,toD){
   const allOrders=getOrders();
   const orders=allOrders.filter(o=>{const d=new Date(o.createdAt);return d>=fromD&&d<=toD;});
   const validOrders=orders.filter(o=>o.status!=='cancelled');
@@ -18626,6 +18770,25 @@ function getReportData(){
   const avgOrder=validOrders.length?Math.round(totalRevenue/validOrders.length):0;
   const users=getUsers();
   const newCustomers=users.filter(u=>{const d=new Date(u.createdAt||u.joinDate||0);return d>=fromD&&d<=toD;}).length;
+  const allExpenses=getExpenses();
+  const expenses=allExpenses.filter(e=>{const d=new Date(e.date);return d>=fromD&&d<=toD;});
+  const totalExpenses=expenses.reduce((s,e)=>s+(e.amount||0),0);
+  const netProfit=totalRevenue-totalExpenses;
+  return {orders,validOrders,totalRevenue,avgOrder,newCustomers,expenses,totalExpenses,netProfit};
+}
+function getReportData(){
+  const def=reportDefaultDates();
+  const from=reportFromDate||def.from, to=reportToDate||def.to;
+  const fromD=new Date(from+'T00:00:00'), toD=new Date(to+'T23:59:59');
+  const cur=computePeriodStats(fromD,toD);
+  const {orders,validOrders,totalRevenue,avgOrder,newCustomers,expenses,totalExpenses,netProfit}=cur;
+
+  // ── Previous period of equal length, immediately before `from` ──
+  const spanMs=toD.getTime()-fromD.getTime();
+  const prevToD=new Date(fromD.getTime()-1);
+  const prevFromD=new Date(prevToD.getTime()-spanMs);
+  const prev=computePeriodStats(prevFromD,prevToD);
+
   const prodSales={};
   validOrders.forEach(o=>(o.items||[]).forEach(it=>{
     const key=it.id;
@@ -18639,11 +18802,37 @@ function getReportData(){
   const payCounts={};
   const payLabels={cod:'ক্যাশ অন ডেলিভারি',bkash:'বিকাশ',nagad:'নগদ',bank:'ব্যাংক',upay:'উপায়',rocket:'রকেট'};
   validOrders.forEach(o=>{const k=o.payment||'other';payCounts[k]=(payCounts[k]||0)+1;});
-  const allExpenses=getExpenses();
-  const expenses=allExpenses.filter(e=>{const d=new Date(e.date);return d>=fromD&&d<=toD;});
-  const totalExpenses=expenses.reduce((s,e)=>s+(e.amount||0),0);
-  const netProfit=totalRevenue-totalExpenses;
-  return {from,to,orders,validOrders,totalRevenue,avgOrder,newCustomers,topProducts,statusCounts,payCounts,payLabels,expenses,totalExpenses,netProfit};
+
+  // ── Expense breakdown by category ──
+  const expCatLabels={transport:'পরিবহন',packaging:'প্যাকেজিং',salary:'বেতন',marketing:'মার্কেটিং',utilities:'ইউটিলিটি',other:'অন্যান্য'};
+  const expByCat={};
+  expenses.forEach(e=>{const k=e.cat||'other';expByCat[k]=(expByCat[k]||0)+(e.amount||0);});
+  const expenseBreakdown=Object.entries(expByCat).map(([k,amount])=>({cat:k,label:expCatLabels[k]||k,amount}))
+    .sort((a,b)=>b.amount-a.amount);
+
+  // ── Top customers by spend ──
+  const custMap={};
+  validOrders.forEach(o=>{
+    const key=o.userEmail||o.userPhone||o.phone||o.userName||'unknown';
+    if(!custMap[key]) custMap[key]={name:o.userName||o.name||'—',orders:0,spend:0};
+    custMap[key].orders+=1;
+    custMap[key].spend+=(o.total||0);
+  });
+  const topCustomers=Object.values(custMap).sort((a,b)=>b.spend-a.spend).slice(0,5);
+
+  return {from,to,orders,validOrders,totalRevenue,avgOrder,newCustomers,topProducts,statusCounts,payCounts,payLabels,
+    expenses,totalExpenses,netProfit,expenseBreakdown,topCustomers,prev};
+}
+function pctChange(curr,prev){
+  if(!prev){ return curr>0?{txt:'নতুন',arrow:'▲',cls:'up'}:{txt:'০%',arrow:'',cls:'flat'}; }
+  const diff=((curr-prev)/prev)*100;
+  if(Math.abs(diff)<0.5) return {txt:'অপরিবর্তিত',arrow:'',cls:'flat'};
+  return {txt:(diff>0?'+':'')+diff.toFixed(1)+'%',arrow:diff>0?'▲':'▼',cls:diff>0?'up':'down'};
+}
+function pctBadgeHtml(curr,prev,dark){
+  const c=pctChange(curr,prev);
+  const color=c.cls==='up'?(dark?'#a5e8b0':'#1d8a4e'):c.cls==='down'?(dark?'#ffb3ab':'#e74c3c'):(dark?'#cfe8da':'var(--text-muted)');
+  return `<span style="font-size:.7rem;font-weight:700;color:${color}">${c.arrow} ${c.txt}</span> <span style="font-size:.68rem;color:${dark?'rgba(255,255,255,.7)':'var(--text-muted)'}">আগের সময়ের তুলনায়</span>`;
 }
 function renderAdminReports(){
   const def=reportDefaultDates();
@@ -18663,11 +18852,13 @@ function renderAdminReports(){
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
         <div class="form-group" style="margin:0"><label style="font-size:.75rem">শুরুর তারিখ</label><input type="date" class="form-control" value="${reportFromDate}" onchange="reportFromDate=this.value;renderAdminReports()"></div>
         <div class="form-group" style="margin:0"><label style="font-size:.75rem">শেষ তারিখ</label><input type="date" class="form-control" value="${reportToDate}" onchange="reportToDate=this.value;renderAdminReports()"></div>
-        <div style="display:flex;gap:8px;margin-top:18px">
+        <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
           <button class="btn-add" onclick="downloadReportCSV()"><i class="fas fa-file-csv"></i> CSV রিপোর্ট</button>
           <button class="btn-add" style="background:var(--orange)" onclick="downloadReportPDF()"><i class="fas fa-file-pdf"></i> PDF রিপোর্ট</button>
+          <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="window.print()"><i class="fas fa-print"></i> প্রিন্ট</button>
         </div>
       </div>
+      <div style="font-size:.72rem;color:var(--text-muted)">তুলনা করা হচ্ছে: ${r.prev.orders.length||r.prev.totalRevenue?'আগের সমান দৈর্ঘ্যের সময়কালের সাথে':'পূর্ববর্তী সময়ে কোনো ডেটা নেই'}</div>
     </div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -18675,32 +18866,36 @@ function renderAdminReports(){
         <div class="stat-card-label">মোট বিক্রয়</div>
         <div class="stat-card-value">৳${r.totalRevenue.toLocaleString()}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">${r.validOrders.length}টি বৈধ অর্ডার</div>
+        <div style="margin-top:6px">${pctBadgeHtml(r.totalRevenue,r.prev.totalRevenue)}</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
         <div class="stat-card-label">মোট অর্ডার</div>
         <div class="stat-card-value">${r.orders.length}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">বাতিল: ${r.orders.length-r.validOrders.length}টি</div>
+        <div style="margin-top:6px">${pctBadgeHtml(r.orders.length,r.prev.orders.length)}</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-icon"><i class="fas fa-receipt"></i></div>
         <div class="stat-card-label">গড় অর্ডার মূল্য</div>
         <div class="stat-card-value">৳${r.avgOrder.toLocaleString()}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">প্রতি অর্ডারে</div>
+        <div style="margin-top:6px">${pctBadgeHtml(r.avgOrder,r.prev.avgOrder)}</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-icon"><i class="fas fa-user-plus"></i></div>
         <div class="stat-card-label">নতুন কাস্টমার</div>
         <div class="stat-card-value">${r.newCustomers}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">এই সময়ে যোগ দিয়েছেন</div>
+        <div style="margin-top:6px">${pctBadgeHtml(r.newCustomers,r.prev.newCustomers)}</div>
       </div>
     </div>
     <div class="admin-section">
       <div class="admin-section-header"><h3>💹 লাভ-ক্ষতি সংক্ষিপ্তসার</h3></div>
       <div style="background:linear-gradient(135deg,var(--green-dark),var(--green-mid));border-radius:var(--radius-sm);padding:16px;color:#fff;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
-        <div><div style="font-size:.72rem;opacity:.8">মোট আয়</div><div style="font-size:1.15rem;font-weight:800">৳${r.totalRevenue.toLocaleString()}</div></div>
-        <div><div style="font-size:.72rem;opacity:.8">মোট খরচ</div><div style="font-size:1.15rem;font-weight:800">৳${r.totalExpenses.toLocaleString()}</div></div>
-        <div><div style="font-size:.72rem;opacity:.8">নিট মুনাফা</div><div style="font-size:1.15rem;font-weight:800;color:${r.netProfit>=0?'#a5e8b0':'#ffb3ab'}">৳${r.netProfit.toLocaleString()}</div></div>
+        <div><div style="font-size:.72rem;opacity:.8">মোট আয়</div><div style="font-size:1.15rem;font-weight:800">৳${r.totalRevenue.toLocaleString()}</div><div style="margin-top:4px">${pctBadgeHtml(r.totalRevenue,r.prev.totalRevenue,true)}</div></div>
+        <div><div style="font-size:.72rem;opacity:.8">মোট খরচ</div><div style="font-size:1.15rem;font-weight:800">৳${r.totalExpenses.toLocaleString()}</div><div style="margin-top:4px">${pctBadgeHtml(r.totalExpenses,r.prev.totalExpenses,true)}</div></div>
+        <div><div style="font-size:.72rem;opacity:.8">নিট মুনাফা</div><div style="font-size:1.15rem;font-weight:800;color:${r.netProfit>=0?'#a5e8b0':'#ffb3ab'}">৳${r.netProfit.toLocaleString()}</div><div style="margin-top:4px">${pctBadgeHtml(r.netProfit,r.prev.netProfit,true)}</div></div>
       </div>
     </div>
     <div class="admin-section">
@@ -18712,6 +18907,16 @@ function renderAdminReports(){
           <tbody>${r.topProducts.map(p=>`<tr><td><strong>${p.name}</strong></td><td>${p.qty} কেজি</td><td>৳${p.revenue.toLocaleString()}</td></tr>`).join('')}</tbody>
         </table>
       </div>`:'<div class="no-data" style="padding:30px;text-align:center">এই সময়ে কোনো বিক্রয় নেই</div>'}
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>👑 সেরা কাস্টমার (খরচ অনুযায়ী)</h3></div>
+      ${r.topCustomers.length?`
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead><tr><th>কাস্টমার</th><th>অর্ডার সংখ্যা</th><th>মোট খরচ</th></tr></thead>
+          <tbody>${r.topCustomers.map(c=>`<tr><td><strong>${c.name}</strong></td><td>${c.orders}টি</td><td>৳${c.spend.toLocaleString()}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>`:'<div class="no-data" style="padding:30px;text-align:center">এই সময়ে কোনো কাস্টমার নেই</div>'}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="analytics-grid-2col">
       <div class="admin-section">
@@ -18726,6 +18931,19 @@ function renderAdminReports(){
           ${Object.keys(r.payCounts).length?Object.entries(r.payCounts).map(([k,c])=>`<div style="display:flex;justify-content:space-between;font-size:.82rem"><span>${r.payLabels[k]||k}</span><strong>${c}টি</strong></div>`).join(''):'<div class="no-data" style="padding:16px;text-align:center">কোনো ডেটা নেই</div>'}
         </div>
       </div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🧾 খরচের খাত অনুযায়ী বিশ্লেষণ</h3></div>
+      ${r.expenseBreakdown.length?`
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${r.expenseBreakdown.map(e=>{
+          const pct=r.totalExpenses>0?Math.round(e.amount/r.totalExpenses*100):0;
+          return`<div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px"><span>${e.label}</span><strong>৳${e.amount.toLocaleString()} (${pct}%)</strong></div>
+            <div style="height:7px;border-radius:4px;background:var(--bg-raised);overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--orange);border-radius:4px"></div></div>
+          </div>`;
+        }).join('')}
+      </div>`:'<div class="no-data" style="padding:16px;text-align:center">এই সময়ে কোনো খরচ নেই</div>'}
     </div>`;
 }
 function downloadReportCSV(){
@@ -18733,21 +18951,27 @@ function downloadReportCSV(){
   const rows=[
     ['রিপোর্ট সময়কাল',`${r.from} থেকে ${r.to}`],
     [],
-    ['সারাংশ'],
-    ['মোট বিক্রয়',r.totalRevenue],
-    ['মোট অর্ডার',r.orders.length],
-    ['বৈধ অর্ডার',r.validOrders.length],
-    ['গড় অর্ডার মূল্য',r.avgOrder],
-    ['মোট খরচ',r.totalExpenses],
-    ['নিট মুনাফা',r.netProfit],
-    ['নতুন কাস্টমার',r.newCustomers],
+    ['সারাংশ','এই সময়ে','আগের সময়ে','পরিবর্তন'],
+    ['মোট বিক্রয়',r.totalRevenue,r.prev.totalRevenue,pctChange(r.totalRevenue,r.prev.totalRevenue).txt],
+    ['মোট অর্ডার',r.orders.length,r.prev.orders.length,pctChange(r.orders.length,r.prev.orders.length).txt],
+    ['বৈধ অর্ডার',r.validOrders.length,r.prev.validOrders.length,''],
+    ['গড় অর্ডার মূল্য',r.avgOrder,r.prev.avgOrder,pctChange(r.avgOrder,r.prev.avgOrder).txt],
+    ['মোট খরচ',r.totalExpenses,r.prev.totalExpenses,pctChange(r.totalExpenses,r.prev.totalExpenses).txt],
+    ['নিট মুনাফা',r.netProfit,r.prev.netProfit,pctChange(r.netProfit,r.prev.netProfit).txt],
+    ['নতুন কাস্টমার',r.newCustomers,r.prev.newCustomers,pctChange(r.newCustomers,r.prev.newCustomers).txt],
     [],
     ['পণ্য','বিক্রিত পরিমাণ (কেজি)','আয়']
   ];
   r.topProducts.forEach(p=>rows.push([p.name,p.qty,p.revenue]));
   rows.push([]);
+  rows.push(['সেরা কাস্টমার','অর্ডার সংখ্যা','মোট খরচ']);
+  r.topCustomers.forEach(c=>rows.push([c.name,c.orders,c.spend]));
+  rows.push([]);
   rows.push(['অর্ডার স্ট্যাটাস','সংখ্যা']);
   Object.entries(r.statusCounts).forEach(([k,c])=>rows.push([statusLabel(k),c]));
+  rows.push([]);
+  rows.push(['খরচের খাত','পরিমাণ']);
+  r.expenseBreakdown.forEach(e=>rows.push([e.label,e.amount]));
   const csv=rows.map(row=>row.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');
@@ -18762,6 +18986,8 @@ function downloadReportPDF(){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const settings=getSiteSettings?getSiteSettings():{};
+  const pct=(c,p)=>pctChange(c,p).txt;
+  const ensureSpace=(y,needed)=>{ if(y+needed>280){ doc.addPage(); return 16; } return y; };
   doc.setFontSize(16);
   doc.text('Amer Hat Bazar - Sales Report',14,16);
   doc.setFontSize(10);
@@ -18769,21 +18995,22 @@ function downloadReportPDF(){
   doc.text(`Generated: ${new Date().toLocaleString('en-GB')}`,14,28);
   doc.autoTable({
     startY:34,
-    head:[['Metric','Value']],
+    head:[['Metric','This Period','Previous Period','Change']],
     body:[
-      ['Total Revenue','Tk '+r.totalRevenue.toLocaleString()],
-      ['Total Orders',r.orders.length],
-      ['Valid Orders',r.validOrders.length],
-      ['Cancelled Orders',r.orders.length-r.validOrders.length],
-      ['Average Order Value','Tk '+r.avgOrder.toLocaleString()],
-      ['New Customers',r.newCustomers],
-      ['Total Expenses','Tk '+r.totalExpenses.toLocaleString()],
-      ['Net Profit','Tk '+r.netProfit.toLocaleString()]
+      ['Total Revenue','Tk '+r.totalRevenue.toLocaleString(),'Tk '+r.prev.totalRevenue.toLocaleString(),pct(r.totalRevenue,r.prev.totalRevenue)],
+      ['Total Orders',r.orders.length,r.prev.orders.length,pct(r.orders.length,r.prev.orders.length)],
+      ['Valid Orders',r.validOrders.length,r.prev.validOrders.length,''],
+      ['Cancelled Orders',r.orders.length-r.validOrders.length,r.prev.orders.length-r.prev.validOrders.length,''],
+      ['Average Order Value','Tk '+r.avgOrder.toLocaleString(),'Tk '+r.prev.avgOrder.toLocaleString(),pct(r.avgOrder,r.prev.avgOrder)],
+      ['New Customers',r.newCustomers,r.prev.newCustomers,pct(r.newCustomers,r.prev.newCustomers)],
+      ['Total Expenses','Tk '+r.totalExpenses.toLocaleString(),'Tk '+r.prev.totalExpenses.toLocaleString(),pct(r.totalExpenses,r.prev.totalExpenses)],
+      ['Net Profit','Tk '+r.netProfit.toLocaleString(),'Tk '+r.prev.netProfit.toLocaleString(),pct(r.netProfit,r.prev.netProfit)]
     ],
     theme:'grid',headStyles:{fillColor:[27,94,32]}
   });
   let y=doc.lastAutoTable.finalY+8;
   if(r.topProducts.length){
+    y=ensureSpace(y,20);
     doc.setFontSize(12);doc.text('Top Products',14,y);
     doc.autoTable({
       startY:y+3,
@@ -18793,12 +19020,35 @@ function downloadReportPDF(){
     });
     y=doc.lastAutoTable.finalY+8;
   }
+  if(r.topCustomers.length){
+    y=ensureSpace(y,20);
+    doc.setFontSize(12);doc.text('Top Customers',14,y);
+    doc.autoTable({
+      startY:y+3,
+      head:[['Customer','Orders','Total Spend']],
+      body:r.topCustomers.map(c=>[c.name,c.orders,'Tk '+c.spend.toLocaleString()]),
+      theme:'grid',headStyles:{fillColor:[27,94,32]}
+    });
+    y=doc.lastAutoTable.finalY+8;
+  }
   if(Object.keys(r.statusCounts).length){
+    y=ensureSpace(y,20);
     doc.setFontSize(12);doc.text('Order Status Breakdown',14,y);
     doc.autoTable({
       startY:y+3,
       head:[['Status','Count']],
       body:Object.entries(r.statusCounts).map(([k,c])=>[k,c]),
+      theme:'grid',headStyles:{fillColor:[27,94,32]}
+    });
+    y=doc.lastAutoTable.finalY+8;
+  }
+  if(r.expenseBreakdown.length){
+    y=ensureSpace(y,20);
+    doc.setFontSize(12);doc.text('Expense Breakdown by Category',14,y);
+    doc.autoTable({
+      startY:y+3,
+      head:[['Category','Amount']],
+      body:r.expenseBreakdown.map(e=>[e.label,'Tk '+e.amount.toLocaleString()]),
       theme:'grid',headStyles:{fillColor:[27,94,32]}
     });
   }
@@ -18821,5 +19071,67 @@ function renderAdminSettings(){const m=document.getElementById("admin-main");if(
   <button onclick="closeSocialShare()" style="background:none;border:none;color:var(--text-muted);font-size:.78rem;cursor:pointer;padding:4px;font-family:'Hind Siliguri',sans-serif">&#2476;&#2494;&#2468;&#2495;&#2482; &#2453;&#2480;&#2497;&#2472;</button>
 </div>
 <div class="autosave-indicator" id="autosave-indicator">&#128190; &#2488;&#2503;&#2476; &#2570;&#2458;&#2509;&#2459;&#2503;...</div>
+
+<script>
+// ── MOBILE KEYBOARD-OPEN DETECTOR ──
+// Fixed-position elements (bottom nav, back-to-top, WhatsApp/support FABs,
+// sticky cart bar, PWA install bar) are pinned with `bottom:0` relative to the
+// viewport. When a phone's on-screen keyboard opens, the browser shrinks the
+// viewport and these elements get repositioned to the new bottom edge, which
+// visually lands them mid-screen on top of page content. Only runs on mobile
+// widths (<=768px, matching the existing mobile-nav breakpoint) so desktop
+// behaviour is completely unaffected.
+(function(){
+  function isMobileWidth(){ return window.innerWidth<=768; }
+  function isFormEl(el){
+    if(!el) return false;
+    const tag=el.tagName;
+    if(tag==='TEXTAREA') return true;
+    if(tag==='SELECT') return true;
+    if(tag==='INPUT'){
+      const skip=['button','checkbox','radio','submit','reset','file','range','color','image'];
+      return skip.indexOf((el.type||'text').toLowerCase())===-1;
+    }
+    return false;
+  }
+  function showFloatingUI(){ document.body.classList.remove('keyboard-open'); }
+  function hideFloatingUI(){ if(isMobileWidth()) document.body.classList.add('keyboard-open'); }
+
+  let blurTimer=null;
+  document.addEventListener('focusin',function(e){
+    if(!isFormEl(e.target)) return;
+    clearTimeout(blurTimer);
+    hideFloatingUI();
+  });
+  document.addEventListener('focusout',function(e){
+    if(!isFormEl(e.target)) return;
+    clearTimeout(blurTimer);
+    blurTimer=setTimeout(function(){
+      if(!isFormEl(document.activeElement)) showFloatingUI();
+    },150);
+  });
+
+  // Extra safety net for browsers/webviews where focus events alone aren't
+  // reliable: watch the real visual viewport height and infer the keyboard
+  // state from how much it has shrunk.
+  if(window.visualViewport){
+    let baseHeight=window.visualViewport.height;
+    window.visualViewport.addEventListener('resize',function(){
+      if(!isMobileWidth()){ showFloatingUI(); return; }
+      const shrink=baseHeight-window.visualViewport.height;
+      if(shrink>150){
+        hideFloatingUI();
+      }else if(!isFormEl(document.activeElement)){
+        showFloatingUI();
+        baseHeight=window.visualViewport.height;
+      }
+    });
+  }
+
+  window.addEventListener('resize',function(){
+    if(!isMobileWidth()) showFloatingUI();
+  },{passive:true});
+})();
+</script>
 </body>
 </html>
