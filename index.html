@@ -5972,12 +5972,14 @@ function addToCart(pid){
     const newQty=existing.qty+qty;
     if(newQty>p.stock){showToast(`সর্বোচ্চ ${p.stock} কেজি যোগ করা যাবে`,'warning');return;}
     existing.qty=newQty;
+    existing.price=getWholesaleUnitPrice(p,newQty);
   } else {
-    cart.push({id:pid,name:p.name,price:getDiscountedPrice(p),originalPrice:p.price,discount:p.discount,image:p.image,qty,origin:p.origin});
+    cart.push({id:pid,name:p.name,price:getWholesaleUnitPrice(p,qty),originalPrice:p.price,discount:p.discount,image:p.image,qty,origin:p.origin});
   }
   saveMyCart(cart);
   updateCartCount();
-  showToast(`🥭 ${p.name} (${qty} কেজি) কার্টে যোগ হয়েছে!`,'success');
+  const whDisc=getWholesaleDiscount(existing?existing.qty:qty);
+  showToast(`🥭 ${p.name} (${qty} কেজি) কার্টে যোগ হয়েছে!${whDisc>0?` 🏷️ পাইকারি ছাড় ${whDisc}% প্রযোজ্য হয়েছে`:''}`,'success');
   if(typeof updateQuickCheckoutBar==='function') updateQuickCheckoutBar();
   const sidebar=document.getElementById('cart-sidebar');
   if(sidebar && sidebar.classList.contains('open')) renderCart();
@@ -5997,6 +5999,7 @@ function changeQty(pid,delta){
     const maxQty=prod?prod.stock:99;
     item.qty=Math.max(1,Math.min(maxQty,item.qty+delta));
     if(delta>0&&item.qty>=maxQty) showToast('সর্বোচ্চ স্টক যোগ হয়েছে','warning');
+    if(prod) item.price=getWholesaleUnitPrice(prod,item.qty);
   }
   saveMyCart(cart);renderCart();updateCartCount();
 }
@@ -6071,11 +6074,12 @@ function renderCart(){
     const stockLeft=prod?prod.stock:99;
     const lowStock=stockLeft>0&&stockLeft<=5;
     const outOfStock=stockLeft<=0;
+    const whDisc=getWholesaleDiscount(i.qty||1);
     return '<div class="cart-item">'+
       '<div class="cart-item-img">'+(i.image?'<img src="'+i.image+'" alt="'+i.name+'">':"🥭")+'</div>'+
       '<div class="cart-item-info">'+
         '<div class="cart-item-name">'+i.name+'</div>'+
-        '<div class="cart-item-price">৳'+i.price+'/'+t('কেজি')+'</div>'+
+        '<div class="cart-item-price">৳'+i.price+'/'+t('কেজি')+(whDisc>0?' <span style="color:var(--orange);font-weight:700;font-size:.75rem">🏷️ পাইকারি -'+whDisc+'%</span>':'')+'</div>'+
         (outOfStock?'<div style="font-size:.75rem;color:#e74c3c;font-weight:600">'+t('❌ স্টক শেষ')+'</div>':
          lowStock?'<div style="font-size:.75rem;color:#f4a40a;font-weight:600">⚠️ '+t('মাত্র')+' '+stockLeft+' '+t('কেজি')+' '+t('বাকি')+'</div>':'')+
         '<div class="qty-controls">'+
@@ -10071,6 +10075,13 @@ function getWholesaleDiscount(qty){
   for(const tier of tiers){if(qty>=tier.min) return tier.disc;}
   return 0;
 }
+// Regular (product-level) discount, THEN wholesale quantity discount stacked
+// on top when the cart quantity for this product meets a tier threshold.
+function getWholesaleUnitPrice(p,qty){
+  const base=getDiscountedPrice(p);
+  const whDisc=getWholesaleDiscount(qty);
+  return whDisc>0?Math.round(base*(1-whDisc/100)):base;
+}
 function renderAdminWholesale(){
   const tiers=getWholesaleTiers();
   document.getElementById('admin-main').innerHTML=`
@@ -10091,9 +10102,26 @@ function renderAdminWholesale(){
         <button class="btn-add" style="background:var(--green-mid)" onclick="addWHTier()"><i class="fas fa-plus"></i> নতুন স্তর</button>
       </div>
       <div style="margin-top:20px;background:var(--green-pale);border-radius:var(--radius-sm);padding:14px;font-size:.83rem">
-        <strong>💡 কীভাবে কাজ করে:</strong> ওজন selector-এ ১০+ কেজি সিলেক্ট করলে স্বয়ংক্রিয়ভাবে পাইকারি মূল্যে ছাড় প্রযোজ্য হবে।
+        <strong>💡 কীভাবে কাজ করে:</strong> কোনো পণ্যের কার্ট-পরিমাণ কোনো স্তরের সর্বনিম্ন পরিমাণে পৌঁছালে, ওই পণ্যের ইউনিট মূল্যে স্বয়ংক্রিয়ভাবে (আগে থেকে থাকা পণ্য-ছাড়ের উপর) এই ছাড় প্রযোজ্য হয়ে যায় — কার্ট, প্রোডাক্ট পেজ ও ওজন-বাটনে সাথে সাথে দেখা যাবে।
+      </div>
+      <div style="margin-top:16px;background:var(--bg-raised);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-weight:700;color:var(--green-dark);margin-bottom:8px;font-size:.85rem"><i class="fas fa-calculator"></i> ছাড় প্রিভিউ</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label style="font-size:.82rem">পরিমাণ (কেজি):</label>
+          <input type="number" class="form-control" id="wh-preview-qty" placeholder="যেমন: ২৫" style="width:120px" oninput="updateWHPreview()" min="1">
+          <span id="wh-preview-result" style="font-weight:700;color:var(--orange)"></span>
+        </div>
       </div>
     </div>`;
+}
+function updateWHPreview(){
+  const qty=Number(document.getElementById('wh-preview-qty')?.value)||0;
+  const el=document.getElementById('wh-preview-result');
+  if(!el) return;
+  if(!qty){el.textContent='';return;}
+  const disc=getWholesaleDiscount(qty);
+  el.textContent=disc>0?`→ ${qty} কেজিতে ${disc}% পাইকারি ছাড় প্রযোজ্য হবে`:'→ এই পরিমাণে কোনো পাইকারি ছাড় প্রযোজ্য নয়';
+  el.style.color=disc>0?'var(--green-mid)':'var(--text-muted)';
 }
 function saveWHTiers(){
   const rows=document.querySelectorAll('#wh-tiers tr');
@@ -10297,29 +10325,101 @@ function applySeasonalPricing(isSeason){
 // ============================================================
 // ACTIVITY LOG
 // ============================================================
-function renderAdminActivityLog(){
+let activityLogFilter={q:'',user:'',from:'',to:''};
+function activityLogDateGroup(t){
+  const d=new Date(t),today=new Date(),yest=new Date();yest.setDate(yest.getDate()-1);
+  if(d.toDateString()===today.toDateString()) return 'আজ';
+  if(d.toDateString()===yest.toDateString()) return 'গতকাল';
+  const days=Math.floor((today-d)/86400000);
+  if(days<7) return 'এই সপ্তাহে';
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+}
+function getFilteredActivityLogs(){
   const logs=JSON.parse(localStorage.getItem('amb_activity_log')||'[]');
-  document.getElementById('admin-main').innerHTML=`
-    <div class="admin-section">
-      <div class="admin-section-header">
-        <h3>📋 অ্যাক্টিভিটি লগ (${logs.length}টি)</h3>
-        <button class="btn-danger" onclick="clearActivityLog()"><i class="fas fa-trash"></i> সব মুছুন</button>
-      </div>
-      <div class="activity-log-list">
-        ${logs.length?logs.map(l=>`
+  const {q,user,from,to}=activityLogFilter;
+  const fromT=from?new Date(from+'T00:00:00').getTime():null;
+  const toT=to?new Date(to+'T23:59:59').getTime():null;
+  return logs.filter(l=>{
+    if(q&&!(l.text||'').toLowerCase().includes(q.toLowerCase())) return false;
+    if(user&&(l.user||'Admin')!==user) return false;
+    if(fromT!==null&&l.time<fromT) return false;
+    if(toT!==null&&l.time>toT) return false;
+    return true;
+  });
+}
+function applyActivityLogFilter(){
+  activityLogFilter.q=document.getElementById('al-search')?.value||'';
+  activityLogFilter.user=document.getElementById('al-user')?.value||'';
+  activityLogFilter.from=document.getElementById('al-from')?.value||'';
+  activityLogFilter.to=document.getElementById('al-to')?.value||'';
+  updateActivityLogList(); // only re-render the list, so the search box never loses focus
+}
+function resetActivityLogFilter(){
+  activityLogFilter={q:'',user:'',from:'',to:''};
+  renderAdminActivityLog();
+}
+function exportActivityLogCSV(){
+  const logs=getFilteredActivityLogs();
+  if(!logs.length){showToast('কোনো লগ নেই','error');return;}
+  const rows=[['সময়','ব্যবহারকারী','বিবরণ']];
+  logs.forEach(l=>rows.push([new Date(l.time).toLocaleString('en-GB'),l.user||'Admin',l.text]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`activity_log_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+function updateActivityLogList(){
+  const allLogs=JSON.parse(localStorage.getItem('amb_activity_log')||'[]');
+  const logs=getFilteredActivityLogs();
+  let lastGroup=null;
+  const rowsHtml=logs.length?logs.map(l=>{
+    const grp=activityLogDateGroup(l.time);
+    const header=grp!==lastGroup?`<div style="font-size:.72rem;font-weight:700;color:var(--text-muted);margin:14px 0 6px;text-transform:uppercase">${grp}</div>`:'';
+    lastGroup=grp;
+    return header+`
           <div class="activity-log-item">
             <div class="al-icon">${l.icon||'📋'}</div>
             <div>
               <div class="al-text">${l.text}</div>
               <div class="al-time">${l.user||'Admin'} · ${new Date(l.time).toLocaleString('en-GB')}</div>
             </div>
-          </div>`).join(''):'<div class="no-data">কোনো লগ নেই</div>'}
+          </div>`;
+  }).join(''):'<div class="no-data">কোনো লগ পাওয়া যায়নি</div>';
+  const listEl=document.getElementById('al-list-container');
+  if(listEl) listEl.innerHTML=rowsHtml;
+  const countEl=document.getElementById('al-count');
+  if(countEl) countEl.textContent=`(${logs.length}/${allLogs.length}টি)`;
+}
+function renderAdminActivityLog(){
+  const allLogs=JSON.parse(localStorage.getItem('amb_activity_log')||'[]');
+  const users=[...new Set(allLogs.map(l=>l.user||'Admin'))];
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h3>📋 অ্যাক্টিভিটি লগ <span id="al-count" style="font-weight:400;font-size:.85rem;color:var(--text-muted)">(${allLogs.length}/${allLogs.length}টি)</span></h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="exportActivityLogCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+          <button class="btn-danger" onclick="clearActivityLog()"><i class="fas fa-trash"></i> সব মুছুন</button>
+        </div>
       </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:14px" class="al-filter-grid">
+        <input class="form-control" id="al-search" placeholder="🔍 লগ খুঁজুন..." value="${activityLogFilter.q}" oninput="applyActivityLogFilter()">
+        <select class="form-control" id="al-user" onchange="applyActivityLogFilter()">
+          <option value="">সব ব্যবহারকারী</option>
+          ${users.map(u=>`<option value="${u}" ${activityLogFilter.user===u?'selected':''}>${u}</option>`).join('')}
+        </select>
+        <input type="date" class="form-control" id="al-from" value="${activityLogFilter.from}" onchange="applyActivityLogFilter()">
+        <input type="date" class="form-control" id="al-to" value="${activityLogFilter.to}" onchange="applyActivityLogFilter()">
+        <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 12px;cursor:pointer" onclick="resetActivityLogFilter()"><i class="fas fa-rotate-left"></i></button>
+      </div>
+      <div class="activity-log-list" id="al-list-container" style="max-height:520px"></div>
     </div>`;
+  updateActivityLogList();
 }
 function clearActivityLog(){
   if(!confirm('সব অ্যাক্টিভিটি লগ মুছে ফেলবেন?')) return;
   localStorage.removeItem('amb_activity_log');
+  activityLogFilter={q:'',user:'',from:'',to:''};
   renderAdminActivityLog();showToast('লগ মুছে ফেলা হয়েছে');
 }
 
@@ -12062,41 +12162,126 @@ function renderStaffPerformanceView(){
 // ============================================================
 function getBatches(){return JSON.parse(localStorage.getItem('amb_batches')||'[]');}
 function saveBatches(b){localStorage.setItem('amb_batches',JSON.stringify(b));}
+function nextBatchLot(){
+  const n=(Number(localStorage.getItem('amb_batch_counter'))||0)+1;
+  localStorage.setItem('amb_batch_counter',String(n));
+  return 'LOT-'+String(n).padStart(4,'0');
+}
 function addBatch(){
   const pid=document.getElementById('batch-product')?.value;
   const qty=Number(document.getElementById('batch-qty')?.value);
+  const cost=Number(document.getElementById('batch-cost')?.value)||0;
+  const supplier=(document.getElementById('batch-supplier')?.value||'').trim();
   const expiry=document.getElementById('batch-expiry')?.value;
   if(!pid||!qty||!expiry){showToast('সব তথ্য দিন','error');return;}
   const batches=getBatches();
-  batches.push({id:Date.now(),productId:Number(pid),qty,expiry,addedAt:Date.now()});
+  batches.push({id:Date.now(),lot:nextBatchLot(),productId:Number(pid),qty,remainingQty:qty,cost,supplier,expiry,addedAt:Date.now()});
   saveBatches(batches);
   showToast('✅ ব্যাচ যোগ হয়েছে');
   renderAdminBatches();
 }
 function deleteBatch(id){
+  if(!confirm('এই ব্যাচটি মুছে ফেলবেন?')) return;
   saveBatches(getBatches().filter(b=>b.id!==id));
   renderAdminBatches();
 }
-function renderAdminBatches(){
+function adjustBatchQty(id){
+  const inp=document.getElementById(`batch-use-${id}`);
+  const used=Number(inp?.value);
+  if(!used||used<=0){showToast('পরিমাণ লিখুন','error');return;}
+  const batches=getBatches();
+  const b=batches.find(x=>x.id===id);
+  if(!b) return;
+  const rem=b.remainingQty!==undefined?b.remainingQty:b.qty;
+  if(used>rem){showToast(`এই ব্যাচে মাত্র ${rem} কেজি মজুদ আছে`,'error');return;}
+  b.remainingQty=rem-used;
+  saveBatches(batches);
+  showToast(`✅ ${used} কেজি ব্যবহার/বিক্রি হিসেবে চিহ্নিত হলো`);
+  renderAdminBatches();
+}
+let batchProductFilter='';
+function setBatchProductFilter(v){batchProductFilter=v;renderAdminBatches();}
+function exportBatchesCSV(){
   const batches=getBatches();
   const products=getProducts();
+  if(!batches.length){showToast('কোনো ব্যাচ নেই','error');return;}
+  const rows=[['লট নম্বর','পণ্য','সরবরাহকারী','মোট পরিমাণ','অবশিষ্ট','ক্রয়মূল্য/কেজি','মেয়াদ উত্তীর্ণের তারিখ','যোগ করার তারিখ']];
+  batches.forEach(b=>{
+    const p=products.find(x=>Number(x.id)===b.productId);
+    rows.push([b.lot||'',p?p.name:'?',b.supplier||'',b.qty,b.remainingQty!==undefined?b.remainingQty:b.qty,b.cost||0,b.expiry,new Date(b.addedAt).toLocaleDateString('en-GB')]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`batches_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+function renderAdminBatches(){
+  const allBatches=getBatches();
+  const products=getProducts();
   const now=Date.now();
+  const batches=(batchProductFilter?allBatches.filter(b=>String(b.productId)===String(batchProductFilter)):allBatches)
+    .slice().sort((a,b)=>new Date(a.expiry)-new Date(b.expiry)); // FEFO: soonest-expiring first
+
+  const expiredCount=allBatches.filter(b=>new Date(b.expiry).getTime()<now&&(b.remainingQty!==undefined?b.remainingQty:b.qty)>0).length;
+  const expiringSoonCount=allBatches.filter(b=>{
+    const d=Math.ceil((new Date(b.expiry)-now)/86400000);
+    return d>=0&&d<=3&&(b.remainingQty!==undefined?b.remainingQty:b.qty)>0;
+  }).length;
+  const totalStockValue=allBatches.reduce((s,b)=>s+((b.remainingQty!==undefined?b.remainingQty:b.qty)*(b.cost||0)),0);
+
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
-      <div class="admin-section-header"><h3>📦 ইনভেন্টরি ব্যাচ ট্র্যাকিং</h3></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;margin-bottom:16px">
+      <div class="admin-section-header">
+        <h3>📦 ইনভেন্টরি ব্যাচ ট্র্যাকিং (${allBatches.length}টি)</h3>
+        <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="exportBatchesCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">
+        <div style="text-align:center;background:var(--bg-raised);border-radius:var(--radius-sm);padding:10px">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--green-dark)">৳${totalStockValue.toLocaleString()}</div>
+          <div style="font-size:.68rem;color:var(--text-muted)">মজুদের ক্রয়মূল্য</div>
+        </div>
+        <div style="text-align:center;background:var(--bg-raised);border-radius:var(--radius-sm);padding:10px">
+          <div style="font-size:1.1rem;font-weight:800;color:#f4a40a">${expiringSoonCount}টি</div>
+          <div style="font-size:.68rem;color:var(--text-muted)">শীঘ্রই মেয়াদ শেষ (≤৩ দিন)</div>
+        </div>
+        <div style="text-align:center;background:var(--bg-raised);border-radius:var(--radius-sm);padding:10px">
+          <div style="font-size:1.1rem;font-weight:800;color:#e74c3c">${expiredCount}টি</div>
+          <div style="font-size:.68rem;color:var(--text-muted)">মেয়াদোত্তীর্ণ (মজুদসহ)</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;gap:10px;margin-bottom:12px" class="batch-form-grid">
         <select class="form-control" id="batch-product">${products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
         <input class="form-control" type="number" id="batch-qty" placeholder="পরিমাণ (কেজি)">
+        <input class="form-control" type="number" id="batch-cost" placeholder="ক্রয়মূল্য/কেজি (৳)">
+        <input class="form-control" id="batch-supplier" placeholder="সরবরাহকারী (ঐচ্ছিক)">
         <input class="form-control" type="date" id="batch-expiry">
         <button class="btn-add" onclick="addBatch()"><i class="fas fa-plus"></i></button>
       </div>
+      <div style="margin-bottom:12px">
+        <select class="form-control" id="batch-filter" style="max-width:240px" onchange="setBatchProductFilter(this.value)">
+          <option value="">সব পণ্য দেখুন</option>
+          ${products.map(p=>`<option value="${p.id}" ${String(batchProductFilter)===String(p.id)?'selected':''}>${p.name}</option>`).join('')}
+        </select>
+      </div>
       ${batches.length?batches.map(b=>{
         const p=products.find(x=>Number(x.id)===b.productId);
+        const rem=b.remainingQty!==undefined?b.remainingQty:b.qty;
+        const usedUp=rem<=0;
         const daysLeft=Math.ceil((new Date(b.expiry)-now)/86400000);
-        const cls=daysLeft<0?'expired':daysLeft<=3?'expiring-soon':'';
-        return`<div class="batch-row ${cls}">
-          <div style="flex:1"><strong>${p?p.name:'?'}</strong> · ${b.qty} কেজি</div>
-          <div style="font-size:.8rem">${daysLeft<0?'❌ মেয়াদ শেষ':daysLeft<=3?`⚠️ ${daysLeft} দিন বাকি`:`✅ ${daysLeft} দিন বাকি`}</div>
+        const cls=usedUp?'':daysLeft<0?'expired':daysLeft<=3?'expiring-soon':'';
+        return`<div class="batch-row ${cls}" style="${usedUp?'opacity:.55':''}">
+          <div style="flex:1;min-width:160px">
+            <strong>${p?p.name:'?'}</strong> · <span style="font-family:monospace;font-size:.75rem;color:var(--text-muted)">${b.lot||'—'}</span>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px">
+              অবশিষ্ট: <strong style="color:${usedUp?'#888':'var(--green-dark)'}">${rem}/${b.qty} কেজি</strong>
+              ${b.cost?` · ক্রয়মূল্য ৳${b.cost}/কেজি`:''}${b.supplier?` · ${b.supplier}`:''}
+            </div>
+          </div>
+          <div style="font-size:.8rem;white-space:nowrap">${usedUp?'✔️ শেষ হয়ে গেছে':daysLeft<0?'❌ মেয়াদ শেষ':daysLeft<=3?`⚠️ ${daysLeft} দিন বাকি`:`✅ ${daysLeft} দিন বাকি`}</div>
+          ${!usedUp?`<div style="display:flex;gap:4px;align-items:center">
+            <input type="number" id="batch-use-${b.id}" placeholder="কেজি" style="width:60px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:.75rem" min="1" max="${rem}">
+            <button class="btn-sm" style="background:var(--orange);color:#fff;border:none;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:.7rem" onclick="adjustBatchQty(${b.id})" title="ব্যবহার/বিক্রি হিসেবে বাদ দিন"><i class="fas fa-minus"></i></button>
+          </div>`:''}
           <button class="btn-sm btn-danger" onclick="deleteBatch(${b.id})"><i class="fas fa-trash"></i></button>
         </div>`;
       }).join(''):'<div class="no-data" style="padding:20px;text-align:center">কোনো ব্যাচ নেই</div>'}
@@ -12431,13 +12616,17 @@ function openProductDetail(pid){
   const qualityBadge={premium:'pdp-badge-premium',standard:'pdp-badge-standard',economy:'pdp-badge-economy'};
   const qualityLabel={premium:'Premium ⭐',standard:'Standard',economy:'Economy'};
 
-  // Weight buttons
+  // Weight buttons — show wholesale-discounted total when a tier applies at that weight
   const weightBtns=[1,2,5,10].filter(w=>w<=p.stock||p.stock<=0).concat(p.stock<=0?[]:[] );
-  const wBtnsHtml=(prefix)=>[1,2,5,10].map(w=>`
+  const wBtnsHtml=(prefix)=>[1,2,5,10].map(w=>{
+    const whDisc=getWholesaleDiscount(w);
+    const total=fp*w;
+    const whTotal=whDisc>0?Math.round(total*(1-whDisc/100)):total;
+    return`
     <button class="pdp-w-btn${w===1?' active':''}" id="${prefix}wb-${w}" onclick="setPDPWeight(${w},'${prefix}')">
-      <span class="pdp-w-kg">${w} ${t('কেজি')}</span>
-      <span class="pdp-w-price">৳${fp*w}</span>
-    </button>`).join('');
+      <span class="pdp-w-kg">${w} ${t('কেজি')}${whDisc>0?` <span style="color:var(--orange);font-weight:800">-${whDisc}%</span>`:''}</span>
+      <span class="pdp-w-price">${whDisc>0?`<s style="opacity:.55;font-weight:400;font-size:.85em">৳${total}</s> `:''}৳${whTotal}</span>
+    </button>`;}).join('');
 
   // Reviews HTML
   const reviewsHtml=reviews.length?reviews.slice(0,5).map(r=>`
@@ -12469,8 +12658,8 @@ function openProductDetail(pid){
     </div>`).join('')
     :`<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:.85rem">${t('কোনো প্রশ্ন নেই। প্রথম প্রশ্ন করুন!')}</div>`;
 
-  // Wholesale tip
-  const wTip=wTiers.length?`<div class="pdp-wholesale-tip">🏷️ ${wTiers[0].min}+ ${t('কেজিতে')} ${wTiers[0].disc}% ${t('পাইকারি ছাড় পাবেন')}</div>`:'';
+  // Wholesale tip — show the full tier ladder, lowest threshold first
+  const wTip=wTiers.length?`<div class="pdp-wholesale-tip">🏷️ ${t('পাইকারি ছাড়')}: ${wTiers.slice().sort((a,b)=>a.min-b.min).map(tr=>`${tr.min}+ ${t('কেজিতে')} ${tr.disc}%`).join(' · ')}</div>`:'';
 
   // Delivery estimate
   const est=estimateDelivery('');
@@ -12691,11 +12880,12 @@ function setPDPWeight(w,prefix){
   // Update prices
   if(currentPDP){
     const fp=getDiscountedPrice(currentPDP);
-    const total=fp*w;
+    const whDisc=getWholesaleDiscount(w);
+    const total=whDisc>0?Math.round(fp*w*(1-whDisc/100)):fp*w;
     const priceEl=document.getElementById('pdp-ob-price');
-    if(priceEl) priceEl.textContent=`৳${total} (${w}কেজি)`;
+    if(priceEl) priceEl.textContent=`৳${total} (${w}কেজি)${whDisc>0?` 🏷️-${whDisc}%`:''}`;
     const mbPrice=document.getElementById('pdp-mb-price');
-    if(mbPrice) mbPrice.textContent=`৳${total} · ${w}কেজি`;
+    if(mbPrice) mbPrice.textContent=`৳${total} · ${w}কেজি${whDisc>0?` 🏷️-${whDisc}%`:''}`;
     // Also update productWeights for addToCart
     if(currentPDP) productWeights[currentPDP.id]=w;
   }
@@ -16981,6 +17171,11 @@ function exportAlertsCSV(){
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='stock_alerts.csv';a.click();
 }
+function recordBackupEvent(){
+  const hist=JSON.parse(localStorage.getItem('amb_backup_history')||'[]');
+  hist.unshift(Date.now());
+  localStorage.setItem('amb_backup_history',JSON.stringify(hist.slice(0,10)));
+}
 function exportAllData(){
   const data={
     products:getProducts(),
@@ -17006,7 +17201,10 @@ function exportAllData(){
   a.download=`amer-hat-bazar-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   localStorage.setItem('amb_last_backup',new Date().toLocaleString('bn-BD'));
+  localStorage.setItem('amb_last_backup_ts',String(Date.now()));
+  recordBackupEvent();
   showToast('✅ সম্পূর্ণ ডেটা ব্যাকআপ ডাউনলোড হচ্ছে!');
+  if(document.getElementById('backup-reminder-banner')) renderAdminBackup();
 }
 function exportPartialData(kind){
   const map={
@@ -17208,7 +17406,12 @@ function importAllData(){
       try{
         const data=JSON.parse(ev.target.result);
         if(!data.products||!data.orders) throw new Error('Invalid backup file');
-        if(!confirm(`ব্যাকআপ থেকে রিস্টোর করবেন?\n\nতারিখ: ${data.exportedAt||'অজানা'}\nপণ্য: ${data.products?.length||0}টি\nঅর্ডার: ${data.orders?.length||0}টি\n\n⚠️ বর্তমান ডেটা মুছে যাবে!`)) return;
+        const catLabels={products:'পণ্য',orders:'অর্ডার',users:'কাস্টমার',coupons:'কুপন',reviews:'রিভিউ',newsletter:'নিউজলেটার সদস্য',bulkOrders:'বাল্ক অর্ডার',giftCards:'গিফট কার্ড',expenses:'খরচ',returns:'রিটার্ন',staff:'স্টাফ'};
+        const present=Object.keys(catLabels).filter(k=>data[k]!==undefined).map(k=>`${catLabels[k]}: ${Array.isArray(data[k])?data[k].length:'✓'}`);
+        if(!confirm(`ব্যাকআপ থেকে রিস্টোর করবেন?\n\nতারিখ: ${data.exportedAt||'অজানা'}\n${present.join('\n')}\n\n⚠️ বর্তমান ডেটা মুছে যাবে! (নিরাপত্তার জন্য, রিস্টোরের আগে বর্তমান ডেটার একটা সেফটি-ব্যাকআপ অটো-ডাউনলোড হবে)`)) return;
+        // Safety net: auto-download the current data before overwriting it,
+        // so an accidental/wrong restore can always be undone.
+        try{ exportAllData(); }catch(e){}
         if(data.products) localStorage.setItem('amb_products',JSON.stringify(data.products));
         if(data.orders) localStorage.setItem('amb_orders',JSON.stringify(data.orders));
         if(data.users) localStorage.setItem('amb_users',JSON.stringify(data.users));
@@ -17369,9 +17572,49 @@ function removeNLSub(phone){
   renderAdminNewsletter();showToast('সদস্য মুছে ফেলা হয়েছে');
 }
 function renderAdminBackup(){
+  const lastTs=Number(localStorage.getItem('amb_last_backup_ts'))||null;
+  const daysSince=lastTs?Math.floor((Date.now()-lastTs)/86400000):null;
+  const isOverdue=daysSince===null||daysSince>=3;
+  const reminderHtml=isOverdue
+    ?`<div id="backup-reminder-banner" style="background:#fff3cd;border:1.5px solid #f4a40a;border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.3rem">⚠️</span>
+        <div style="flex:1;font-size:.85rem">${daysSince===null?'আপনি এখনো কোনো ব্যাকআপ নেননি।':`শেষ ব্যাকআপের পর ${daysSince} দিন পার হয়ে গেছে।`} এখনই একটা ব্যাকআপ নেওয়ার পরামর্শ দেওয়া হচ্ছে।</div>
+        <button class="btn-add" style="white-space:nowrap" onclick="exportAllData()"><i class="fas fa-download"></i> এখনই ব্যাকআপ নিন</button>
+      </div>`
+    :`<div id="backup-reminder-banner" style="background:#e8f7ee;border:1.5px solid var(--green-mid);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:.85rem;color:var(--green-dark)">✅ ব্যাকআপ আপ-টু-ডেট আছে — শেষ ব্যাকআপ ${daysSince===0?'আজ':daysSince+' দিন আগে'} নেওয়া হয়েছে।</div>`;
+
+  // Live data overview so the admin knows what's about to be backed up
+  const counts={
+    'পণ্য':getProducts().length,
+    'অর্ডার':getOrders().length,
+    'কাস্টমার':getUsers().length,
+    'স্টাফ':getStaff().length,
+    'কুপন':getCoupons().length,
+    'রিভিউ':(JSON.parse(localStorage.getItem('amb_reviews')||'[]')).length,
+    'গিফট কার্ড':(JSON.parse(localStorage.getItem('amb_gift_cards')||'[]')).length,
+    'খরচ':(JSON.parse(localStorage.getItem('amb_expenses')||'[]')).length,
+    'বাল্ক অর্ডার':(JSON.parse(localStorage.getItem('amb_bulk_orders')||'[]')).length,
+    'নিউজলেটার':(JSON.parse(localStorage.getItem('amb_nl')||'[]')).length
+  };
+  let sizeBytes=0;
+  Object.keys(localStorage).forEach(k=>{ if(k.startsWith('amb_')) sizeBytes+=(localStorage.getItem(k)||'').length; });
+  const sizeKB=(sizeBytes/1024).toFixed(1);
+
+  const history=JSON.parse(localStorage.getItem('amb_backup_history')||'[]');
+
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
       <div class="admin-section-header"><h3>💾 ডেটা ব্যাকআপ ও রিস্টোর</h3></div>
+      ${reminderHtml}
+      <div style="background:var(--bg-raised);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+        <div style="font-weight:700;color:var(--green-dark);margin-bottom:10px;font-size:.85rem"><i class="fas fa-database"></i> বর্তমান ডেটা ওভারভিউ (মোট আকার: ${sizeKB} KB)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px">
+          ${Object.entries(counts).map(([label,c])=>`<div style="text-align:center;background:var(--bg-card);border-radius:var(--radius-xs);padding:8px">
+            <div style="font-size:1rem;font-weight:800;color:var(--green-mid)">${c}</div>
+            <div style="font-size:.65rem;color:var(--text-muted)">${label}</div>
+          </div>`).join('')}
+        </div>
+      </div>
       <div class="backup-grid">
         <div class="backup-card">
           <div class="backup-icon">⬇️</div>
@@ -17382,7 +17625,7 @@ function renderAdminBackup(){
         <div class="backup-card">
           <div class="backup-icon">⬆️</div>
           <div class="backup-title">ব্যাকআপ রিস্টোর</div>
-          <div class="backup-sub">আগের ব্যাকআপ JSON ফাইল আপলোড করে ডেটা ফিরিয়ে আনুন</div>
+          <div class="backup-sub">আগের ব্যাকআপ JSON ফাইল আপলোড করে ডেটা ফিরিয়ে আনুন (রিস্টোরের আগে বর্তমান ডেটার সেফটি-ব্যাকআপ অটো-ডাউনলোড হবে)</div>
           <button class="btn btn-primary" onclick="importAllData()" style="width:100%;background:var(--green-mid)"><i class="fas fa-upload"></i> রিস্টোর করুন</button>
         </div>
         <div class="backup-card" style="border-color:#e74c3c">
@@ -17395,6 +17638,12 @@ function renderAdminBackup(){
       <div style="margin-top:24px;background:#f9f5e7;border-radius:var(--radius-sm);padding:16px;font-size:.82rem;color:var(--text-muted)">
         <strong>💡 পরামর্শ:</strong> প্রতিদিন একবার ব্যাকআপ নিন। ব্যাকআপ ফাইলটি নিরাপদ স্থানে রাখুন।
         <div style="margin-top:8px">সর্বশেষ ব্যাকআপ: <strong>${localStorage.getItem('amb_last_backup')||'কখনো নেওয়া হয়নি'}</strong></div>
+        ${history.length?`<div style="margin-top:10px">
+          <div style="font-weight:700;color:var(--text);margin-bottom:4px">সাম্প্রতিক ব্যাকআপ ইতিহাস:</div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            ${history.slice(0,5).map(t=>`<div>• ${new Date(t).toLocaleString('bn-BD')}</div>`).join('')}
+          </div>
+        </div>`:''}
       </div>
     </div>
     <div class="admin-section">
@@ -18613,6 +18862,22 @@ function renderAdminAnalytics(){
     return isAll||d>=rangeStart;
   }).length;
 
+  // Previous equal-length period, for growth badges (not meaningful for "সর্বমোট")
+  let prev=null;
+  if(!isAll){
+    const prevEnd=new Date(rangeStart.getTime()-1);
+    const prevStart=new Date(prevEnd);
+    prevStart.setDate(prevStart.getDate()-(analyticsRangeDays-1));
+    prevStart.setHours(0,0,0,0);
+    prev=computePeriodStats(prevStart,prevEnd);
+  }
+  const growthBadge=metric=>{
+    if(isAll||!prev) return '';
+    const map={revenue:[totalRevenue,prev.totalRevenue],orders:[orders.length,prev.orders.length],avg:[avgOrder,prev.avgOrder],newCust:[newCustomers,prev.newCustomers]};
+    const [c,p]=map[metric];
+    return `<div style="margin-top:6px">${pctBadgeHtml(c,p)}</div>`;
+  };
+
   // Daily revenue trend
   const dayCount=isAll?Math.min(30,Math.max(1,Math.ceil((now-new Date(Math.min(...allOrders.map(o=>new Date(o.createdAt).getTime()),now.getTime())))/86400000)+1)):analyticsRangeDays;
   const trendDays=Math.min(dayCount,30); // cap bars for readability
@@ -18647,6 +18912,36 @@ function renderAdminAnalytics(){
   validOrders.forEach(o=>{const k=o.payment||'other';payCounts[k]=(payCounts[k]||0)+1;});
   const payTotal=validOrders.length||1;
 
+  // New vs repeat orders (repeat = customer's earliest-ever valid order came before this one)
+  const allValidOrders=allOrders.filter(o=>o.status!=='cancelled');
+  const firstOrderTime={};
+  allValidOrders.forEach(o=>{
+    const key=o.userEmail||o.userPhone||o.phone||o.userName||'unknown';
+    const t=new Date(o.createdAt).getTime();
+    if(!(key in firstOrderTime)||t<firstOrderTime[key]) firstOrderTime[key]=t;
+  });
+  let newOrderCount=0,newOrderRevenue=0,repeatOrderCount=0,repeatOrderRevenue=0;
+  validOrders.forEach(o=>{
+    const key=o.userEmail||o.userPhone||o.phone||o.userName||'unknown';
+    const t=new Date(o.createdAt).getTime();
+    if(t<=firstOrderTime[key]){newOrderCount++;newOrderRevenue+=o.total||0;}
+    else{repeatOrderCount++;repeatOrderRevenue+=o.total||0;}
+  });
+  const repeatBase=validOrders.length||1;
+  const repeatRatePct=Math.round(repeatOrderCount/repeatBase*100);
+
+  // Day-of-week performance
+  const dowNames=['রবি','সোম','মঙ্গল','বুধ','বৃহ','শুক্র','শনি'];
+  const dowRevenue=[0,0,0,0,0,0,0];
+  validOrders.forEach(o=>{const d=new Date(o.createdAt).getDay();dowRevenue[d]+=(o.total||0);});
+  const maxDow=Math.max(...dowRevenue,1);
+
+  // Top delivery districts
+  const districtRevenue={};
+  validOrders.forEach(o=>{const d=o.district||'অজানা';districtRevenue[d]=(districtRevenue[d]||0)+(o.total||0);});
+  const topDistricts=Object.entries(districtRevenue).map(([name,revenue])=>({name,revenue})).sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+  const maxDistrict=Math.max(...topDistricts.map(d=>d.revenue),1);
+
   const rangeBtn=(days,label)=>`<button class="btn-sm" style="background:${analyticsRangeDays===days?'var(--green-dark)':'var(--bg-raised)'};color:${analyticsRangeDays===days?'#fff':'var(--text)'};border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.78rem;font-family:'Hind Siliguri',sans-serif;cursor:pointer" onclick="setAnalyticsRange(${days})">${label}</button>`;
 
   document.getElementById('admin-main').innerHTML=`
@@ -18664,24 +18959,28 @@ function renderAdminAnalytics(){
         <div class="stat-card-label">মোট বিক্রয়</div>
         <div class="stat-card-value">৳${totalRevenue.toLocaleString()}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">${validOrders.length}টি বৈধ অর্ডার</div>
+        ${growthBadge('revenue')}
       </div>
       <div class="stat-card">
         <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
         <div class="stat-card-label">মোট অর্ডার</div>
         <div class="stat-card-value">${orders.length}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">বাতিল: ${orders.length-validOrders.length}টি</div>
+        ${growthBadge('orders')}
       </div>
       <div class="stat-card">
         <div class="stat-card-icon"><i class="fas fa-receipt"></i></div>
         <div class="stat-card-label">গড় অর্ডার মূল্য</div>
         <div class="stat-card-value">৳${avgOrder.toLocaleString()}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">প্রতি অর্ডারে</div>
+        ${growthBadge('avg')}
       </div>
       <div class="stat-card">
         <div class="stat-card-icon"><i class="fas fa-user-plus"></i></div>
         <div class="stat-card-label">নতুন কাস্টমার</div>
         <div class="stat-card-value">${newCustomers}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">এই সময়ে যোগ দিয়েছেন</div>
+        ${growthBadge('newCust')}
       </div>
     </div>
     <div class="admin-section">
@@ -18694,6 +18993,42 @@ function renderAdminAnalytics(){
             </div>
             <div class="chart-bar-lbl" style="font-size:.62rem">${t.label}</div>
           </div>`).join('')}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="analytics-grid-2col">
+      <div class="admin-section">
+        <div class="admin-section-header"><h3>🔁 নতুন বনাম পুনরায় অর্ডার</h3></div>
+        <div style="display:flex;gap:10px;text-align:center;margin-bottom:12px">
+          <div style="flex:1;background:var(--bg-raised);border-radius:var(--radius-sm);padding:10px">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--orange)">${newOrderCount}</div>
+            <div style="font-size:.7rem;color:var(--text-muted)">প্রথমবার অর্ডার</div>
+            <div style="font-size:.68rem;color:var(--text-muted)">৳${newOrderRevenue.toLocaleString()}</div>
+          </div>
+          <div style="flex:1;background:var(--bg-raised);border-radius:var(--radius-sm);padding:10px">
+            <div style="font-size:1.1rem;font-weight:800;color:var(--green-mid)">${repeatOrderCount}</div>
+            <div style="font-size:.7rem;color:var(--text-muted)">পুনরায় অর্ডার</div>
+            <div style="font-size:.68rem;color:var(--text-muted)">৳${repeatOrderRevenue.toLocaleString()}</div>
+          </div>
+        </div>
+        <div style="background:var(--bg-raised);border-radius:10px;height:12px;overflow:hidden;display:flex">
+          <div style="width:${repeatRatePct}%;height:100%;background:var(--green-mid)"></div>
+          <div style="width:${100-repeatRatePct}%;height:100%;background:var(--orange)"></div>
+        </div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px;text-align:center">পুনরায় অর্ডারের হার: <strong>${repeatRatePct}%</strong></div>
+      </div>
+      <div class="admin-section">
+        <div class="admin-section-header"><h3>📅 সপ্তাহের দিন অনুযায়ী বিক্রয়</h3></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${dowNames.map((name,i)=>`
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:3px">
+                <span>${name}বার</span><strong>৳${dowRevenue[i].toLocaleString()}</strong>
+              </div>
+              <div style="background:var(--bg-raised);border-radius:10px;height:8px;overflow:hidden">
+                <div style="width:${(dowRevenue[i]/maxDow)*100}%;height:100%;background:var(--green-mid);border-radius:10px"></div>
+              </div>
+            </div>`).join('')}
+        </div>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="analytics-grid-2col">
@@ -18739,6 +19074,21 @@ function renderAdminAnalytics(){
             <td style="width:120px"><div style="background:var(--bg-raised);border-radius:10px;height:8px;overflow:hidden"><div style="width:${(p.qty/maxProdQty)*100}%;height:100%;background:var(--orange);border-radius:10px"></div></div></td>
           </tr>`).join('')}</tbody>
         </table>
+      </div>`:'<div class="no-data" style="padding:30px;text-align:center">এই সময়ে কোনো বিক্রয় নেই</div>'}
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🗺️ শীর্ষ ডেলিভারি জেলা (টপ ৫)</h3></div>
+      ${topDistricts.length?`
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${topDistricts.map(d=>`
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px">
+              <span>${d.name}</span><strong>৳${d.revenue.toLocaleString()}</strong>
+            </div>
+            <div style="background:var(--bg-raised);border-radius:10px;height:8px;overflow:hidden">
+              <div style="width:${(d.revenue/maxDistrict)*100}%;height:100%;background:var(--green-dark);border-radius:10px"></div>
+            </div>
+          </div>`).join('')}
       </div>`:'<div class="no-data" style="padding:30px;text-align:center">এই সময়ে কোনো বিক্রয় নেই</div>'}
     </div>`;
 }
