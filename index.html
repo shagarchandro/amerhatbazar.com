@@ -6031,7 +6031,10 @@ function calcCartTotals(cart,district){
   const subtotal=cart.reduce((s,i)=>s+(Number(i.price||0)*(Number(i.qty)||1)),0);
   let discount=0;
   if(appliedCoupon){
-    if(appliedCoupon.type==='percent') discount=Math.round(subtotal*appliedCoupon.value/100);
+    if(appliedCoupon.type==='percent'){
+      discount=Math.round(subtotal*appliedCoupon.value/100);
+      if(appliedCoupon.maxDiscount) discount=Math.min(discount,appliedCoupon.maxDiscount);
+    }
     else discount=Number(appliedCoupon.value)||0;
   }
   const afterDiscount=Math.max(0,subtotal-discount);
@@ -6104,29 +6107,45 @@ function renderCart(){
 // ============================================================
 // COUPON
 // ============================================================
-function validateCoupon(code){
+function validateCouponDetailed(code,subtotal,user){
   const coupons=getCoupons();
-  const c=coupons.find(x=>x.code.toUpperCase()===code.toUpperCase()&&x.active);
-  if(!c) return null;
-  if(c.expiry&&new Date(c.expiry)<new Date()) return null;
-  if(c.maxUse&&c.used>=c.maxUse) return null;
-  return c;
+  const c=coupons.find(x=>x.code.toUpperCase()===(code||'').toUpperCase());
+  if(!c) return{ok:false,reason:'কুপন কোডটি সঠিক নয়'};
+  if(!c.active) return{ok:false,reason:'এই কুপনটি বর্তমানে নিষ্ক্রিয়'};
+  if(c.expiry&&new Date(c.expiry)<new Date()) return{ok:false,reason:'কুপনের মেয়াদ শেষ হয়ে গেছে'};
+  if(c.maxUse&&c.used>=c.maxUse) return{ok:false,reason:'কুপনের সর্বোচ্চ ব্যবহারসীমা শেষ হয়ে গেছে'};
+  if(c.minOrder&&subtotal!==undefined&&subtotal<c.minOrder) return{ok:false,reason:`ন্যূনতম ৳${c.minOrder} অর্ডারে এই কুপন প্রযোজ্য`};
+  if(c.newCustomerOnly&&user){
+    const priorOrders=getOrders().filter(o=>((o.userPhone&&o.userPhone===user.phone)||(o.userEmail&&user.email&&o.userEmail===user.email))&&o.status!=='cancelled');
+    if(priorOrders.length>0) return{ok:false,reason:'এই কুপনটি শুধু নতুন কাস্টমারদের জন্য'};
+  }
+  if(c.oneTimePerUser&&user){
+    const uid=user.email||user.phone;
+    if(uid&&(c.usedBy||[]).includes(uid)) return{ok:false,reason:'আপনি ইতিমধ্যে এই কুপনটি ব্যবহার করেছেন'};
+  }
+  return{ok:true,coupon:c};
+}
+function validateCoupon(code,subtotal,user){
+  const r=validateCouponDetailed(code,subtotal,user);
+  return r.ok?r.coupon:null;
 }
 function applyCouponHero(){
   const code=document.getElementById('hero-coupon-input').value.trim();
   const msg=document.getElementById('coupon-msg');
   if(!code){msg.innerHTML='<span style="color:#e74c3c">কুপন কোড লিখুন</span>';return;}
-  const c=validateCoupon(code);
-  if(c){appliedCoupon=c;msg.innerHTML=`<span style="color:#2ecc71">✅ কুপন প্রয়োগ হয়েছে! ${c.type==='percent'?c.value+'% ছাড়':'৳'+c.value+' ছাড়'}</span>`;showToast('কুপন প্রয়োগ হয়েছে! 🎉','success');}
-  else{msg.innerHTML='<span style="color:#e74c3c">❌ অবৈধ বা মেয়াদোত্তীর্ণ কুপন</span>';}
+  const subtotal=getMyCart().reduce((s,i)=>s+(Number(i.price||0)*(Number(i.qty)||1)),0);
+  const r=validateCouponDetailed(code,subtotal,getCurrentUser());
+  if(r.ok){appliedCoupon=r.coupon;msg.innerHTML=`<span style="color:#2ecc71">✅ কুপন প্রয়োগ হয়েছে! ${r.coupon.type==='percent'?r.coupon.value+'% ছাড়':'৳'+r.coupon.value+' ছাড়'}</span>`;showToast('কুপন প্রয়োগ হয়েছে! 🎉','success');}
+  else{msg.innerHTML=`<span style="color:#e74c3c">❌ ${r.reason}</span>`;}
 }
 function applyCouponCart(){
   const code=document.getElementById('cart-coupon-input').value.trim();
   const msg=document.getElementById('cart-coupon-msg');
   if(!code){msg.innerHTML='<span style="color:#e74c3c">কুপন কোড লিখুন</span>';return;}
-  const c=validateCoupon(code);
-  if(c){appliedCoupon=c;msg.innerHTML=`<span style="color:var(--green-mid)">✅ ${c.type==='percent'?c.value+'% ছাড়':'৳'+c.value+' ছাড়'} প্রয়োগ!</span>`;renderCart();}
-  else{msg.innerHTML='<span style="color:#e74c3c">❌ অবৈধ কুপন</span>';}
+  const subtotal=getMyCart().reduce((s,i)=>s+(Number(i.price||0)*(Number(i.qty)||1)),0);
+  const r=validateCouponDetailed(code,subtotal,getCurrentUser());
+  if(r.ok){appliedCoupon=r.coupon;msg.innerHTML=`<span style="color:var(--green-mid)">✅ ${r.coupon.type==='percent'?r.coupon.value+'% ছাড়':'৳'+r.coupon.value+' ছাড়'} প্রয়োগ!</span>`;renderCart();}
+  else{msg.innerHTML=`<span style="color:#e74c3c">❌ ${r.reason}</span>`;}
 }
 
 // ============================================================
@@ -6546,7 +6565,11 @@ function placeOrder(isBuyNow){
   if(appliedCoupon){
     const coupons=getCoupons();
     const c=coupons.find(x=>x.id===appliedCoupon.id);
-    if(c) c.used=(c.used||0)+1;
+    if(c){
+      c.used=(c.used||0)+1;
+      const uid=u.email||phone;
+      if(uid){ c.usedBy=c.usedBy||[]; if(!c.usedBy.includes(uid)) c.usedBy.push(uid); }
+    }
     saveCoupons(coupons);appliedCoupon=null;
   }
   if(!isBuyNow){saveMyCart(u.email,[]);}
@@ -9784,12 +9807,12 @@ function checkURLCoupon(){
   const params=new URLSearchParams(window.location.search);
   const code=params.get('coupon')||params.get('code');
   if(!code) return;
-  const coupons=getCoupons();
-  const c=coupons.find(x=>x.code.toUpperCase()===code.toUpperCase()&&x.active);
-  if(c){
-    appliedCoupon=c;
-    showToast(`🎉 কুপন "${c.code}" স্বয়ংক্রিয়ভাবে প্রয়োগ হয়েছে! ${c.discount}% ছাড় পাচ্ছেন`);
-    addNotification(`🎟️ কুপন "${c.code}" প্রয়োগ হয়েছে`,`${c.discount}% ছাড় পাচ্ছেন`);
+  const r=validateCouponDetailed(code,undefined,getCurrentUser());
+  if(r.ok){
+    appliedCoupon=r.coupon;
+    const label=r.coupon.type==='percent'?r.coupon.value+'% ছাড়':'৳'+r.coupon.value+' ছাড়';
+    showToast(`🎉 কুপন "${r.coupon.code}" স্বয়ংক্রিয়ভাবে প্রয়োগ হয়েছে! ${label} পাচ্ছেন`);
+    addNotification(`🎟️ কুপন "${r.coupon.code}" প্রয়োগ হয়েছে`,`${label} পাচ্ছেন`);
   }
 }
 
@@ -16782,6 +16805,7 @@ function renderAdminCustomers(){
   const totalRevenue=orders.reduce((s,o)=>s+(o.total||0),0);
   const avgOrderVal=orders.length?Math.round(totalRevenue/orders.length):0;
   _pg.customers=1;
+  selectedCustomerIds.clear();
 
   document.getElementById('admin-main').innerHTML=`
   <div class="admin-section">
@@ -16826,10 +16850,20 @@ function renderAdminCustomers(){
       </div>`).join('')}
     </div>
 
+    <div id="cust-bulk-bar" style="display:none;background:var(--orange);color:#fff;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:10px;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
+      <span id="cust-bulk-count">0টি নির্বাচিত</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="copySelectedCustomerPhones()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:6px 12px;border-radius:16px;cursor:pointer;font-size:.78rem;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-phone"></i> নম্বর কপি</button>
+        <button onclick="bulkDeleteSelectedCustomers()" style="background:#fff;color:#e74c3c;border:none;padding:6px 12px;border-radius:16px;cursor:pointer;font-size:.78rem;font-weight:700;font-family:'Hind Siliguri',sans-serif"><i class="fas fa-trash"></i> নির্বাচিত মুছুন</button>
+        <button onclick="clearCustomerSelection()" style="background:none;color:#fff;border:1px solid rgba(255,255,255,.5);padding:6px 12px;border-radius:16px;cursor:pointer;font-size:.78rem;font-family:'Hind Siliguri',sans-serif">✕</button>
+      </div>
+    </div>
+
     <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:6px">💡 কলামের নামে ক্লিক করে সাজান (sort)</div>
     <div class="table-wrapper">
       <table class="admin-table">
         <thead><tr>
+          <th style="width:26px"><input type="checkbox" id="cust-select-all" onclick="toggleAllCustomerSelect(this.checked)"></th>
           <th class="cust-sort-th" data-sortkey="name" onclick="sortCustomers('name')" style="cursor:pointer;user-select:none">কাস্টমার <span class="sort-arrow"></span></th>
           <th>যোগাযোগ</th>
           <th>ঠিকানা</th>
@@ -17709,30 +17743,102 @@ function renderAdminBulkOrders(){
       </div>
     </div>`;
 }
-function renderAdminCoupons(){
+let couponFilter={q:'',status:'all'};
+function applyCouponFilter(){
+  couponFilter.q=document.getElementById('cp-search')?.value||'';
+  couponFilter.status=document.getElementById('cp-status')?.value||'all';
+  renderCouponTable();
+}
+function getFilteredCoupons(){
+  const now=new Date();
+  return getCoupons().filter(c=>{
+    if(couponFilter.q&&!c.code.toLowerCase().includes(couponFilter.q.toLowerCase())) return false;
+    const isExpired=c.expiry&&new Date(c.expiry)<now;
+    const isUsedUp=c.maxUse&&c.used>=c.maxUse;
+    if(couponFilter.status==='active'&&!(c.active&&!isExpired&&!isUsedUp)) return false;
+    if(couponFilter.status==='inactive'&&c.active) return false;
+    if(couponFilter.status==='expired'&&!isExpired) return false;
+    return true;
+  });
+}
+function copyCouponCode(code){
+  navigator.clipboard?.writeText(code).then(()=>showToast(`"${code}" কপি হয়েছে`)).catch(()=>showToast('কপি করা যায়নি','error'));
+}
+function exportCouponsCSV(){
   const coupons=getCoupons();
+  if(!coupons.length){showToast('কোনো কুপন নেই','error');return;}
+  const rows=[['কোড','ধরন','মান','ন্যূনতম অর্ডার','সর্বোচ্চ ছাড়','মেয়াদ','ব্যবহার','সর্বোচ্চ ব্যবহার','স্ট্যাটাস']];
+  coupons.forEach(c=>rows.push([c.code,c.type==='percent'?'শতাংশ':'নির্দিষ্ট',c.value,c.minOrder||'',c.maxDiscount||'',c.expiry||'',c.used||0,c.maxUse||'',c.active?'সক্রিয়':'নিষ্ক্রিয়']));
+  const csv=rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`coupons_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  showToast('CSV ডাউনলোড হচ্ছে...');
+}
+function renderCouponTable(){
+  const coupons=getFilteredCoupons();
+  const now=new Date();
+  const body=document.getElementById('coupon-table-body');
+  if(!body) return;
+  body.innerHTML=coupons.map(c=>{
+    const isExpired=c.expiry&&new Date(c.expiry)<now;
+    const isUsedUp=c.maxUse&&c.used>=c.maxUse;
+    const usagePct=c.maxUse?Math.min(100,Math.round((c.used||0)/c.maxUse*100)):0;
+    let statusHtml;
+    if(isExpired) statusHtml='<span class="status-badge status-cancelled">মেয়াদোত্তীর্ণ</span>';
+    else if(isUsedUp) statusHtml='<span class="status-badge status-cancelled">ব্যবহার শেষ</span>';
+    else statusHtml=`<span class="status-badge ${c.active?'status-delivered':'status-cancelled'}">${c.active?'সক্রিয়':'নিষ্ক্রিয়'}</span>`;
+    const tags=[c.minOrder?`ন্যূনতম ৳${c.minOrder}`:'',c.maxDiscount?`সর্বোচ্চ ৳${c.maxDiscount}`:'',c.newCustomerOnly?'নতুন কাস্টমার':'',c.oneTimePerUser?'১ বার/কাস্টমার':''].filter(Boolean);
+    return`<tr>
+      <td><strong style="font-family:monospace;color:var(--green-dark)">${c.code}</strong>
+        <button class="btn-sm" style="background:none;border:none;cursor:pointer;color:var(--text-muted)" onclick="copyCouponCode('${c.code}')" title="কপি করুন"><i class="far fa-copy"></i></button>
+        ${tags.length?`<div style="font-size:.65rem;color:var(--text-muted);margin-top:2px">${tags.join(' · ')}</div>`:''}
+      </td>
+      <td>${c.type==='percent'?'শতাংশ (%)':'নির্দিষ্ট (৳)'}</td>
+      <td>${c.type==='percent'?c.value+'%':'৳'+c.value}</td>
+      <td style="font-size:.8rem">${c.expiry||'—'}</td>
+      <td style="min-width:100px">
+        ${c.used||0}/${c.maxUse||'∞'}
+        ${c.maxUse?`<div style="height:5px;background:var(--bg-raised);border-radius:3px;overflow:hidden;margin-top:3px"><div style="height:100%;width:${usagePct}%;background:${usagePct>=100?'#e74c3c':'var(--green-mid)'}"></div></div>`:''}
+      </td>
+      <td>${statusHtml}</td>
+      <td><div class="action-btns">
+        <button class="btn-edit-sm" onclick="editCoupon(${c.id})"><i class="fas fa-pen"></i></button>
+        <button class="btn-edit-sm" onclick="toggleCoupon(${c.id})">${c.active?'নিষ্ক্রিয়':'সক্রিয়'}</button>
+        <button class="btn-delete-sm" onclick="deleteCoupon(${c.id})"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" class="no-data">কোনো কুপন পাওয়া যায়নি</td></tr>';
+}
+function renderAdminCoupons(){
+  couponEditId=null;
+  const allCoupons=getCoupons();
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
-      <div class="admin-section-header"><h3>🎟️ কুপন তালিকা</h3><button class="btn-add" onclick="showCouponForm()"><i class="fas fa-plus"></i> নতুন কুপন</button></div>
+      <div class="admin-section-header">
+        <h3>🎟️ কুপন তালিকা (${allCoupons.length}টি)</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="exportCouponsCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+          <button class="btn-add" onclick="showCouponForm()"><i class="fas fa-plus"></i> নতুন কুপন</button>
+        </div>
+      </div>
       <div id="coupon-form-area"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <input class="form-control" id="cp-search" placeholder="🔍 কোড খুঁজুন..." style="max-width:220px" oninput="applyCouponFilter()">
+        <select class="form-control" id="cp-status" style="max-width:160px" onchange="applyCouponFilter()">
+          <option value="all">সব স্ট্যাটাস</option>
+          <option value="active">সক্রিয়</option>
+          <option value="inactive">নিষ্ক্রিয়</option>
+          <option value="expired">মেয়াদোত্তীর্ণ</option>
+        </select>
+      </div>
       <div class="table-wrapper">
         <table class="admin-table">
           <thead><tr><th>কোড</th><th>ধরন</th><th>মান</th><th>মেয়াদ</th><th>ব্যবহার</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
-          <tbody>${coupons.map(c=>`<tr>
-            <td><strong style="font-family:monospace;color:var(--green-dark)">${c.code}</strong></td>
-            <td>${c.type==='percent'?'শতাংশ (%)':'নির্দিষ্ট (৳)'}</td>
-            <td>${c.type==='percent'?c.value+'%':'৳'+c.value}</td>
-            <td style="font-size:.8rem">${c.expiry||'—'}</td>
-            <td>${c.used||0}/${c.maxUse||'∞'}</td>
-            <td><span class="status-badge ${c.active?'status-delivered':'status-cancelled'}">${c.active?'সক্রিয়':'নিষ্ক্রিয়'}</span></td>
-            <td><div class="action-btns">
-              <button class="btn-edit-sm" onclick="toggleCoupon(${c.id})">${c.active?'নিষ্ক্রিয়':'সক্রিয়'}</button>
-              <button class="btn-delete-sm" onclick="deleteCoupon(${c.id})"><i class="fas fa-trash"></i></button>
-            </div></td>
-          </tr>`).join('')||'<tr><td colspan="7" class="no-data">কোনো কুপন নেই</td></tr>'}</tbody>
+          <tbody id="coupon-table-body"></tbody>
         </table>
       </div>
     </div>`;
+  renderCouponTable();
 }
 function renderAdminFlashSale(){
   const products=getProducts();
@@ -17913,7 +18019,7 @@ function renderAdminStockAlerts(){
     </div>`;
 }
 function renderCustomerRows(users,orders){
-  if(!users.length) return '<tr><td colspan="7" class="no-data">কোনো কাস্টমার নেই</td></tr>';
+  if(!users.length) return '<tr><td colspan="8" class="no-data">কোনো কাস্টমার নেই</td></tr>';
   return users.map(u=>{
     const pic=u.avatar||u.picture||'';
     const initials=(u.name||'?').slice(0,1).toUpperCase();
@@ -17935,6 +18041,7 @@ function renderCustomerRows(users,orders){
     let seg=null;
     try{seg=getCustomerSegment(u);}catch(e){}
     return `<tr style="cursor:pointer" onclick="viewCustomerDetail('${u.phone||u.email}')">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="cust-select-cb" data-id="${u.id}" ${selectedCustomerIds.has(u.id)?'checked':''} onchange="toggleCustomerSelect(${u.id},this.checked)"></td>
       <td>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="position:relative;flex-shrink:0">
@@ -17942,7 +18049,7 @@ function renderCustomerRows(users,orders){
             ${isHighValue?'<span style="position:absolute;bottom:-2px;right:-2px;font-size:.6rem">⭐</span>':''}
           </div>
           <div>
-            <div style="font-weight:700;font-size:.85rem">${u.name||'—'}${providerBadge}</div>
+            <div style="font-weight:700;font-size:.85rem">${u.name||'—'}${providerBadge}${u.adminNote?` <span title="${u.adminNote.replace(/"/g,'&quot;')}" style="color:#f4a40a;cursor:help">📝</span>`:''}</div>
             <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:2px">
               ${seg?`<span class="${seg.badge}" style="font-size:.6rem;padding:1px 6px">${seg.icon} ${seg.label}</span>`:''}
               ${u.birthday?`<span style="font-size:.62rem;color:#9d50bb">🎂 ${new Date(u.birthday).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</span>`:''}
@@ -17972,7 +18079,7 @@ function renderCustomerRows(users,orders){
           ${u.phone?`<a href="tel:${u.phone}" class="btn-sm btn-primary" style="text-decoration:none;padding:5px 7px" title="কল"><i class="fas fa-phone"></i></a>`:''}
           ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" class="btn-sm" style="background:#25d366;color:#fff;border:none;padding:5px 7px;border-radius:6px;text-decoration:none" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>`:''}
           <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:5px 7px;border-radius:6px" onclick="openEditCustomerModal('${u.phone||u.email}')" title="সম্পাদনা"><i class="fas fa-pen"></i></button>
-          <button class="btn-sm btn-danger" onclick="deleteCustomer('${u.phone||u.email}')" title="মুছুন"><i class="fas fa-trash"></i></button>
+          <button class="btn-sm btn-danger" onclick="deleteCustomer(${u.id})" title="মুছুন"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>`;
@@ -18398,12 +18505,46 @@ function _searchCustomersImpl(q){
 }
 const searchCustomers=debounce(_searchCustomersImpl,200);
 
+let couponEditId=null;
+function generateCouponCode(){
+  const words=['MANGO','AAM','FRESH','SWEET','SALE','SAVE','SUMMER','HAT'];
+  const word=words[Math.floor(Math.random()*words.length)];
+  const num=Math.floor(10+Math.random()*90);
+  const el=document.getElementById('cp-code');
+  if(el) el.value=`${word}${num}`;
+}
+function editCoupon(id){
+  const c=getCoupons().find(x=>x.id===id);
+  if(!c) return;
+  couponEditId=id;
+  showCouponForm();
+  document.getElementById('cp-code').value=c.code;
+  document.getElementById('cp-code').disabled=true;
+  document.getElementById('cp-value').value=c.value;
+  document.getElementById('cp-expiry').value=c.expiry||'';
+  document.getElementById('cp-maxuse').value=c.maxUse||'';
+  document.getElementById('cp-minorder').value=c.minOrder||'';
+  document.getElementById('cp-maxdisc').value=c.maxDiscount||'';
+  document.getElementById('cp-newonly').checked=!!c.newCustomerOnly;
+  document.getElementById('cp-oneuse').checked=!!c.oneTimePerUser;
+  if(c.type==='fixed'){
+    document.querySelector('input[name="cp-type"][value="fixed"]').checked=true;
+    updateCpTypeUI();
+  }
+  document.getElementById('coupon-form-title').textContent='✏️ কুপন সম্পাদনা করুন';
+  document.getElementById('coupon-form-area').scrollIntoView({behavior:'smooth'});
+}
 function showCouponForm(){
   document.getElementById('coupon-form-area').innerHTML=`
     <div class="admin-form" style="border-bottom:1px solid var(--border);background:var(--bg)">
-      <h4 style="margin-bottom:15px;color:var(--green-dark)">➕ নতুন কুপন তৈরি করুন</h4>
+      <h4 id="coupon-form-title" style="margin-bottom:15px;color:var(--green-dark)">➕ নতুন কুপন তৈরি করুন</h4>
       <div class="form-row">
-        <div class="form-group"><label>কুপন কোড *</label><input id="cp-code" style="text-transform:uppercase;width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none" placeholder="যেমন: MANGO20" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="form-group"><label>কুপন কোড *</label>
+          <div style="display:flex;gap:6px">
+            <input id="cp-code" style="text-transform:uppercase;flex:1;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none" placeholder="যেমন: MANGO20" oninput="this.value=this.value.toUpperCase()">
+            <button type="button" class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0 12px;cursor:pointer" onclick="generateCouponCode()" title="র‍্যান্ডম কোড তৈরি করুন"><i class="fas fa-dice"></i></button>
+          </div>
+        </div>
         <div class="form-group"><label>ডিসকাউন্ট মান *</label><input id="cp-value" type="number" min="1" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none" placeholder="20"></div>
       </div>
       <div class="form-group">
@@ -18419,14 +18560,22 @@ function showCouponForm(){
       </div>
       <div class="form-row">
         <div class="form-group"><label>মেয়াদ শেষ তারিখ</label><input id="cp-expiry" type="date" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none"></div>
-        <div class="form-group"><label>সর্বোচ্চ ব্যবহার সংখ্যা</label><input id="cp-maxuse" type="number" min="1" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none" placeholder="100"></div>
+        <div class="form-group"><label>সর্বোচ্চ ব্যবহার সংখ্যা</label><input id="cp-maxuse" type="number" min="1" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none" placeholder="১০০"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ন্যূনতম অর্ডার (৳) — ঐচ্ছিক</label><input id="cp-minorder" type="number" min="0" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none" placeholder="যেমন: ৫০০"></div>
+        <div class="form-group"><label>সর্বোচ্চ ছাড়ের সীমা (৳) — শুধু % এর জন্য</label><input id="cp-maxdisc" type="number" min="0" style="width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none" placeholder="যেমন: ২০০"></div>
+      </div>
+      <div class="form-row" style="align-items:center">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer"><input type="checkbox" id="cp-newonly" style="width:16px;height:16px"> শুধু নতুন কাস্টমারদের জন্য</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer"><input type="checkbox" id="cp-oneuse" style="width:16px;height:16px"> প্রতি কাস্টমার একবার ব্যবহার করতে পারবে</label>
       </div>
       <div style="background:var(--yellow-light);border:1px solid var(--yellow);border-radius:var(--radius-sm);padding:9px 14px;margin-bottom:12px;font-size:.82rem;color:#856404">
         💡 ডিসকাউন্ট ধরন "শতাংশ" বাছাই করলে মোট মূল্য থেকে ঐ শতাংশ কাটা হবে। "নির্দিষ্ট পরিমাণ" হলে সরাসরি টাকা কাটা হবে।
       </div>
       <div style="display:flex;gap:10px">
         <button class="btn-primary" onclick="saveCoupon()"><i class="fas fa-save"></i> কুপন সংরক্ষণ করুন</button>
-        <button class="btn-secondary-btn" onclick="document.getElementById('coupon-form-area').innerHTML=''">বাতিল</button>
+        <button class="btn-secondary-btn" onclick="couponEditId=null;document.getElementById('coupon-form-area').innerHTML=''">বাতিল</button>
       </div>
     </div>`;
 }
@@ -18617,11 +18766,27 @@ function saveCoupon(){
   const type=document.querySelector('input[name="cp-type"]:checked')?.value||'percent';
   const expiry=document.getElementById('cp-expiry').value;
   const maxUse=parseInt(document.getElementById('cp-maxuse').value)||null;
+  const minOrder=parseFloat(document.getElementById('cp-minorder')?.value)||null;
+  const maxDiscount=type==='percent'?(parseFloat(document.getElementById('cp-maxdisc')?.value)||null):null;
+  const newCustomerOnly=!!document.getElementById('cp-newonly')?.checked;
+  const oneTimePerUser=!!document.getElementById('cp-oneuse')?.checked;
   if(!code||!value){showToast('কোড ও মান আবশ্যক','error');return;}
   const coupons=getCoupons();
+  if(couponEditId){
+    const c=coupons.find(x=>x.id===couponEditId);
+    if(!c){showToast('কুপন পাওয়া যায়নি','error');return;}
+    Object.assign(c,{value,type,expiry:expiry||null,maxUse,minOrder,maxDiscount,newCustomerOnly,oneTimePerUser});
+    saveCoupons(coupons);showToast('কুপন আপডেট হয়েছে ✅','success');
+    couponEditId=null;
+    document.getElementById('coupon-form-area').innerHTML='';
+    renderAdminCoupons();
+    return;
+  }
   if(coupons.find(c=>c.code===code)){showToast('এই কোড ইতিমধ্যে আছে','error');return;}
-  coupons.push({id:Date.now(),code,type,value,expiry:expiry||null,maxUse,used:0,active:true});
-  saveCoupons(coupons);showToast('কুপন তৈরি হয়েছে ✅','success');renderAdminCoupons();
+  coupons.push({id:Date.now(),code,type,value,expiry:expiry||null,maxUse,minOrder,maxDiscount,newCustomerOnly,oneTimePerUser,used:0,usedBy:[],active:true});
+  saveCoupons(coupons);showToast('কুপন তৈরি হয়েছে ✅','success');
+  document.getElementById('coupon-form-area').innerHTML='';
+  renderAdminCoupons();
 }
 // ── CUSTOMER + ADMIN FIXES ──
 
@@ -18666,6 +18831,54 @@ function getFilteredSortedCustomers(){
   });
   return {users,orders};
 }
+let selectedCustomerIds=new Set();
+function toggleCustomerSelect(id,checked){
+  if(checked) selectedCustomerIds.add(id); else selectedCustomerIds.delete(id);
+  updateCustomerBulkBar();
+}
+function toggleAllCustomerSelect(checked){
+  document.querySelectorAll('.cust-select-cb').forEach(cb=>{
+    cb.checked=checked;
+    const id=Number(cb.dataset.id);
+    if(checked) selectedCustomerIds.add(id); else selectedCustomerIds.delete(id);
+  });
+  updateCustomerBulkBar();
+}
+function updateCustomerBulkBar(){
+  const bar=document.getElementById('cust-bulk-bar');
+  const countEl=document.getElementById('cust-bulk-count');
+  if(!bar) return;
+  if(selectedCustomerIds.size>0){
+    bar.style.display='flex';
+    if(countEl) countEl.textContent=`${selectedCustomerIds.size}টি নির্বাচিত`;
+  }else{
+    bar.style.display='none';
+  }
+}
+function clearCustomerSelection(){
+  selectedCustomerIds.clear();
+  document.querySelectorAll('.cust-select-cb').forEach(cb=>cb.checked=false);
+  const selAll=document.getElementById('cust-select-all'); if(selAll) selAll.checked=false;
+  updateCustomerBulkBar();
+}
+function copySelectedCustomerPhones(){
+  const users=getUsers().filter(u=>selectedCustomerIds.has(u.id));
+  const phones=users.map(u=>u.phone).filter(Boolean).join(', ');
+  if(!phones){showToast('নির্বাচিত কাস্টমারদের ফোন নম্বর নেই','error');return;}
+  navigator.clipboard?.writeText(phones).then(()=>showToast(`✅ ${users.length}টি ফোন নম্বর কপি হয়েছে`)).catch(()=>{
+    showCustomAlert('ফোন নম্বর তালিকা',phones,'ঠিক আছে','info',()=>{});
+  });
+}
+function bulkDeleteSelectedCustomers(){
+  const n=selectedCustomerIds.size;
+  if(!n) return;
+  showCustomAlert('নির্বাচিত কাস্টমার মুছুন',`${n}টি কাস্টমার অ্যাকাউন্ট স্থায়ীভাবে মুছে ফেলা হবে।`,'হ্যাঁ, মুছুন','danger',()=>{
+    saveUsers(getUsers().filter(u=>!selectedCustomerIds.has(u.id)));
+    showToast(`✅ ${n}টি কাস্টমার মুছে ফেলা হয়েছে`,'success');
+    selectedCustomerIds.clear();
+    renderAdminCustomers();
+  });
+}
 function refreshCustomersTable(){
   const {users,orders}=getFilteredSortedCustomers();
   const pg=paginate(users,'customers');
@@ -18674,6 +18887,7 @@ function refreshCustomersTable(){
   const pager=document.getElementById('customers-pagination');
   if(pager) pager.innerHTML=renderPagination('customers',pg.pages,pg.current);
   updateSortArrows();
+  updateCustomerBulkBar();
 }
 function updateSortArrows(){
   document.querySelectorAll('.cust-sort-th').forEach(th=>{
@@ -18755,6 +18969,7 @@ function viewCustomerDetail(phoneOrEmail){
            ['🏠 স্থায়ী',[u.permArea,u.permUpazila,u.permDistrict].filter(Boolean).join(', ')||'—']]
           .map(([l,v])=>`<tr><td style="padding:7px 0;color:var(--text-muted);width:40%;border-bottom:1px solid var(--border)">${l}</td><td style="padding:7px 0 7px 10px;font-weight:600;border-bottom:1px solid var(--border);word-break:break-all">${v}</td></tr>`).join('')}
       </table>
+      ${u.adminNote?`<div style="margin-top:12px;background:var(--yellow-light);border:1px solid var(--yellow);border-radius:var(--radius-sm);padding:10px 12px;font-size:.8rem;color:#856404"><strong>🗒️ অভ্যন্তরীণ নোট:</strong> ${u.adminNote.replace(/</g,'&lt;')}</div>`:''}
       <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
         ${u.phone?`<a href="tel:${u.phone}" style="flex:1;min-width:90px;text-align:center;padding:10px;background:var(--green-dark);color:#fff;border-radius:20px;text-decoration:none;font-size:.83rem;font-weight:700"><i class="fas fa-phone"></i> কল</a>`:''}
         ${u.phone?`<a href="https://wa.me/880${(u.phone||'').replace(/^0/,'')}" target="_blank" style="flex:1;min-width:90px;text-align:center;padding:10px;background:#25d366;color:#fff;border-radius:20px;text-decoration:none;font-size:.83rem;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp</a>`:''}
@@ -18799,6 +19014,8 @@ function openEditCustomerModal(phoneOrEmail){
       </div>
       <div class="form-group" style="margin-bottom:6px"><label>এলাকা / ঠিকানা</label>
         <input id="ec-area" class="form-control" value="${(u.area||'').replace(/"/g,'&quot;')}"></div>
+      <div class="form-group" style="margin-bottom:6px"><label>🗒️ অভ্যন্তরীণ নোট (শুধু অ্যাডমিন দেখবে)</label>
+        <textarea id="ec-note" class="form-control" rows="2" placeholder="যেমন: ডেলিভারির আগে কল করতে হবে">${(u.adminNote||'').replace(/</g,'&lt;')}</textarea></div>
       <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:14px"><i class="fas fa-circle-info"></i> ফোন/ইমেইল পরিবর্তন করলে এই কাস্টমারের পুরনো অর্ডারের সাথে মিল নাও হতে পারে।</div>
       <div style="display:flex;gap:8px">
         <button class="btn-add" style="flex:1;justify-content:center" onclick="saveCustomerEdit('${(u.phone||u.email).replace(/'/g,"\\'")}')"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
@@ -18820,7 +19037,8 @@ function saveCustomerEdit(origKey){
     name,phone,email,
     district:document.getElementById('ec-district').value.trim(),
     upazila:document.getElementById('ec-upazila').value.trim(),
-    area:document.getElementById('ec-area').value.trim()
+    area:document.getElementById('ec-area').value.trim(),
+    adminNote:document.getElementById('ec-note')?.value.trim()||''
   };
   saveUsers(users);
   document.getElementById('edit-customer-overlay')?.remove();
