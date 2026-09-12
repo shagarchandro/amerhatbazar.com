@@ -5497,6 +5497,20 @@ function doRegister(){
       </div>
       <div id="admin-login-error" class="error-msg"></div>
       <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doAdminLogin()">প্রবেশ করুন</button>
+      <div style="text-align:center;margin-top:10px">
+        <a href="javascript:void(0)" onclick="toggleAdminRecoveryForm()" style="color:var(--text-muted);font-size:.78rem;text-decoration:underline">পাসওয়ার্ড ভুলে গেছেন?</a>
+      </div>
+      <div id="admin-recovery-form" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)">
+        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:10px">আপনার রিকভারি কোড দিয়ে নতুন পাসওয়ার্ড সেট করুন।</div>
+        <div class="form-group"><label>রিকভারি কোড</label><input class="form-control" id="recovery-code-input" placeholder="যেমন: ABCDE-12345" style="text-transform:uppercase"></div>
+        <div class="form-group"><label>নতুন পাসওয়ার্ড</label>
+          <div class="pw-wrap"><input class="form-control" id="recovery-new-pass" type="password" placeholder="কমপক্ষে ৬ অক্ষর">
+          <button type="button" class="pw-eye-btn" onclick="togglePwVis('recovery-new-pass',this)"><i class="fas fa-eye"></i></button></div>
+        </div>
+        <div id="admin-recovery-error" class="error-msg"></div>
+        <div id="admin-recovery-success" class="success-msg"></div>
+        <button class="btn-primary" style="width:100%;padding:10px" onclick="resetPasswordWithRecoveryCode()">পাসওয়ার্ড রিসেট করুন</button>
+      </div>
       <div style="text-align:center;margin-top:14px;font-size:.8rem;color:var(--text-muted)">
         স্টাফ সদস্য? <a href="javascript:void(0)" onclick="closeModal('admin-login-modal');openModal('staff-login-modal')" style="color:var(--green-mid);font-weight:700;text-decoration:underline">এখানে লগইন করুন</a>
       </div>
@@ -6646,8 +6660,9 @@ function buyNow(pid){
   openModal('buynow-modal');
 }
 function renderBuyNowModal(p,u){
-  const fp=getDiscountedPrice(p);
+  const fp=getWholesaleUnitPrice(p,buyNowQty);
   const ct=calcCartTotals([{price:fp,qty:buyNowQty}],'ঢাকা');
+  const whDisc=getWholesaleDiscount(buyNowQty);
   document.getElementById('buynow-body').innerHTML=`
     <div style="background:linear-gradient(135deg,var(--green-pale),#b7e4c7);border-radius:0;padding:15px 20px;display:flex;gap:14px;align-items:center">
       <div style="width:65px;height:65px;border-radius:10px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:2.2rem;box-shadow:var(--shadow)">
@@ -6656,10 +6671,14 @@ function renderBuyNowModal(p,u){
       <div style="flex:1">
         <div style="font-weight:700;color:var(--green-dark);font-size:1rem">${p.name}</div>
         <div style="color:var(--text-muted);font-size:.82rem">📍 ${p.origin} &nbsp;|&nbsp; ${t('স্টক')}: ${p.stock} ${t('কেজি')}</div>
-        <div style="color:var(--orange);font-size:1.05rem;font-weight:700;margin-top:2px">৳${fp}/${t('কেজি')}</div>
+        <div style="color:var(--orange);font-size:1.05rem;font-weight:700;margin-top:2px" id="bn-unit-price">৳${fp}/${t('কেজি')}${whDisc>0?` <span style="background:var(--green-mid);color:#fff;font-size:.68rem;padding:1px 7px;border-radius:10px;vertical-align:middle">🏷️ পাইকারি -${whDisc}%</span>`:''}</div>
       </div>
     </div>
     <div style="padding:18px 20px">
+      <!-- Weight presets -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
+        ${[1,2,5,10].filter(w=>w<=p.stock||p.stock<=0).map(w=>`<button type="button" class="btn-sm" style="background:${buyNowQty===w?'var(--green-dark)':'var(--bg-raised)'};color:${buyNowQty===w?'#fff':'var(--text)'};border:1px solid var(--border);padding:7px 0;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600" onclick="setBuyNowQty(${w})">${w} ${t('কেজি')}</button>`).join('')}
+      </div>
       <!-- Quantity -->
       <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px 15px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
         <span style="font-weight:600;color:var(--green-dark)">${t('পরিমাণ')} (${t('কেজি')})</span>
@@ -6714,21 +6733,45 @@ function renderBuyNowModal(p,u){
     selectPayment('cod');
   },0);
 }
+function setBuyNowQty(w){
+  if(!buyNowProduct) return;
+  buyNowQty=Math.max(1,Math.min(buyNowProduct.stock||99,w));
+  changeBuyNowQty(0);
+}
 function changeBuyNowQty(delta){
   if(!buyNowProduct) return;
   buyNowQty=Math.max(1,Math.min(buyNowProduct.stock||99,buyNowQty+delta));
   const district=document.getElementById('bn-district')?.value||'';
   const upazila=document.getElementById('bn-upazila')?.value||'';
-  const ct=calcCartTotals([{price:buyNowProduct.price,qty:buyNowQty}],district);
+  // Wholesale-aware unit price — was previously using the flat regular
+  // price here, so the total silently went wrong (ignored both the
+  // product's discount and any wholesale quantity tier) the moment the
+  // quantity was changed with +/-.
+  const fp=getWholesaleUnitPrice(buyNowProduct,buyNowQty);
+  const ct=calcCartTotals([{price:fp,qty:buyNowQty}],district);
+  const whDisc=getWholesaleDiscount(buyNowQty);
   const qd=document.getElementById('bn-qty-display');
   const tp=document.getElementById('bn-total-preview');
   const dp=document.getElementById('bn-del-preview');
   const gt=document.getElementById('bn-grand-total');
+  const up=document.getElementById('bn-unit-price');
   if(qd) qd.textContent=buyNowQty;
-  if(tp) tp.textContent='৳'+(buyNowProduct.price*buyNowQty);
+  if(tp) tp.textContent='৳'+(fp*buyNowQty);
+  if(up) up.innerHTML=`৳${fp}/${t('কেজি')}${whDisc>0?` <span style="background:var(--green-mid);color:#fff;font-size:.68rem;padding:1px 7px;border-radius:10px;vertical-align:middle">🏷️ পাইকারি -${whDisc}%</span>`:''}`;
+  // Keep buyNowProduct.price in sync with the current quantity's
+  // wholesale-aware unit price — placeOrder() reads buyNowProduct.price
+  // directly when building the order, so if this isn't kept current the
+  // actual order total can silently diverge from what's shown on screen.
+  if(buyNowProduct) buyNowProduct.price=fp;
   const loc=[upazila,district].filter(Boolean).join(', ');
   if(dp) dp.textContent=(ct.delCharge===0?t('ফ্রি ডেলিভারি')+' 🎉':(loc||t('ডেলিভারি'))+' — ৳'+ct.delCharge);
   if(gt) gt.textContent='৳'+ct.total;
+  document.querySelectorAll('#buynow-body .btn-sm[onclick^="setBuyNowQty"]').forEach(btn=>{
+    const w2=Number(btn.getAttribute('onclick').match(/\d+/)[0]);
+    const active=w2===buyNowQty;
+    btn.style.background=active?'var(--green-dark)':'var(--bg-raised)';
+    btn.style.color=active?'#fff':'var(--text)';
+  });
 }
 
 function updateCheckoutDelivery(){
@@ -8050,6 +8093,27 @@ function getAdminLoginLockout(){
   catch(e){return {attempts:0,until:0};}
 }
 function saveAdminLoginLockout(l){localStorage.setItem('amb_admin_lockout',JSON.stringify(l));}
+function toggleAdminRecoveryForm(){
+  const el=document.getElementById('admin-recovery-form');
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+function resetPasswordWithRecoveryCode(){
+  const code=(document.getElementById('recovery-code-input')?.value||'').trim().toUpperCase();
+  const nw=document.getElementById('recovery-new-pass')?.value||'';
+  const err=document.getElementById('admin-recovery-error');
+  const suc=document.getElementById('admin-recovery-success');
+  if(err) err.textContent='';
+  if(suc) suc.textContent='';
+  const admin=getAdmin();
+  if(!admin.recoveryCode){ if(err) err.textContent='কোনো রিকভারি কোড সেট করা নেই — অ্যাডমিন সেটিংস থেকে আগে একটা তৈরি করতে হবে।'; return; }
+  if(!code||code!==admin.recoveryCode){ if(err) err.textContent='রিকভারি কোড সঠিক নয়'; return; }
+  if(!nw||nw.length<6){ if(err) err.textContent='নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে'; return; }
+  saveAdmin({...admin,password:nw,pwChangedAt:Date.now(),recoveryCode:generateRecoveryCode()});
+  if(suc) suc.textContent='✅ পাসওয়ার্ড রিসেট হয়েছে! নতুন পাসওয়ার্ড দিয়ে লগইন করুন। (নতুন রিকভারি কোডও তৈরি হয়েছে)';
+  showToast('✅ পাসওয়ার্ড রিসেট হয়েছে','success');
+  document.getElementById('recovery-code-input').value='';
+  document.getElementById('recovery-new-pass').value='';
+}
 function doAdminLogin(){
   const email=document.getElementById('admin-email-input').value.trim();
   const pass=document.getElementById('admin-pass-input').value;
@@ -12132,7 +12196,12 @@ function openStaffNotesModal(staffId){
     <button onclick="this.closest('#staff-notes-overlay').remove()" style="position:absolute;top:12px;right:12px;background:var(--bg-raised);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;color:var(--text-muted)">×</button>
     <h3 style="color:var(--green-dark);margin-bottom:4px;font-size:1rem"><i class="fas fa-sticky-note"></i> মন্তব্য/নোট — ${s.name}</h3>
     <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:14px">পারফরম্যান্স, সতর্কতা বা প্রশংসার রেকর্ড এখানে রাখুন</div>
-    <div style="display:flex;gap:8px;margin-bottom:14px">
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <select id="new-staff-note-type" class="form-control" style="max-width:140px">
+        <option value="note">📝 সাধারণ</option>
+        <option value="positive">👍 প্রশংসা</option>
+        <option value="warning">⚠️ সতর্কতা</option>
+      </select>
       <textarea id="new-staff-note" class="form-control" rows="2" placeholder="নতুন মন্তব্য লিখুন..." style="flex:1"></textarea>
     </div>
     <button class="btn-primary" style="width:100%;margin-bottom:16px" onclick="submitStaffNote(${staffId})"><i class="fas fa-plus"></i> যোগ করুন</button>
@@ -12147,19 +12216,25 @@ function renderStaffNotesList(staffId){
   const list=document.getElementById('staff-notes-list');
   if(!list) return;
   if(!notes.length){list.innerHTML='<div class="no-data" style="padding:16px;text-align:center;font-size:.82rem">এখনো কোনো মন্তব্য নেই</div>';return;}
-  list.innerHTML=notes.map((n,i)=>`
-    <div style="padding:10px 12px;background:var(--bg-raised);border-radius:var(--radius-sm);margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+  const typeMeta={positive:{icon:'👍',label:'প্রশংসা',color:'#27ae60'},warning:{icon:'⚠️',label:'সতর্কতা',color:'#e74c3c'},note:{icon:'📝',label:'সাধারণ',color:'var(--text-muted)'}};
+  list.innerHTML=notes.map((n,i)=>{
+    const tm=typeMeta[n.type]||typeMeta.note;
+    return`
+    <div style="padding:10px 12px;background:var(--bg-raised);border-radius:var(--radius-sm);margin-bottom:8px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-left:3px solid ${tm.color}">
       <div style="flex:1">
-        <div style="font-size:.82rem;color:var(--text)">${n.text}</div>
+        <span style="font-size:.68rem;font-weight:700;color:${tm.color}">${tm.icon} ${tm.label}</span>
+        <div style="font-size:.82rem;color:var(--text);margin-top:3px">${n.text}</div>
         <div style="font-size:.68rem;color:var(--text-muted);margin-top:4px">${new Date(n.date).toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}</div>
       </div>
       <button onclick="deleteStaffNote(${staffId},${i});renderStaffNotesList(${staffId})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.85rem"><i class="fas fa-times"></i></button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function submitStaffNote(staffId){
   const txt=(document.getElementById('new-staff-note')?.value||'').trim();
+  const type=document.getElementById('new-staff-note-type')?.value||'note';
   if(!txt){showToast('মন্তব্য লিখুন','error');return;}
-  addStaffNote(staffId,txt);
+  addStaffNote(staffId,txt,type);
   document.getElementById('new-staff-note').value='';
   renderStaffNotesList(staffId);
   showToast('✅ মন্তব্য যোগ হয়েছে','success');
@@ -12571,17 +12646,45 @@ function confirmDeleteSalaryPayment(staffId,month){
 
 // ── STAFF PERFORMANCE OVERVIEW (attendance rate + notes leaderboard) ──
 let perfSelectedMonth=new Date().toISOString().slice(0,7);
+let perfFilter={q:'',role:''};
 function setPerfMonth(m){perfSelectedMonth=m;renderStaffPerformanceView();}
-function renderStaffPerformanceView(){
+function applyPerfFilter(){
+  perfFilter.q=document.getElementById('perf-search')?.value||'';
+  perfFilter.role=document.getElementById('perf-role-filter')?.value||'';
+  renderStaffPerformanceView();
+}
+function exportPerformanceCSV(){
   const staff=getStaff().filter(s=>s.status!=='inactive');
   const monthKey=perfSelectedMonth;
+  if(!staff.length){showToast('কোনো স্টাফ নেই','error');return;}
+  const rows=[['নাম','পদবি','উপস্থিত','অনুপস্থিত','ছুটি','হাফ ডে','হাজিরার হার','প্রশংসা','সতর্কতা','সাধারণ মন্তব্য']];
+  staff.forEach(s=>{
+    const sum=getAttendanceSummary(s.id,monthKey);
+    const marked=sum.present+sum.absent+sum.leave+sum.halfday;
+    const rate=marked?Math.round(((sum.present+sum.halfday*0.5)/marked)*100):'';
+    const notes=getStaffNotes(s.id);
+    rows.push([s.name,s.role,sum.present,sum.absent,sum.leave,sum.halfday,rate!==''?rate+'%':'তথ্য নেই',
+      notes.filter(n=>n.type==='positive').length,notes.filter(n=>n.type==='warning').length,notes.filter(n=>!n.type||n.type==='note').length]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`staff_performance_${perfSelectedMonth}.csv`;a.click();
+}
+function renderStaffPerformanceView(){
+  let staff=getStaff().filter(s=>s.status!=='inactive');
   const roleLabels={admin:'অ্যাডমিন',manager:'ম্যানেজার',staff:'স্টাফ',delivery:'ডেলিভারি',support:'সাপোর্ট'};
+  if(perfFilter.q) staff=staff.filter(s=>s.name.toLowerCase().includes(perfFilter.q.toLowerCase()));
+  if(perfFilter.role) staff=staff.filter(s=>s.role===perfFilter.role);
+  const monthKey=perfSelectedMonth;
   const rows=staff.map(s=>{
     const sum=getAttendanceSummary(s.id,monthKey);
     const marked=sum.present+sum.absent+sum.leave+sum.halfday;
     const rate=marked?Math.round(((sum.present+sum.halfday*0.5)/marked)*100):null;
-    const notesCount=getStaffNotes(s.id).length;
-    return {s,sum,marked,rate,notesCount};
+    const notes=getStaffNotes(s.id);
+    const positiveCount=notes.filter(n=>n.type==='positive').length;
+    const warningCount=notes.filter(n=>n.type==='warning').length;
+    const generalCount=notes.filter(n=>!n.type||n.type==='note').length;
+    return {s,sum,marked,rate,positiveCount,warningCount,generalCount,notesCount:notes.length};
   }).sort((a,b)=>{
     if(a.rate===null&&b.rate===null) return 0;
     if(a.rate===null) return 1;
@@ -12594,7 +12697,10 @@ function renderStaffPerformanceView(){
   <div class="admin-section">
     <div class="admin-section-header">
       <h3>🏆 স্টাফ পারফরম্যান্স</h3>
-      <input type="month" class="form-control" style="width:auto" value="${monthKey}" max="${new Date().toISOString().slice(0,7)}" onchange="setPerfMonth(this.value)">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="month" class="form-control" style="width:auto" value="${monthKey}" max="${new Date().toISOString().slice(0,7)}" onchange="setPerfMonth(this.value)">
+        <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="exportPerformanceCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 0;border-bottom:1px solid var(--border);margin-bottom:14px">
       ${[
@@ -12607,19 +12713,28 @@ function renderStaffPerformanceView(){
         <div style="font-size:.7rem;color:var(--text-muted)">${x.label}</div>
       </div>`).join('')}
     </div>
-    ${!rows.length?'<div class="no-data" style="padding:24px;text-align:center">কোনো সক্রিয় স্টাফ নেই</div>':`
-    <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:8px">💡 হাজিরার হার অনুযায়ী সাজানো (হাফ ডে = অর্ধেক গণনা)</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <input class="search-bar" id="perf-search" placeholder="নাম খুঁজুন..." oninput="applyPerfFilter()" style="max-width:180px">
+      <select class="form-control" id="perf-role-filter" style="max-width:160px" onchange="applyPerfFilter()">
+        <option value="">সব পদবি</option>
+        ${Object.entries(roleLabels).map(([k,l])=>`<option value="${k}" ${perfFilter.role===k?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    ${!rows.length?'<div class="no-data" style="padding:24px;text-align:center">কোনো স্টাফ পাওয়া যায়নি</div>':`
+    <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:8px">💡 হাজিরার হার অনুযায়ী সাজানো (হাফ ডে = অর্ধেক গণনা) · কার্ডে ক্লিক করে মন্তব্য দেখুন/যোগ করুন</div>
     <div style="display:flex;flex-direction:column;gap:8px">
       ${rows.map((r,idx)=>{
         const medal=idx===0&&r.rate!==null?'🥇':idx===1&&r.rate!==null?'🥈':idx===2&&r.rate!==null?'🥉':'';
         const barColor=r.rate===null?'#ccc':r.rate>=90?'#27ae60':r.rate>=70?'#f39c12':'#e74c3c';
-        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);flex-wrap:wrap">
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);flex-wrap:wrap;cursor:pointer" onclick="openStaffNotesModal(${r.s.id})">
           <div style="width:28px;text-align:center;font-size:1.1rem">${medal||(idx+1)}</div>
           <div style="flex:1;min-width:120px">
             <div style="font-weight:700;font-size:.88rem">${r.s.name} <span style="font-size:.65rem;color:var(--text-muted);font-weight:400">(${roleLabels[r.s.role]||r.s.role})</span></div>
-            <div style="display:flex;gap:8px;font-size:.7rem;color:var(--text-muted);margin-top:2px">
+            <div style="display:flex;gap:8px;font-size:.7rem;color:var(--text-muted);margin-top:2px;flex-wrap:wrap">
               <span>✅${r.sum.present}</span><span>❌${r.sum.absent}</span><span>🌴${r.sum.leave}</span><span>🌓${r.sum.halfday}</span>
-              ${r.notesCount?`<span>📝${r.notesCount} মন্তব্য</span>`:''}
+              ${r.positiveCount?`<span style="color:#27ae60;font-weight:600">👍${r.positiveCount}</span>`:''}
+              ${r.warningCount?`<span style="color:#e74c3c;font-weight:600">⚠️${r.warningCount}</span>`:''}
+              ${r.generalCount?`<span>📝${r.generalCount}</span>`:''}
             </div>
           </div>
           <div style="width:140px;flex-shrink:0">
@@ -15409,61 +15524,158 @@ function saveOAuthKey(provider){
   else loginWithFacebook();
 }
 
+function toggleOAuthProvider(provider){
+  const cfg=getOAuthConfig();
+  const idField=provider==='google'?'googleClientId':'facebookAppId';
+  const backupField=provider==='google'?'googleClientIdBackup':'facebookAppIdBackup';
+  if(cfg[idField]){
+    // Currently enabled → disable (keep a backup so re-enabling doesn't need retyping)
+    cfg[backupField]=cfg[idField];
+    delete cfg[idField];
+    showToast(`${provider==='google'?'Google':'Facebook'} লগইন বন্ধ করা হয়েছে`);
+  } else if(cfg[backupField]){
+    // Currently disabled with a backup → re-enable
+    cfg[idField]=cfg[backupField];
+    delete cfg[backupField];
+    showToast(`✅ ${provider==='google'?'Google':'Facebook'} লগইন চালু করা হয়েছে`);
+  } else {
+    showToast('আগে একটা Client/App ID সেভ করুন','error');
+    return;
+  }
+  saveOAuthConfig(cfg);
+  renderAdminOAuthSettings();
+}
+function validateOAuthId(provider){
+  const el=document.getElementById(provider==='google'?'admin-google-id':'admin-fb-id');
+  const msgEl=document.getElementById(provider==='google'?'google-id-validation':'fb-id-validation');
+  if(!el||!msgEl) return;
+  const v=el.value.trim();
+  if(!v){msgEl.textContent='';return;}
+  if(provider==='google'){
+    const ok=/\.apps\.googleusercontent\.com$/.test(v);
+    msgEl.textContent=ok?'✓ সঠিক ফরম্যাট মনে হচ্ছে':'⚠️ সাধারণত এটি ".apps.googleusercontent.com" দিয়ে শেষ হয় — মিলিয়ে দেখুন';
+    msgEl.style.color=ok?'#27ae60':'#f39c12';
+  }else{
+    const ok=/^\d{10,20}$/.test(v);
+    msgEl.textContent=ok?'✓ সঠিক ফরম্যাট মনে হচ্ছে':'⚠️ সাধারণত এটি শুধু সংখ্যা (১০-২০ ডিজিট) হয় — মিলিয়ে দেখুন';
+    msgEl.style.color=ok?'#27ae60':'#f39c12';
+  }
+}
+let socialUserSearchQ='';
+function searchSocialUsers(q){
+  socialUserSearchQ=q;
+  renderSocialUsersList();
+}
+function renderSocialUsersList(){
+  const el=document.getElementById('social-users-list');
+  if(!el) return;
+  let users=getUsers().filter(u=>u.provider);
+  if(socialUserSearchQ) users=users.filter(u=>(u.name||'').toLowerCase().includes(socialUserSearchQ.toLowerCase())||(u.phone||'').includes(socialUserSearchQ));
+  el.innerHTML=users.length?users.map(u=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;background:rgba(255,255,255,.6);border-radius:6px">
+      <span class="social-tag ${u.provider}">${u.provider==='google'?'🔴 Google':'🔵 Facebook'}</span>
+      <strong style="font-size:.82rem">${u.name}</strong>
+      <span style="font-size:.75rem;color:#888">${u.phone}</span>
+      <span style="font-size:.72rem;color:#888;margin-left:auto">${new Date(u.joinDate||Date.now()).toLocaleDateString('en-GB')}</span>
+    </div>`).join(''):'<div style="margin-top:6px;color:#888">কোনো ব্যবহারকারী পাওয়া যায়নি।</div>';
+}
+function exportSocialUsersCSV(){
+  const users=getUsers().filter(u=>u.provider);
+  if(!users.length){showToast('কোনো সোশ্যাল লগইন ব্যবহারকারী নেই','error');return;}
+  const rows=[['নাম','ফোন','প্রোভাইডার','যোগদানের তারিখ']];
+  users.forEach(u=>rows.push([u.name,u.phone,u.provider==='google'?'Google':'Facebook',new Date(u.joinDate||Date.now()).toLocaleDateString('en-GB')]));
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='social_login_users.csv';a.click();
+}
 // ── Admin: OAuth Settings Tab ──
 function renderAdminOAuthSettings(){
   const cfg=getOAuthConfig();
+  const socialUsers=getUsers().filter(u=>u.provider);
+  const googleCount=socialUsers.filter(u=>u.provider==='google').length;
+  const fbCount=socialUsers.filter(u=>u.provider==='facebook').length;
+  const googleOn=!!cfg.googleClientId, fbOn=!!cfg.facebookAppId;
+  const googleHasBackup=!googleOn&&!!cfg.googleClientIdBackup;
+  const fbHasBackup=!fbOn&&!!cfg.facebookAppIdBackup;
   document.getElementById('admin-main').innerHTML=`
     <div class="admin-section">
       <div class="admin-section-header"><h3>🔐 Social Login সেটিংস</h3></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px;background:var(--bg-raised);border-radius:var(--radius-sm);margin-bottom:16px">
+        <div style="text-align:center"><div style="font-size:1.1rem;font-weight:800;color:var(--green-dark)">${socialUsers.length}</div><div style="font-size:.65rem;color:var(--text-muted)">মোট সোশ্যাল ইউজার</div></div>
+        <div style="text-align:center"><div style="font-size:1.1rem;font-weight:800;color:#c0392b">${googleCount}</div><div style="font-size:.65rem;color:var(--text-muted)">🔴 Google দিয়ে</div></div>
+        <div style="text-align:center"><div style="font-size:1.1rem;font-weight:800;color:#1877F2">${fbCount}</div><div style="font-size:.65rem;color:var(--text-muted)">🔵 Facebook দিয়ে</div></div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
         <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
             <svg width="24" height="24" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             <strong style="color:#1b4332">Google Login</strong>
-            <span style="margin-left:auto;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:10px;background:${cfg.googleClientId?'#d4edda':'#f8d7da'};color:${cfg.googleClientId?'#155724':'#721c24'}">${cfg.googleClientId?'✅ চালু':'❌ বন্ধ'}</span>
+            <label class="toggle-switch" style="margin-left:auto" title="${googleOn?'বন্ধ করুন':'চালু করুন'}">
+              <input type="checkbox" ${googleOn?'checked':''} ${!googleOn&&!googleHasBackup?'disabled':''} onchange="toggleOAuthProvider('google')">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
           <div class="form-group"><label style="font-size:.8rem">Google Client ID</label>
-            <input class="form-control" id="admin-google-id" value="${cfg.googleClientId||''}" placeholder="xxxx.apps.googleusercontent.com" style="font-size:.78rem">
+            <input class="form-control" id="admin-google-id" value="${cfg.googleClientId||cfg.googleClientIdBackup||''}" placeholder="xxxx.apps.googleusercontent.com" style="font-size:.78rem" oninput="validateOAuthId('google')">
+            <div id="google-id-validation" style="font-size:.68rem;margin-top:3px"></div>
           </div>
-          <button class="btn-sm btn-primary" onclick="adminSaveOAuth('google')" style="width:100%;margin-top:8px">সেভ করুন</button>
+          ${googleHasBackup?'<div style="font-size:.7rem;color:#f39c12;margin-bottom:6px">⏸️ সাময়িকভাবে বন্ধ আছে — উপরের সুইচ দিয়ে চালু করুন</div>':''}
+          <button class="btn-sm btn-primary" onclick="adminSaveOAuth('google')" style="width:100%;margin-top:4px">সেভ করুন</button>
+          <details style="margin-top:8px"><summary style="font-size:.72rem;color:var(--text-muted);cursor:pointer">Client ID কীভাবে পাবেন?</summary>
+            <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px;line-height:1.6">
+              <a href="https://console.cloud.google.com" target="_blank" style="color:var(--green-mid)">Google Cloud Console</a> → নতুন Project → APIs & Services → Credentials → OAuth Client ID তৈরি করুন। Authorized JavaScript origins-এ যোগ করুন: <code style="background:var(--bg-raised);padding:1px 5px;border-radius:3px">${window.location.origin}</code>
+            </div>
+          </details>
         </div>
         <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:16px">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
             <svg width="24" height="24" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
             <strong style="color:#1b4332">Facebook Login</strong>
-            <span style="margin-left:auto;font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:10px;background:${cfg.facebookAppId?'#d4edda':'#f8d7da'};color:${cfg.facebookAppId?'#155724':'#721c24'}">${cfg.facebookAppId?'✅ চালু':'❌ বন্ধ'}</span>
+            <label class="toggle-switch" style="margin-left:auto" title="${fbOn?'বন্ধ করুন':'চালু করুন'}">
+              <input type="checkbox" ${fbOn?'checked':''} ${!fbOn&&!fbHasBackup?'disabled':''} onchange="toggleOAuthProvider('facebook')">
+              <span class="toggle-slider"></span>
+            </label>
           </div>
           <div class="form-group"><label style="font-size:.8rem">Facebook App ID</label>
-            <input class="form-control" id="admin-fb-id" value="${cfg.facebookAppId||''}" placeholder="123456789012345" style="font-size:.78rem">
+            <input class="form-control" id="admin-fb-id" value="${cfg.facebookAppId||cfg.facebookAppIdBackup||''}" placeholder="123456789012345" style="font-size:.78rem" oninput="validateOAuthId('facebook')">
+            <div id="fb-id-validation" style="font-size:.68rem;margin-top:3px"></div>
           </div>
-          <button class="btn-sm btn-primary" onclick="adminSaveOAuth('facebook')" style="width:100%;margin-top:8px">সেভ করুন</button>
+          ${fbHasBackup?'<div style="font-size:.7rem;color:#f39c12;margin-bottom:6px">⏸️ সাময়িকভাবে বন্ধ আছে — উপরের সুইচ দিয়ে চালু করুন</div>':''}
+          <button class="btn-sm btn-primary" onclick="adminSaveOAuth('facebook')" style="width:100%;margin-top:4px">সেভ করুন</button>
+          <details style="margin-top:8px"><summary style="font-size:.72rem;color:var(--text-muted);cursor:pointer">App ID কীভাবে পাবেন?</summary>
+            <div style="font-size:.72rem;color:var(--text-muted);margin-top:6px;line-height:1.6">
+              <a href="https://developers.facebook.com" target="_blank" style="color:var(--green-mid)">Facebook Developers</a> → নতুন App (Consumer) → Facebook Login product যোগ করুন। Valid OAuth Redirect URIs-এ যোগ করুন: <code style="background:var(--bg-raised);padding:1px 5px;border-radius:3px">${window.location.origin}</code>
+            </div>
+          </details>
         </div>
       </div>
       <div style="background:#fff3cd;border:1px solid #f4a40a;border-radius:8px;padding:14px;font-size:.82rem;color:#856404;line-height:1.75">
-        <strong>📋 Social Login ব্যবহারকারীরা:</strong>
-        ${getUsers().filter(u=>u.provider).length === 0
-          ? '<div style="margin-top:6px;color:#888">এখনো কোনো social login ব্যবহারকারী নেই।</div>'
-          : `<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
-            ${getUsers().filter(u=>u.provider).map(u=>`
-              <div style="display:flex;align-items:center;gap:8px;padding:6px;background:rgba(255,255,255,.6);border-radius:6px">
-                <span class="social-tag ${u.provider}">${u.provider==='google'?'🔴 Google':'🔵 Facebook'}</span>
-                <strong style="font-size:.82rem">${u.name}</strong>
-                <span style="font-size:.75rem;color:#888">${u.phone}</span>
-                <span style="font-size:.72rem;color:#888;margin-left:auto">${new Date(u.joinDate||Date.now()).toLocaleDateString('en-GB')}</span>
-              </div>`).join('')}
-          </div>`}
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <strong>📋 Social Login ব্যবহারকারীরা:</strong>
+          <div style="display:flex;gap:6px">
+            <input class="search-bar" placeholder="খুঁজুন..." oninput="searchSocialUsers(this.value)" style="font-size:.75rem;padding:5px 10px;max-width:140px">
+            <button class="btn-sm" style="background:#fff;border:1px solid #f4a40a;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:.72rem" onclick="exportSocialUsersCSV()"><i class="fas fa-file-csv"></i></button>
+          </div>
+        </div>
+        <div id="social-users-list" style="margin-top:8px;display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto"></div>
       </div>
       <div style="margin-top:14px;background:var(--green-pale);border-radius:8px;padding:14px;font-size:.82rem;color:var(--green-dark);line-height:1.7">
         <strong>🔗 OAuth Redirect URI (Google Console-এ যোগ করুন):</strong><br>
         <code style="background:#fff;padding:3px 8px;border-radius:4px;font-size:.75rem">${window.location.origin}</code>
       </div>
     </div>`;
+  renderSocialUsersList();
 }
 function adminSaveOAuth(provider){
   const val=(document.getElementById(`admin-${provider==='google'?'google-id':'fb-id'}`)?.value||'').trim();
   const cfg=getOAuthConfig();
-  if(provider==='google') cfg.googleClientId=val||undefined;
-  else cfg.facebookAppId=val||undefined;
+  if(provider==='google'){
+    if(cfg.googleClientIdBackup&&!cfg.googleClientId) cfg.googleClientIdBackup=val||undefined;
+    else cfg.googleClientId=val||undefined;
+  } else {
+    if(cfg.facebookAppIdBackup&&!cfg.facebookAppId) cfg.facebookAppIdBackup=val||undefined;
+    else cfg.facebookAppId=val||undefined;
+  }
   saveOAuthConfig(cfg);
   showToast(`✅ ${provider==='google'?'Google':'Facebook'} Client ID সেভ হয়েছে!`);
   renderAdminOAuthSettings();
@@ -15907,25 +16119,113 @@ function renderAdminExpenses(){
 }
 
 // INVENTORY VALUE
-function renderInventoryValue(){
+let invValueSort={key:'value',dir:'desc'};
+let invValueSearchQ='';
+function getProductAvgCost(pid){
+  let batches=[];
+  try{batches=getBatches().filter(b=>Number(b.productId)===Number(pid)&&(b.remainingQty!==undefined?b.remainingQty:b.qty)>0&&b.cost);}catch(e){}
+  if(!batches.length) return null;
+  const totalQty=batches.reduce((s,b)=>s+(b.remainingQty!==undefined?b.remainingQty:b.qty),0);
+  if(totalQty<=0) return null;
+  const weightedCost=batches.reduce((s,b)=>s+b.cost*(b.remainingQty!==undefined?b.remainingQty:b.qty),0);
+  return weightedCost/totalQty;
+}
+function sortInvValue(key){
+  invValueSort.dir=(invValueSort.key===key&&invValueSort.dir==='desc')?'asc':'desc';
+  invValueSort.key=key;
+  renderInventoryValue();
+}
+function searchInvValue(q){invValueSearchQ=q;renderInventoryValue();}
+function exportInvValueCSV(){
   const products=getProducts();
-  const totalValue=products.reduce(function(s,p){return s+(getDiscountedPrice(p)*p.stock);},0);
-  const totalKg=products.reduce(function(s,p){return s+p.stock;},0);
-  let rows=products.slice().sort(function(a,b){return (getDiscountedPrice(b)*b.stock)-(getDiscountedPrice(a)*a.stock);})
-    .map(function(p){
-      const v=getDiscountedPrice(p)*p.stock;
-      return '<tr><td><strong>'+p.name+'</strong></td><td>'+p.stock+' \u0995\u09c7\u099c\u09bf</td>'
-        +'<td>\u09f3'+getDiscountedPrice(p)+'</td>'
-        +'<td><strong style="color:var(--orange)">\u09f3'+v.toLocaleString()+'</strong></td></tr>';
-    }).join('');
-  document.getElementById('admin-main').innerHTML='<div class="admin-section">'
-    +'<div class="admin-section-header"><h3>\ud83d\udcca \u0987\u09a8\u09ad\u09c7\u09a8\u09cd\u099f\u09b0\u09bf \u09ae\u09c2\u09b2\u09cd\u09af \u09b0\u09bf\u09aa\u09cb\u09b0\u09cd\u099f</h3></div>'
-    +'<div class="inv-value-card">'
-    +'<div style="font-size:.85rem;opacity:.8">\u09ae\u09cb\u099f \u0987\u09a8\u09ad\u09c7\u09a8\u09cd\u099f\u09b0\u09bf \u09ae\u09c2\u09b2\u09cd\u09af</div>'
-    +'<div class="inv-value-amount">\u09f3'+totalValue.toLocaleString()+'</div>'
-    +'<div style="font-size:.82rem;opacity:.7;margin-top:4px">\u09ae\u09cb\u099f '+totalKg+' \u0995\u09c7\u099c\u09bf \xb7 '+products.filter(function(p){return p.stock>0;}).length+'\u099f\u09bf \u09aa\u09a3\u09cd\u09af</div></div>'
-    +'<div class="table-wrapper"><table class="admin-table"><thead><tr><th>\u09aa\u09a3\u09cd\u09af</th><th>\u09b8\u09cd\u099f\u0995</th><th>\u09ae\u09c2\u09b2\u09cd\u09af</th><th>\u09ae\u09cb\u099f</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody></table></div></div>';
+  if(!products.length){showToast('কোনো পণ্য নেই','error');return;}
+  const rows=[['পণ্য','স্টক (কেজি)','বিক্রয়মূল্য/কেজি','বিক্রয় মূল্য (মোট)','ক্রয়মূল্য/কেজি','ক্রয় মূল্য (মোট)','সম্ভাব্য মুনাফা','মার্জিন %']];
+  products.forEach(p=>{
+    const sell=getDiscountedPrice(p);
+    const sellVal=sell*p.stock;
+    const avgCost=getProductAvgCost(p.id);
+    const costVal=avgCost!==null?avgCost*p.stock:'';
+    const profit=avgCost!==null?sellVal-costVal:'';
+    const margin=avgCost!==null&&sellVal>0?Math.round((profit/sellVal)*100)+'%':'';
+    rows.push([p.name,p.stock,sell,sellVal,avgCost!==null?Math.round(avgCost):'তথ্য নেই',costVal,profit,margin]);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='inventory_value.csv';a.click();
+}
+function renderInventoryValue(){
+  let products=getProducts();
+  if(invValueSearchQ) products=products.filter(p=>p.name.toLowerCase().includes(invValueSearchQ.toLowerCase()));
+
+  const enriched=products.map(p=>{
+    const sell=getDiscountedPrice(p);
+    const sellVal=sell*p.stock;
+    const avgCost=getProductAvgCost(p.id);
+    const costVal=avgCost!==null?avgCost*p.stock:null;
+    const profit=avgCost!==null?sellVal-costVal:null;
+    const margin=avgCost!==null&&sellVal>0?Math.round((profit/sellVal)*100):null;
+    return{p,sell,sellVal,avgCost,costVal,profit,margin};
+  });
+
+  const sortFns={
+    value:(a,b)=>b.sellVal-a.sellVal,
+    stock:(a,b)=>b.p.stock-a.p.stock,
+    cost:(a,b)=>(b.costVal||0)-(a.costVal||0),
+    profit:(a,b)=>(b.profit||0)-(a.profit||0),
+  };
+  enriched.sort((a,b)=>{
+    const r=(sortFns[invValueSort.key]||sortFns.value)(a,b);
+    return invValueSort.dir==='asc'?-r:r;
+  });
+
+  const totalValue=enriched.reduce((s,r)=>s+r.sellVal,0);
+  const totalKg=products.reduce((s,p)=>s+p.stock,0);
+  const totalCost=enriched.reduce((s,r)=>s+(r.costVal||0),0);
+  const totalProfit=totalValue-totalCost;
+  const hasCostData=enriched.some(r=>r.avgCost!==null);
+  const missingCostCount=enriched.filter(r=>r.p.stock>0&&r.avgCost===null).length;
+
+  const rows=enriched.map(r=>`<tr>
+    <td><strong>${r.p.name}</strong></td>
+    <td>${r.p.stock} কেজি</td>
+    <td>৳${r.sell}</td>
+    <td><strong style="color:var(--orange)">৳${r.sellVal.toLocaleString()}</strong></td>
+    <td>${r.avgCost!==null?'৳'+Math.round(r.avgCost):'<span style="color:var(--text-muted);font-size:.75rem">তথ্য নেই</span>'}</td>
+    <td>${r.costVal!==null?'৳'+Math.round(r.costVal).toLocaleString():'—'}</td>
+    <td>${r.profit!==null?`<strong style="color:${r.profit>=0?'#27ae60':'#e74c3c'}">৳${Math.round(r.profit).toLocaleString()}</strong>${r.margin!==null?` <span style="font-size:.7rem;color:var(--text-muted)">(${r.margin}%)</span>`:''}`:'—'}</td>
+  </tr>`).join('');
+
+  document.getElementById('admin-main').innerHTML=`<div class="admin-section">
+    <div class="admin-section-header"><h3>📊 ইনভেন্টরি মূল্য রিপোর্ট</h3>
+      <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="exportInvValueCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px">
+      <div class="inv-value-card" style="margin:0">
+        <div style="font-size:.8rem;opacity:.8">মোট বিক্রয়মূল্য</div>
+        <div class="inv-value-amount" style="font-size:1.5rem">৳${totalValue.toLocaleString()}</div>
+        <div style="font-size:.75rem;opacity:.7;margin-top:2px">মোট ${totalKg} কেজি · ${products.filter(p=>p.stock>0).length}টি পণ্য</div>
+      </div>
+      <div style="background:var(--bg-raised);border-radius:var(--radius-sm);padding:16px">
+        <div style="font-size:.8rem;color:var(--text-muted)">মোট ক্রয়মূল্য (ব্যাচ থেকে)</div>
+        <div style="font-size:1.5rem;font-weight:800;color:#2980b9">৳${totalCost.toLocaleString()}</div>
+        ${missingCostCount>0?`<div style="font-size:.7rem;color:#f39c12;margin-top:2px">${missingCostCount}টি পণ্যের ক্রয়মূল্য তথ্য নেই</div>`:''}
+      </div>
+      <div style="background:var(--bg-raised);border-radius:var(--radius-sm);padding:16px">
+        <div style="font-size:.8rem;color:var(--text-muted)">সম্ভাব্য মুনাফা (সব বিক্রি হলে)</div>
+        <div style="font-size:1.5rem;font-weight:800;color:${totalProfit>=0?'#27ae60':'#e74c3c'}">৳${totalProfit.toLocaleString()}</div>
+      </div>
+    </div>
+    ${!hasCostData?`<div style="background:#fff3cd;border:1px solid #f4a40a;border-radius:8px;padding:10px 14px;font-size:.8rem;color:#856404;margin-bottom:12px">💡 ক্রয়মূল্য ভিত্তিক হিসাব দেখতে <a href="#" onclick="showAdminTab('batches');return false" style="color:#856404;font-weight:700;text-decoration:underline">📦 ব্যাচ ট্র্যাকিং</a>-এ পণ্যের ক্রয়মূল্যসহ ব্যাচ যোগ করুন।</div>`:''}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <input class="search-bar" placeholder="পণ্য খুঁজুন..." oninput="searchInvValue(this.value)" style="max-width:200px">
+      <button class="btn-sm" style="background:${invValueSort.key==='value'?'var(--green-dark)':'var(--bg-raised)'};color:${invValueSort.key==='value'?'#fff':'var(--text)'};border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:.75rem;cursor:pointer" onclick="sortInvValue('value')">বিক্রয়মূল্য</button>
+      <button class="btn-sm" style="background:${invValueSort.key==='stock'?'var(--green-dark)':'var(--bg-raised)'};color:${invValueSort.key==='stock'?'#fff':'var(--text)'};border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:.75rem;cursor:pointer" onclick="sortInvValue('stock')">স্টক</button>
+      <button class="btn-sm" style="background:${invValueSort.key==='cost'?'var(--green-dark)':'var(--bg-raised)'};color:${invValueSort.key==='cost'?'#fff':'var(--text)'};border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:.75rem;cursor:pointer" onclick="sortInvValue('cost')">ক্রয়মূল্য</button>
+      <button class="btn-sm" style="background:${invValueSort.key==='profit'?'var(--green-dark)':'var(--bg-raised)'};color:${invValueSort.key==='profit'?'#fff':'var(--text)'};border:1px solid var(--border);padding:6px 12px;border-radius:20px;font-size:.75rem;cursor:pointer" onclick="sortInvValue('profit')">মুনাফা</button>
+    </div>
+    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>পণ্য</th><th>স্টক</th><th>বিক্রয়মূল্য/কেজি</th><th>মোট বিক্রয়মূল্য</th><th>ক্রয়মূল্য/কেজি</th><th>মোট ক্রয়মূল্য</th><th>সম্ভাব্য মুনাফা</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan="7" class="no-data">কোনো পণ্য পাওয়া যায়নি</td></tr>'}</tbody></table></div>
+  </div>`;
 }
 
 // NOTIFICATION TEMPLATES
@@ -17967,6 +18267,26 @@ function changeAdminEmail(){
   showToast('অ্যাডমিন ইমেইল পরিবর্তিত হয়েছে ✅','success');
   setTimeout(()=>renderPasswordChange(),1500);
 }
+function generateRecoveryCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code='';
+  for(let i=0;i<10;i++){ if(i===5) code+='-'; code+=chars[Math.floor(Math.random()*chars.length)]; }
+  return code;
+}
+function regenerateRecoveryCode(){
+  showCustomAlert('রিকভারি কোড নতুন করে তৈরি করুন','পুরনো কোডটি আর কাজ করবে না। নিশ্চিত?','হ্যাঁ, তৈরি করুন','warning',()=>{
+    const admin=getAdmin();
+    const code=generateRecoveryCode();
+    saveAdmin({...admin,recoveryCode:code});
+    showToast('✅ নতুন রিকভারি কোড তৈরি হয়েছে — এটা সংরক্ষণ করুন');
+    renderPasswordChange();
+  });
+}
+function copyRecoveryCode(){
+  const admin=getAdmin();
+  if(!admin.recoveryCode) return;
+  navigator.clipboard?.writeText(admin.recoveryCode).then(()=>showToast('✅ কোড কপি হয়েছে')).catch(()=>{});
+}
 function changeAdminPassword(){
   const curr=document.getElementById('pw-current').value;
   const nw=document.getElementById('pw-new').value;
@@ -17979,10 +18299,14 @@ function changeAdminPassword(){
   if(curr!==admin.password){err.textContent='বর্তমান পাসওয়ার্ড ভুল';return;}
   if(nw.length<6){err.textContent='নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে';return;}
   if(nw!==conf){err.textContent='পাসওয়ার্ড মিলছে না';return;}
-  saveAdmin({...admin,password:nw});suc.textContent='পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে ✅';
+  if(nw===curr){err.textContent='নতুন পাসওয়ার্ড আগের পাসওয়ার্ডের মতো হতে পারবে না';return;}
+  const updates={password:nw,pwChangedAt:Date.now()};
+  if(!admin.recoveryCode) updates.recoveryCode=generateRecoveryCode();
+  saveAdmin({...admin,...updates});suc.textContent='পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে ✅';
   document.getElementById('pw-current').value='';document.getElementById('pw-new').value='';document.getElementById('pw-confirm').value='';
   document.getElementById('pw-strength').style.width='0';
   showToast('পাসওয়ার্ড পরিবর্তিত হয়েছে ✅','success');
+  renderPasswordChange();
 }
 function checkPwStrength(){
   const v=document.getElementById('pw-new')?.value||'';
@@ -17991,8 +18315,21 @@ function checkPwStrength(){
   if(v.length>=6) score++;if(v.length>=10) score++;if(/[A-Z]/.test(v)) score++;if(/[0-9]/.test(v)) score++;if(/[^a-zA-Z0-9]/.test(v)) score++;
   const colors=['#e74c3c','#e74c3c','#f4a40a','#2ecc71','#27ae60'];
   const widths=['20%','40%','60%','80%','100%'];
+  const labels=['দুর্বল','দুর্বল','মাঝারি','ভালো','শক্তিশালী'];
   bar.style.background=v.length?colors[Math.min(score,4)]:'transparent';
   bar.style.width=v.length?widths[Math.min(score,4)]:'0';
+  const lbl=document.getElementById('pw-strength-label');
+  if(lbl) lbl.textContent=v.length?`পাসওয়ার্ডের শক্তি: ${labels[Math.min(score,4)]}`:'';
+  checkPwMatch();
+}
+function checkPwMatch(){
+  const nw=document.getElementById('pw-new')?.value||'';
+  const conf=document.getElementById('pw-confirm')?.value||'';
+  const el=document.getElementById('pw-match-indicator');
+  if(!el) return;
+  if(!conf){el.textContent='';return;}
+  if(nw===conf){el.textContent='✓ পাসওয়ার্ড মিলেছে';el.style.color='#27ae60';}
+  else{el.textContent='✗ পাসওয়ার্ড মিলছে না';el.style.color='#e74c3c';}
 }
 function clearAllAlerts(){
   if(!confirm('সব স্টক অ্যালার্ট মুছে ফেলবেন?')) return;
@@ -19260,6 +19597,7 @@ function renderPasswordChange(){
         <div class="admin-section">
           <div class="admin-section-header"><h3>🔑 পাসওয়ার্ড পরিবর্তন</h3></div>
           <div class="admin-form">
+            ${admin.pwChangedAt?`<div style="font-size:.75rem;color:var(--text-muted);margin-bottom:12px">সর্বশেষ পরিবর্তন: ${new Date(admin.pwChangedAt).toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}</div>`:''}
             <div class="form-group"><label>বর্তমান পাসওয়ার্ড <span class="req-star">*</span></label>
               <div class="pw-wrap">
                 <input type="password" id="pw-current" placeholder="বর্তমান পাসওয়ার্ড" required>
@@ -19274,14 +19612,30 @@ function renderPasswordChange(){
             </div>
             <div class="form-group"><label>নিশ্চিত পাসওয়ার্ড <span class="req-star">*</span></label>
               <div class="pw-wrap">
-                <input type="password" id="pw-confirm" placeholder="পুনরায় লিখুন" required minlength="6">
+                <input type="password" id="pw-confirm" placeholder="পুনরায় লিখুন" required minlength="6" oninput="checkPwMatch()">
                 <button type="button" class="pw-eye-btn" onclick="togglePwVis('pw-confirm',this)"><i class="fas fa-eye"></i></button>
               </div>
             </div>
-            <div id="pw-strength" style="height:4px;border-radius:2px;margin-top:-8px;margin-bottom:10px;transition:all .3s"></div>
+            <div id="pw-strength" style="height:4px;border-radius:2px;margin-top:-8px;margin-bottom:4px;transition:all .3s"></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+              <span id="pw-strength-label" style="font-size:.72rem;color:var(--text-muted)"></span>
+              <span id="pw-match-indicator" style="font-size:.72rem;font-weight:600"></span>
+            </div>
             <div id="pw-error" class="error-msg"></div>
             <div id="pw-success" class="success-msg"></div>
             <button class="btn-primary" onclick="changeAdminPassword()" style="margin-top:5px"><i class="fas fa-key"></i> পাসওয়ার্ড পরিবর্তন করুন</button>
+          </div>
+        </div>
+        <div class="admin-section">
+          <div class="admin-section-header"><h3>🛟 রিকভারি কোড</h3></div>
+          <div class="admin-form">
+            <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">পাসওয়ার্ড ভুলে গেলে এই কোড দিয়ে লগইন পেজ থেকে রিসেট করতে পারবেন। এটা নিরাপদ জায়গায় সংরক্ষণ করুন — কাউকে শেয়ার করবেন না।</div>
+            ${admin.recoveryCode?`
+            <div style="display:flex;align-items:center;gap:10px;background:var(--green-pale);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px">
+              <code style="font-size:1.1rem;font-weight:800;letter-spacing:1px;color:var(--green-dark);flex:1">${admin.recoveryCode}</code>
+              <button class="btn-sm" style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:6px 10px;cursor:pointer" onclick="copyRecoveryCode()"><i class="far fa-copy"></i></button>
+            </div>`:`<div style="font-size:.82rem;color:var(--text-muted);margin-bottom:12px">এখনো কোনো রিকভারি কোড তৈরি করা হয়নি।</div>`}
+            <button class="btn-sm" style="background:var(--bg-raised);border:1px solid var(--border);padding:7px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:.82rem" onclick="regenerateRecoveryCode()"><i class="fas fa-rotate"></i> ${admin.recoveryCode?'নতুন কোড তৈরি করুন':'কোড তৈরি করুন'}</button>
           </div>
         </div>
       </div>
