@@ -20749,6 +20749,7 @@ function computePeriodStats(fromD,toD){
   const netProfit=totalRevenue-totalExpenses;
   return {orders,validOrders,totalRevenue,avgOrder,newCustomers,expenses,totalExpenses,netProfit};
 }
+let reportCompareMode='prev'; // 'prev' = immediately preceding period, 'yoy' = same period last year
 function getReportData(){
   const def=reportDefaultDates();
   const from=reportFromDate||def.from, to=reportToDate||def.to;
@@ -20756,11 +20757,21 @@ function getReportData(){
   const cur=computePeriodStats(fromD,toD);
   const {orders,validOrders,totalRevenue,avgOrder,newCustomers,expenses,totalExpenses,netProfit}=cur;
 
-  // ── Previous period of equal length, immediately before `from` ──
-  const spanMs=toD.getTime()-fromD.getTime();
-  const prevToD=new Date(fromD.getTime()-1);
-  const prevFromD=new Date(prevToD.getTime()-spanMs);
-  const prev=computePeriodStats(prevFromD,prevToD);
+  // ── Comparison period: either immediately-preceding (equal length) or
+  // the same calendar period one year ago — mango sales are highly
+  // seasonal, so "previous period" can look like a false decline/growth
+  // right at season boundaries. YoY gives a fairer read for a seasonal business. ──
+  let prev;
+  if(reportCompareMode==='yoy'){
+    const prevFromD=new Date(fromD);prevFromD.setFullYear(prevFromD.getFullYear()-1);
+    const prevToD=new Date(toD);prevToD.setFullYear(prevToD.getFullYear()-1);
+    prev=computePeriodStats(prevFromD,prevToD);
+  }else{
+    const spanMs=toD.getTime()-fromD.getTime();
+    const prevToD=new Date(fromD.getTime()-1);
+    const prevFromD=new Date(prevToD.getTime()-spanMs);
+    prev=computePeriodStats(prevFromD,prevToD);
+  }
 
   const prodSales={};
   validOrders.forEach(o=>(o.items||[]).forEach(it=>{
@@ -20793,8 +20804,30 @@ function getReportData(){
   });
   const topCustomers=Object.values(custMap).sort((a,b)=>b.spend-a.spend).slice(0,5);
 
+  // ── Delivery district breakdown ──
+  const districtMap={};
+  validOrders.forEach(o=>{const d=o.district||'অজানা';districtMap[d]=(districtMap[d]||0)+(o.total||0);});
+  const topDistricts=Object.entries(districtMap).map(([name,revenue])=>({name,revenue})).sort((a,b)=>b.revenue-a.revenue).slice(0,5);
+
+  // ── COGS-based gross profit (uses batch cost data, when available) ──
+  let cogs=0,cogsCoveredQty=0,totalSoldQty=0;
+  try{
+    Object.entries(prodSales).forEach(([pid,ps])=>{
+      totalSoldQty+=ps.qty;
+      const avgCost=getProductAvgCost(pid);
+      if(avgCost!==null){ cogs+=avgCost*ps.qty; cogsCoveredQty+=ps.qty; }
+    });
+  }catch(e){}
+  const hasCogsData=cogsCoveredQty>0;
+  const grossProfit=totalRevenue-cogs;
+
   return {from,to,orders,validOrders,totalRevenue,avgOrder,newCustomers,topProducts,statusCounts,payCounts,payLabels,
-    expenses,totalExpenses,netProfit,expenseBreakdown,topCustomers,prev};
+    expenses,totalExpenses,netProfit,expenseBreakdown,topCustomers,topDistricts,prev,
+    cogs,hasCogsData,cogsCoveredQty,totalSoldQty,grossProfit};
+}
+function setReportCompareMode(mode){
+  reportCompareMode=mode;
+  renderAdminReports();
 }
 function pctChange(curr,prev){
   if(!prev){ return curr>0?{txt:'নতুন',arrow:'▲',cls:'up'}:{txt:'০%',arrow:'',cls:'flat'}; }
@@ -20831,7 +20864,15 @@ function renderAdminReports(){
           <button class="btn-add" style="background:var(--bg-raised);color:var(--text)" onclick="window.print()"><i class="fas fa-print"></i> প্রিন্ট</button>
         </div>
       </div>
-      <div style="font-size:.72rem;color:var(--text-muted)">তুলনা করা হচ্ছে: ${r.prev.orders.length||r.prev.totalRevenue?'আগের সমান দৈর্ঘ্যের সময়কালের সাথে':'পূর্ববর্তী সময়ে কোনো ডেটা নেই'}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <span style="font-size:.72rem;color:var(--text-muted)">তুলনার ভিত্তি:</span>
+        <div style="display:flex;gap:4px;background:var(--bg-raised);border-radius:20px;padding:3px">
+          <button onclick="setReportCompareMode('prev')" style="background:${reportCompareMode==='prev'?'var(--green-dark)':'transparent'};color:${reportCompareMode==='prev'?'#fff':'var(--text)'};border:none;padding:5px 12px;border-radius:16px;font-size:.72rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-weight:600">আগের সমান সময়কাল</button>
+          <button onclick="setReportCompareMode('yoy')" style="background:${reportCompareMode==='yoy'?'var(--green-dark)':'transparent'};color:${reportCompareMode==='yoy'?'#fff':'var(--text)'};border:none;padding:5px 12px;border-radius:16px;font-size:.72rem;cursor:pointer;font-family:'Hind Siliguri',sans-serif;font-weight:600">গত বছরের একই সময়</button>
+        </div>
+        <span style="font-size:.68rem;color:var(--text-muted)">💡 আমের বিক্রি মৌসুমনির্ভর — মৌসুমের শুরু/শেষে "গত বছরের একই সময়" তুলনা বেশি নির্ভরযোগ্য</span>
+      </div>
+      <div style="font-size:.72rem;color:var(--text-muted)">তুলনা করা হচ্ছে: ${r.prev.orders.length||r.prev.totalRevenue?(reportCompareMode==='yoy'?'গত বছরের একই সময়কালের সাথে':'আগের সমান দৈর্ঘ্যের সময়কালের সাথে'):'তুলনার জন্য কোনো ডেটা নেই'}</div>
     </div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -20870,6 +20911,19 @@ function renderAdminReports(){
         <div><div style="font-size:.72rem;opacity:.8">মোট খরচ</div><div style="font-size:1.15rem;font-weight:800">৳${r.totalExpenses.toLocaleString()}</div><div style="margin-top:4px">${pctBadgeHtml(r.totalExpenses,r.prev.totalExpenses,true)}</div></div>
         <div><div style="font-size:.72rem;opacity:.8">নিট মুনাফা</div><div style="font-size:1.15rem;font-weight:800;color:${r.netProfit>=0?'#a5e8b0':'#ffb3ab'}">৳${r.netProfit.toLocaleString()}</div><div style="margin-top:4px">${pctBadgeHtml(r.netProfit,r.prev.netProfit,true)}</div></div>
       </div>
+      ${r.hasCogsData?`<div style="background:var(--bg-raised);border-radius:var(--radius-sm);padding:14px;margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:.78rem;color:var(--text-muted)">পণ্যের প্রকৃত ক্রয়মূল্য (COGS) বাদে গ্রস মুনাফা</div>
+            <div style="font-size:1.1rem;font-weight:800;color:${r.grossProfit>=0?'#27ae60':'#e74c3c'}">৳${Math.round(r.grossProfit).toLocaleString()}</div>
+          </div>
+          <div style="text-align:right;font-size:.72rem;color:var(--text-muted)">
+            মোট বিক্রিত ${r.totalSoldQty} কেজির মধ্যে ${r.cogsCoveredQty} কেজির ক্রয়মূল্য জানা আছে<br>
+            ক্রয়মূল্য: ৳${Math.round(r.cogs).toLocaleString()}
+            ${r.cogsCoveredQty<r.totalSoldQty?' (আংশিক তথ্য)':''}
+          </div>
+        </div>
+      </div>`:`<div style="font-size:.72rem;color:var(--text-muted);margin-top:8px">💡 প্রকৃত ক্রয়মূল্য-ভিত্তিক (COGS) গ্রস মুনাফা দেখতে <a href="#" onclick="showAdminTab('batches');return false" style="color:var(--green-dark);font-weight:700">📦 ব্যাচ ট্র্যাকিং</a>-এ পণ্যের ক্রয়মূল্যসহ ব্যাচ যোগ করুন।</div>`}
     </div>
     <div class="admin-section">
       <div class="admin-section-header"><h3>🏆 পণ্য অনুযায়ী বিক্রয় (আয় অনুযায়ী)</h3></div>
@@ -20890,6 +20944,19 @@ function renderAdminReports(){
           <tbody>${r.topCustomers.map(c=>`<tr><td><strong>${c.name}</strong></td><td>${c.orders}টি</td><td>৳${c.spend.toLocaleString()}</td></tr>`).join('')}</tbody>
         </table>
       </div>`:'<div class="no-data" style="padding:30px;text-align:center">এই সময়ে কোনো কাস্টমার নেই</div>'}
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-header"><h3>🗺️ শীর্ষ ডেলিভারি জেলা</h3></div>
+      ${r.topDistricts.length?`
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${r.topDistricts.map((d,i)=>{
+          const maxD=r.topDistricts[0].revenue||1;
+          return`<div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px"><span>${d.name}</span><strong>৳${d.revenue.toLocaleString()}</strong></div>
+            <div style="background:var(--bg-raised);border-radius:10px;height:8px;overflow:hidden"><div style="width:${(d.revenue/maxD)*100}%;height:100%;background:var(--green-dark);border-radius:10px"></div></div>
+          </div>`;
+        }).join('')}
+      </div>`:'<div class="no-data" style="padding:30px;text-align:center">এই সময়ে কোনো বিক্রয় নেই</div>'}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="analytics-grid-2col">
       <div class="admin-section">
@@ -20923,8 +20990,9 @@ function downloadReportCSV(){
   const r=getReportData();
   const rows=[
     ['রিপোর্ট সময়কাল',`${r.from} থেকে ${r.to}`],
+    ['তুলনার ভিত্তি',reportCompareMode==='yoy'?'গত বছরের একই সময়কাল':'আগের সমান দৈর্ঘ্যের সময়কাল'],
     [],
-    ['সারাংশ','এই সময়ে','আগের সময়ে','পরিবর্তন'],
+    ['সারাংশ','এই সময়ে','তুলনার সময়ে','পরিবর্তন'],
     ['মোট বিক্রয়',r.totalRevenue,r.prev.totalRevenue,pctChange(r.totalRevenue,r.prev.totalRevenue).txt],
     ['মোট অর্ডার',r.orders.length,r.prev.orders.length,pctChange(r.orders.length,r.prev.orders.length).txt],
     ['বৈধ অর্ডার',r.validOrders.length,r.prev.validOrders.length,''],
@@ -20932,13 +21000,20 @@ function downloadReportCSV(){
     ['মোট খরচ',r.totalExpenses,r.prev.totalExpenses,pctChange(r.totalExpenses,r.prev.totalExpenses).txt],
     ['নিট মুনাফা',r.netProfit,r.prev.netProfit,pctChange(r.netProfit,r.prev.netProfit).txt],
     ['নতুন কাস্টমার',r.newCustomers,r.prev.newCustomers,pctChange(r.newCustomers,r.prev.newCustomers).txt],
-    [],
-    ['পণ্য','বিক্রিত পরিমাণ (কেজি)','আয়']
   ];
+  if(r.hasCogsData){
+    rows.push(['ক্রয়মূল্য (COGS)',Math.round(r.cogs),'',`${r.cogsCoveredQty}/${r.totalSoldQty} কেজির তথ্য জানা`]);
+    rows.push(['গ্রস মুনাফা (COGS ভিত্তিক)',Math.round(r.grossProfit),'','']);
+  }
+  rows.push([]);
+  rows.push(['পণ্য','বিক্রিত পরিমাণ (কেজি)','আয়']);
   r.topProducts.forEach(p=>rows.push([p.name,p.qty,p.revenue]));
   rows.push([]);
   rows.push(['সেরা কাস্টমার','অর্ডার সংখ্যা','মোট খরচ']);
   r.topCustomers.forEach(c=>rows.push([c.name,c.orders,c.spend]));
+  rows.push([]);
+  rows.push(['শীর্ষ ডেলিভারি জেলা','আয়']);
+  r.topDistricts.forEach(d=>rows.push([d.name,d.revenue]));
   rows.push([]);
   rows.push(['অর্ডার স্ট্যাটাস','সংখ্যা']);
   Object.entries(r.statusCounts).forEach(([k,c])=>rows.push([statusLabel(k),c]));
@@ -20965,20 +21040,26 @@ function downloadReportPDF(){
   doc.text('Amer Hat Bazar - Sales Report',14,16);
   doc.setFontSize(10);
   doc.text(`Period: ${r.from} to ${r.to}`,14,23);
-  doc.text(`Generated: ${new Date().toLocaleString('en-GB')}`,14,28);
+  doc.text(`Compared to: ${reportCompareMode==='yoy'?'Same period last year':'Immediately preceding period'}`,14,28);
+  doc.text(`Generated: ${new Date().toLocaleString('en-GB')}`,14,33);
+  const summaryBody=[
+    ['Total Revenue','Tk '+r.totalRevenue.toLocaleString(),'Tk '+r.prev.totalRevenue.toLocaleString(),pct(r.totalRevenue,r.prev.totalRevenue)],
+    ['Total Orders',r.orders.length,r.prev.orders.length,pct(r.orders.length,r.prev.orders.length)],
+    ['Valid Orders',r.validOrders.length,r.prev.validOrders.length,''],
+    ['Cancelled Orders',r.orders.length-r.validOrders.length,r.prev.orders.length-r.prev.validOrders.length,''],
+    ['Average Order Value','Tk '+r.avgOrder.toLocaleString(),'Tk '+r.prev.avgOrder.toLocaleString(),pct(r.avgOrder,r.prev.avgOrder)],
+    ['New Customers',r.newCustomers,r.prev.newCustomers,pct(r.newCustomers,r.prev.newCustomers)],
+    ['Total Expenses','Tk '+r.totalExpenses.toLocaleString(),'Tk '+r.prev.totalExpenses.toLocaleString(),pct(r.totalExpenses,r.prev.totalExpenses)],
+    ['Net Profit','Tk '+r.netProfit.toLocaleString(),'Tk '+r.prev.netProfit.toLocaleString(),pct(r.netProfit,r.prev.netProfit)]
+  ];
+  if(r.hasCogsData){
+    summaryBody.push(['COGS (Cost of Goods Sold)','Tk '+Math.round(r.cogs).toLocaleString(),'',`${r.cogsCoveredQty}/${r.totalSoldQty} kg costed`]);
+    summaryBody.push(['Gross Profit (COGS-based)','Tk '+Math.round(r.grossProfit).toLocaleString(),'','']);
+  }
   doc.autoTable({
-    startY:34,
-    head:[['Metric','This Period','Previous Period','Change']],
-    body:[
-      ['Total Revenue','Tk '+r.totalRevenue.toLocaleString(),'Tk '+r.prev.totalRevenue.toLocaleString(),pct(r.totalRevenue,r.prev.totalRevenue)],
-      ['Total Orders',r.orders.length,r.prev.orders.length,pct(r.orders.length,r.prev.orders.length)],
-      ['Valid Orders',r.validOrders.length,r.prev.validOrders.length,''],
-      ['Cancelled Orders',r.orders.length-r.validOrders.length,r.prev.orders.length-r.prev.validOrders.length,''],
-      ['Average Order Value','Tk '+r.avgOrder.toLocaleString(),'Tk '+r.prev.avgOrder.toLocaleString(),pct(r.avgOrder,r.prev.avgOrder)],
-      ['New Customers',r.newCustomers,r.prev.newCustomers,pct(r.newCustomers,r.prev.newCustomers)],
-      ['Total Expenses','Tk '+r.totalExpenses.toLocaleString(),'Tk '+r.prev.totalExpenses.toLocaleString(),pct(r.totalExpenses,r.prev.totalExpenses)],
-      ['Net Profit','Tk '+r.netProfit.toLocaleString(),'Tk '+r.prev.netProfit.toLocaleString(),pct(r.netProfit,r.prev.netProfit)]
-    ],
+    startY:39,
+    head:[['Metric','This Period','Compared Period','Change']],
+    body:summaryBody,
     theme:'grid',headStyles:{fillColor:[27,94,32]}
   });
   let y=doc.lastAutoTable.finalY+8;
@@ -21000,6 +21081,17 @@ function downloadReportPDF(){
       startY:y+3,
       head:[['Customer','Orders','Total Spend']],
       body:r.topCustomers.map(c=>[c.name,c.orders,'Tk '+c.spend.toLocaleString()]),
+      theme:'grid',headStyles:{fillColor:[27,94,32]}
+    });
+    y=doc.lastAutoTable.finalY+8;
+  }
+  if(r.topDistricts.length){
+    y=ensureSpace(y,20);
+    doc.setFontSize(12);doc.text('Top Delivery Districts',14,y);
+    doc.autoTable({
+      startY:y+3,
+      head:[['District','Revenue']],
+      body:r.topDistricts.map(d=>[d.name,'Tk '+d.revenue.toLocaleString()]),
       theme:'grid',headStyles:{fillColor:[27,94,32]}
     });
     y=doc.lastAutoTable.finalY+8;
