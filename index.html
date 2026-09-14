@@ -17943,6 +17943,22 @@ function renderAdminCustomers(){
   _pg.customers=1;
   selectedCustomerIds.clear();
 
+  // Duplicate phone detection (data-quality signal: accidental double signup etc.)
+  const phoneCounts={};
+  users.forEach(u=>{ if(u.phone) phoneCounts[u.phone]=(phoneCounts[u.phone]||0)+1; });
+  const duplicatePhones=Object.keys(phoneCounts).filter(p=>phoneCounts[p]>1);
+
+  // Upcoming birthdays (next 7 days)
+  const today=new Date();
+  const upcomingBdays=users.filter(u=>{
+    if(!u.birthday) return false;
+    const b=new Date(u.birthday);
+    const thisYear=new Date(today.getFullYear(),b.getMonth(),b.getDate());
+    if(thisYear<new Date(today.getFullYear(),today.getMonth(),today.getDate())) thisYear.setFullYear(today.getFullYear()+1);
+    const diffDays=Math.round((thisYear-today)/86400000);
+    return diffDays>=0&&diffDays<=7;
+  }).sort((a,b)=>new Date(a.birthday).getDate()-new Date(b.birthday).getDate());
+
   document.getElementById('admin-main').innerHTML=`
   <div class="admin-section">
     <div class="admin-section-header">
@@ -17959,6 +17975,7 @@ function renderAdminCustomers(){
           <option value="with-orders">অর্ডার আছে</option>
           <option value="no-orders">অর্ডার নেই</option>
           <option value="high-value">টপ কাস্টমার</option>
+          <option value="duplicate-phone">⚠️ ডুপ্লিকেট ফোন</option>
           <optgroup label="শ্রেণী অনুযায়ী">
             <option value="vip">👑 VIP</option>
             <option value="regular">⭐ নিয়মিত</option>
@@ -17971,6 +17988,16 @@ function renderAdminCustomers(){
         <button onclick="exportCustomersCSV()" style="background:var(--green-dark);color:#fff;border:none;padding:7px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;font-family:'Hind Siliguri',sans-serif;white-space:nowrap"><i class="fas fa-download"></i> CSV</button>
       </div>
     </div>
+
+    ${upcomingBdays.length?`<div class="low-stock-alert" style="margin-bottom:12px;border-left-color:#9d50bb;background:#f5edfa">
+      <div class="low-stock-alert-icon">🎂</div>
+      <div class="low-stock-alert-text"><strong>${upcomingBdays.length}জন কাস্টমারের জন্মদিন আসছে (৭ দিনের মধ্যে)!</strong><span>${upcomingBdays.slice(0,4).map(u=>u.name).join(', ')}${upcomingBdays.length>4?` +আরও ${upcomingBdays.length-4}জন`:''}</span></div>
+    </div>`:''}
+    ${duplicatePhones.length?`<div class="low-stock-alert" style="margin-bottom:12px">
+      <div class="low-stock-alert-icon">⚠️</div>
+      <div class="low-stock-alert-text"><strong>${duplicatePhones.length}টি ফোন নম্বরে একাধিক অ্যাকাউন্ট পাওয়া গেছে</strong><span>ডুপ্লিকেট সাইনআপ হতে পারে — নিচের ফিল্টার থেকে "⚠️ ডুপ্লিকেট ফোন" বেছে দেখুন</span></div>
+      <button onclick="document.getElementById('cust-filter').value='duplicate-phone';filterCustomers('duplicate-phone')" style="background:#f4a40a;color:#fff;border:none;padding:6px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:.78rem;font-family:'Hind Siliguri',sans-serif;white-space:nowrap">দেখুন</button>
+    </div>`:''}
 
     <!-- Stats -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px;background:var(--bg-raised);border-radius:var(--radius-sm);margin-bottom:12px">
@@ -19372,6 +19399,8 @@ function renderAdminStockAlerts(){
 }
 function renderCustomerRows(users,orders){
   if(!users.length) return '<tr><td colspan="8" class="no-data">কোনো কাস্টমার নেই</td></tr>';
+  const phoneCounts={};
+  getUsers().forEach(u=>{ if(u.phone) phoneCounts[u.phone]=(phoneCounts[u.phone]||0)+1; });
   return users.map(u=>{
     const pic=u.avatar||u.picture||'';
     const initials=(u.name||'?').slice(0,1).toUpperCase();
@@ -19385,10 +19414,12 @@ function renderCustomerRows(users,orders){
       :'';
     const userOrders=orders.filter(o=>o.userPhone===u.phone||(u.email&&o.userEmail===u.email));
     const totalSpent=userOrders.reduce((s,o)=>s+(o.total||0),0);
+    const avgOrderValue=userOrders.length?Math.round(totalSpent/userOrders.length):0;
     const lastOrder=userOrders[0];
     const currentAddr=[u.area,u.upazila,u.district].filter(Boolean).join(', ')||'—';
     const permAddr=u.permDistrict?[u.permUpazila,u.permDistrict].filter(Boolean).join(', '):'';
     const isHighValue=totalSpent>=5000;
+    const isDuplicatePhone=u.phone&&phoneCounts[u.phone]>1;
     const joinDate=u.joinDate||u.createdAt?new Date(u.joinDate||u.createdAt).toLocaleDateString('en-GB'):'—';
     let seg=null;
     try{seg=getCustomerSegment(u);}catch(e){}
@@ -19411,7 +19442,7 @@ function renderCustomerRows(users,orders){
       </td>
       <td style="font-size:.78rem">
         <div style="color:var(--text)">${u.email||'—'}</div>
-        <div style="color:var(--green-mid);font-weight:600">${u.phone||'—'}</div>
+        <div style="color:var(--green-mid);font-weight:600">${u.phone||'—'}${isDuplicatePhone?' <span title="এই নম্বরে একাধিক অ্যাকাউন্ট আছে" style="color:#f4a40a">⚠️</span>':''}</div>
       </td>
       <td style="font-size:.75rem;max-width:150px">
         <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📍 ${currentAddr}</div>
@@ -19425,6 +19456,7 @@ function renderCustomerRows(users,orders){
       <td>
         <strong style="color:var(--orange);font-size:.88rem">৳${totalSpent.toLocaleString()}</strong>
         ${isHighValue?'<div style="font-size:.6rem;color:#f0a500;font-weight:700">VIP</div>':''}
+        ${userOrders.length>1?`<div style="font-size:.6rem;color:var(--text-muted)">গড় ৳${avgOrderValue.toLocaleString()}/অর্ডার</div>`:''}
       </td>
       <td onclick="event.stopPropagation()">
         <div style="display:flex;gap:4px;flex-wrap:wrap">
@@ -20186,6 +20218,10 @@ function getFilteredSortedCustomers(){
     users=users.filter(u=>activePhones.has(u.phone));
   } else if(['vip','regular','newcust','atrisk','inactive'].includes(filter)){
     users=users.filter(u=>{try{return getCustomerSegment(u).key===filter;}catch(e){return false;}});
+  } else if(filter==='duplicate-phone'){
+    const phoneCounts={};
+    getUsers().forEach(u=>{ if(u.phone) phoneCounts[u.phone]=(phoneCounts[u.phone]||0)+1; });
+    users=users.filter(u=>u.phone&&phoneCounts[u.phone]>1);
   }
   if(q) users=users.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||(u.phone||'').includes(q)||(u.district||'').includes(q)||(u.permDistrict||'').includes(q));
   users=users.slice().sort((a,b)=>{
