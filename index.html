@@ -8489,12 +8489,72 @@ function renderDashboard(){
   const stockAlerts=JSON.parse(localStorage.getItem('amb_notify')||'{}');
   const alertCount=Object.values(stockAlerts).reduce((s,a)=>s+a.length,0);
   const flashProds=products.filter(p=>p.discount>=15&&p.stock>0).length;
+
+  // ── Today's Priorities: pulls together todos, batches, returns, stock alerts ──
+  const todayStr=new Date().toISOString().slice(0,10);
+  let overdueTodos=0,dueTodayTodos=0;
+  try{
+    const todos=getTodos().filter(t=>!t.completed&&t.dueDate);
+    overdueTodos=todos.filter(t=>t.dueDate<todayStr).length;
+    dueTodayTodos=todos.filter(t=>t.dueDate===todayStr).length;
+  }catch(e){}
+  let expiringBatches=0;
+  try{
+    expiringBatches=getBatches().filter(b=>{
+      const rem=b.remainingQty!==undefined?b.remainingQty:b.qty;
+      if(rem<=0||!b.expiry) return false;
+      const days=Math.ceil((new Date(b.expiry)-new Date())/86400000);
+      return days>=0&&days<=3;
+    }).length;
+  }catch(e){}
+  let pendingReturns=0;
+  try{pendingReturns=getReturns().filter(r=>r.status==='pending').length;}catch(e){}
+  let backInStockPending=0;
+  try{
+    const norm=getStockAlertsNormalized();
+    Object.entries(norm).forEach(([pid,entries])=>{
+      const prod=products.find(p=>Number(p.id)===Number(pid));
+      if(prod&&prod.stock>0) backInStockPending+=entries.filter(e=>!e.notified).length;
+    });
+  }catch(e){}
+  const priorityItems=[
+    {count:overdueTodos+dueTodayTodos,icon:'📋',label:'কাজ আজ/মেয়াদোত্তীর্ণ',tab:'todo',color:'#e74c3c'},
+    {count:expiringBatches,icon:'⚠️',label:'ব্যাচ শীঘ্রই মেয়াদ শেষ',tab:'batches',color:'#f4a40a'},
+    {count:pendingReturns,icon:'↩️',label:'রিটার্ন অনুমোদনের অপেক্ষায়',tab:'returns',color:'#e74c3c'},
+    {count:backInStockPending,icon:'🔔',label:'স্টক ফিরেছে — গ্রাহককে জানান',tab:'stockalerts',color:'#27ae60'},
+  ].filter(x=>x.count>0);
+
+  // ── Sales target mini-progress ──
+  const settings=getSiteSettings();
+  const target=settings.monthlyTarget||50000;
+  const now=new Date();
+  const monthRevenue=orders.filter(o=>{const d=new Date(o.createdAt);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()&&o.status!=='cancelled';}).reduce((s,o)=>s+(o.total||0),0);
+  const targetPct=Math.min(100,Math.round(monthRevenue/target*100));
+
+  // ── Backup reminder ──
+  const lastBackupTs=Number(localStorage.getItem('amb_last_backup_ts'))||null;
+  const daysSinceBackup=lastBackupTs?Math.floor((Date.now()-lastBackupTs)/86400000):null;
+  const backupOverdue=daysSinceBackup===null||daysSinceBackup>=3;
+
   document.getElementById('admin-main').innerHTML=`
-    ${getAdmin().password==='admin123'?`<div style="background:#fff3cd;border:1.5px solid #ffc107;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
+    ${getAdmin().password==='admin123'?`<div style="background:#fff3cd;border:1.5px solid #ffc107;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">⚠️</span><span style="font-size:.85rem;color:#856404"><strong>নিরাপত্তা সতর্কতা:</strong> আপনি এখনো ডিফল্ট পাসওয়ার্ড ব্যবহার করছেন। এখনই পরিবর্তন করুন।</span></div>
       <button class="btn-sm btn-primary" onclick="showAdminTab('password');setTimeout(()=>switchSettingsTab('pass'),50)">পাসওয়ার্ড পরিবর্তন করুন</button>
     </div>`:''}
+    ${backupOverdue?`<div style="background:#fde8e8;border:1.5px solid #e74c3c;border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.3rem">💾</span><span style="font-size:.85rem;color:#822">${daysSinceBackup===null?'আপনি এখনো কোনো ব্যাকআপ নেননি।':`শেষ ব্যাকআপের পর ${daysSinceBackup} দিন পার হয়ে গেছে।`}</span></div>
+      <button class="btn-sm btn-primary" onclick="showAdminTab('backup')">এখনই ব্যাকআপ নিন</button>
+    </div>`:''}
     ${renderLowStockAlert()}
+    ${priorityItems.length?`<div class="admin-section" style="margin-bottom:16px">
+      <div class="admin-section-header"><h3>🔥 আজকের গুরুত্বপূর্ণ কাজ</h3></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+        ${priorityItems.map(x=>`<div onclick="showAdminTab('${x.tab}')" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:var(--bg-raised);border-left:3px solid ${x.color};border-radius:var(--radius-sm);padding:10px 12px">
+          <span style="font-size:1.3rem">${x.icon}</span>
+          <div><div style="font-weight:800;font-size:1rem;color:${x.color}">${x.count}</div><div style="font-size:.7rem;color:var(--text-muted)">${x.label}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
     <div class="stats-grid">
       <div class="stat-card" style="cursor:pointer" onclick="showAdminTab('orders')">
         <div class="stat-card-icon"><i class="fas fa-shopping-bag"></i></div>
@@ -8550,6 +8610,12 @@ function renderDashboard(){
         <div class="stat-card-value">${getReturns().filter(r=>r.status==='pending').length}</div>
         <div style="font-size:.75rem;color:var(--text-muted);margin-top:4px">অপেক্ষারত অনুমোদনের জন্য</div>
       </div>
+    </div>
+
+    <div class="admin-section" style="cursor:pointer" onclick="showAdminTab('target')">
+      <div class="admin-section-header"><h3>🎯 এই মাসের লক্ষ্যমাত্রা</h3><span style="font-weight:800;color:${targetPct>=100?'#27ae60':'var(--orange)'}">${targetPct}%</span></div>
+      <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:6px">৳${monthRevenue.toLocaleString()} / ৳${target.toLocaleString()}</div>
+      <div style="height:10px;background:var(--bg-raised);border-radius:6px;overflow:hidden"><div style="height:100%;width:${targetPct}%;background:${targetPct>=100?'#27ae60':'var(--green-mid)'};border-radius:6px"></div></div>
     </div>
 
     <div id="admin-sales-chart"></div>
