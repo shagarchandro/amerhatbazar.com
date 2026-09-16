@@ -5185,11 +5185,18 @@ function doRegister(){
       <div style="margin-top:20px">
         <h4 style="margin-bottom:8px">কাজের সময়</h4>
         <p style="font-size:.82rem;color:rgba(255,255,255,.5);line-height:1.7">শনি–বৃহস্পতি: সকাল ৯টা – রাত ৯টা<br>শুক্রবার: সকাল ১০টা – সন্ধ্যা ৬টা</p>
+        <div id="footer-open-status" style="margin-top:8px;font-size:.8rem;font-weight:700"></div>
       </div>
     </div>
   </div>
+  <div class="footer-trust-row" style="max-width:1280px;margin:0 auto;padding:16px 20px 0;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;border-top:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.65);font-size:.78rem">
+    <span>🔒 নিরাপদ পেমেন্ট</span>
+    <span>🥭 ১০০% তাজা আমের নিশ্চয়তা</span>
+    <span>🚚 সারাদেশে ডেলিভারি</span>
+    <span>↩️ সহজ রিটার্ন পলিসি</span>
+  </div>
   <div class="footer-bottom" style="max-width:1280px;margin:0 auto;border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px">
-    <p>© ২০২৪ আমের হাট বাজার। সর্বস্বত্ব সংরক্ষিত।</p>
+    <p id="footer-copyright-year">© <span id="footer-year"></span> আমের হাট বাজার। সর্বস্বত্ব সংরক্ষিত।</p>
     <p style="font-size:.78rem;color:rgba(255,255,255,.3)">Designed with ❤️ in Bangladesh</p>
   </div>
 </footer>
@@ -16826,12 +16833,30 @@ function previewInvoiceSample(){
 
 
 
+function initFooterExtras(){
+  const yearEl=document.getElementById('footer-year');
+  if(yearEl) yearEl.textContent=new Date().getFullYear();
+  // Live open/closed badge based on the hours shown just above it:
+  // Sat–Thu 9:00–21:00, Fri 10:00–18:00 (Bangladesh work week)
+  const statusEl=document.getElementById('footer-open-status');
+  if(statusEl){
+    const now=new Date();
+    const day=now.getDay(); // 0=Sun...5=Fri,6=Sat
+    const hour=now.getHours()+now.getMinutes()/60;
+    const isFriday=day===5;
+    const open=isFriday?(hour>=10&&hour<18):(hour>=9&&hour<21);
+    statusEl.innerHTML=open
+      ?'<span style="color:#6fcf97">🟢 এখন খোলা আছে</span>'
+      :'<span style="color:#ff8787">🔴 এখন বন্ধ — কাজের সময়ে যোগাযোগ করুন</span>';
+  }
+}
 // INIT all new features
 setTimeout(function(){
   updateQuickCheckoutBar();
   initAutoSave();
   checkProductDeepLink();
   initOrderStatusAutoRefresh();
+  initFooterExtras();
   var u=getCurrentUser();
   if(u){
     showWelcomeBack(u);
