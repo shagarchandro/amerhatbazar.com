@@ -5501,6 +5501,7 @@ function doRegister(){
           <input class="form-control" id="admin-pass-input" type="password" placeholder="পাসওয়ার্ড" required>
           <button type="button" class="pw-eye-btn" onclick="togglePwVis('admin-pass-input',this)"><i class="fas fa-eye"></i></button>
         </div>
+        <div id="admin-capslock-warn" style="display:none;font-size:.72rem;color:#e76f00;margin-top:4px"><i class="fas fa-triangle-exclamation"></i> Caps Lock চালু আছে</div>
       </div>
       <div id="admin-login-error" class="error-msg"></div>
       <button class="btn-primary" style="width:100%;margin-top:10px;padding:12px" onclick="doAdminLogin()">প্রবেশ করুন</button>
@@ -8135,20 +8136,33 @@ function doAdminLogin(){
   }
   const admin=getAdmin();
   if(email===admin.email&&pass===admin.password){
-    saveAdminLoginLockout({attempts:0,until:0});
+    saveAdminLoginLockout({attempts:0,until:0,lockCount:0});
     if(lockMsg) lockMsg.style.display='none';
     sessionStorage.removeItem('amb_staff_session');
+    // Show when the admin last logged in (before overwriting it) — a
+    // quick way to notice unexpected/unfamiliar login activity.
+    const prevLogin=localStorage.getItem('amb_last_admin_login');
+    localStorage.setItem('amb_last_admin_login',String(now));
+    try{logActivity('🔑 অ্যাডমিন লগইন সফল','🔑');}catch(e){}
     closeModal('admin-login-modal');openAdminPanel();
     try{applyMaintenanceMode();}catch(e){}
     try{applyStaffUIRestrictions();}catch(e){}
+    if(prevLogin) showToast(`👋 স্বাগতম! সর্বশেষ লগইন: ${new Date(Number(prevLogin)).toLocaleString('bn-BD')}`);
   } else {
+    try{logActivity(`⚠️ ব্যর্থ অ্যাডমিন লগইন চেষ্টা — ইমেইল: ${email||'(খালি)'}`,'⚠️');}catch(e){}
     const attempts=(lockout.attempts||0)+1;
     if(attempts>=5){
-      saveAdminLoginLockout({attempts:0,until:now+60000});
-      if(lockMsg){lockMsg.style.display='block';lockMsg.textContent='🔒 ৫ বার ভুল চেষ্টা — ৬০ সেকেন্ডের জন্য বন্ধ করা হয়েছে।';}
+      // Escalating lockout: each time the admin gets locked out again
+      // shortly after, the wait doubles (60s → 120s → 240s..., capped at
+      // 30 minutes) — makes repeated brute-force attempts slower to retry.
+      const lockCount=(lockout.lockCount||0)+1;
+      const durationMs=Math.min(60000*Math.pow(2,lockCount-1),30*60000);
+      saveAdminLoginLockout({attempts:0,until:now+durationMs,lockCount});
+      const durationLabel=durationMs>=60000?Math.round(durationMs/60000)+' মিনিট':Math.round(durationMs/1000)+' সেকেন্ড';
+      if(lockMsg){lockMsg.style.display='block';lockMsg.textContent=`🔒 ৫ বার ভুল চেষ্টা — ${durationLabel}-এর জন্য বন্ধ করা হয়েছে।`;}
       if(err) err.textContent='';
     } else {
-      saveAdminLoginLockout({attempts,until:0});
+      saveAdminLoginLockout({attempts,until:0,lockCount:lockout.lockCount||0});
       if(err) err.textContent=`ইমেইল বা পাসওয়ার্ড ভুল (${5-attempts}টি চেষ্টা বাকি)`;
     }
   }
@@ -8262,12 +8276,46 @@ function adminLogout(){
   try{applyMaintenanceMode();}catch(e){}
 }
 let adminRefreshInterval=null;
+// ── Idle auto-logout: protects an unattended admin session (e.g. on a
+// shared/public computer) by logging out after a period of inactivity,
+// with a warning shown a few minutes beforehand. ──
+const ADMIN_IDLE_LIMIT_MS=30*60*1000; // 30 minutes
+const ADMIN_IDLE_WARN_MS=5*60*1000;   // warn 5 minutes before logout
+let adminIdleTimer=null,adminIdleWarnTimer=null,adminIdleWarned=false;
+function resetAdminIdleTimer(){
+  const panel=document.getElementById('admin-panel');
+  if(!panel||!panel.classList.contains('open')) return;
+  clearTimeout(adminIdleTimer);clearTimeout(adminIdleWarnTimer);
+  adminIdleWarned=false;
+  adminIdleWarnTimer=setTimeout(()=>{
+    adminIdleWarned=true;
+    showToast('⚠️ দীর্ঘক্ষণ নিষ্ক্রিয় — কিছুক্ষণের মধ্যে স্বয়ংক্রিয়ভাবে লগআউট হবে','warning');
+  },ADMIN_IDLE_LIMIT_MS-ADMIN_IDLE_WARN_MS);
+  adminIdleTimer=setTimeout(()=>{
+    const p=document.getElementById('admin-panel');
+    if(p&&p.classList.contains('open')){
+      adminLogout();
+      showToast('🔒 দীর্ঘ সময় নিষ্ক্রিয় থাকায় নিরাপত্তার জন্য স্বয়ংক্রিয়ভাবে লগআউট হয়েছে','warning');
+    }
+  },ADMIN_IDLE_LIMIT_MS);
+}
+function stopAdminIdleTimer(){
+  clearTimeout(adminIdleTimer);clearTimeout(adminIdleWarnTimer);
+  adminIdleTimer=null;adminIdleWarnTimer=null;
+}
+['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(evt=>{
+  document.addEventListener(evt,()=>{
+    if(document.getElementById('admin-panel')?.classList.contains('open')) resetAdminIdleTimer();
+  },{passive:true});
+});
 // Only silently refresh stat numbers — never re-render the whole tab
 function startAdminRefresh(){
   adminRefreshInterval=setInterval(()=>{silentRefreshStats();},4000);
+  resetAdminIdleTimer();
 }
 function stopAdminRefresh(){
   if(adminRefreshInterval){clearInterval(adminRefreshInterval);adminRefreshInterval=null;}
+  stopAdminIdleTimer();
 }
 function silentRefreshStats(){
   // Only update the 4 stat cards on dashboard without touching anything else
@@ -15303,6 +15351,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   try{
     document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter') doLogin();});
     document.getElementById('admin-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter') doAdminLogin();});
+    ['keydown','keyup'].forEach(evt=>document.getElementById('admin-pass-input')?.addEventListener(evt,e=>{
+      const warn=document.getElementById('admin-capslock-warn');
+      if(warn&&typeof e.getModifierState==='function') warn.style.display=e.getModifierState('CapsLock')?'block':'none';
+    }));
   }catch(e){}
 
   const heroEl=document.getElementById('hero');
