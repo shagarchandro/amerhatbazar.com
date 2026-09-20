@@ -5634,6 +5634,8 @@ function doRegister(){
       <div class="admin-nav-section-label">মার্কেটিং</div>
       <button class="admin-nav-item" onclick="showAdminTab('coupons');closeMobileAdminSidebar()" data-label="কুপন ব্যবস্থাপনা"><i class="fas fa-ticket-alt"></i><span class="admin-nav-label">কুপন ব্যবস্থাপনা</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('reviews');closeMobileAdminSidebar()" data-label="রিভিউ ব্যবস্থাপনা"><i class="fas fa-star"></i><span class="admin-nav-label">রিভিউ ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('blog');closeMobileAdminSidebar()" data-label="ব্লগ ব্যবস্থাপনা"><i class="fas fa-newspaper"></i><span class="admin-nav-label">ব্লগ ব্যবস্থাপনা</span></button>
+      <button class="admin-nav-item" onclick="showAdminTab('ugc');closeMobileAdminSidebar()" data-label="গ্রাহক ছবি (UGC)"><i class="fas fa-camera"></i><span class="admin-nav-label">গ্রাহক ছবি (UGC)</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('messages');closeMobileAdminSidebar()" data-label="বার্তাসমূহ"><i class="fas fa-envelope"></i><span class="admin-nav-label">বার্তাসমূহ <span id="msg-badge" style="background:#e74c3c;color:#fff;font-size:.65rem;padding:1px 6px;border-radius:10px;display:none">0</span></span></button>
       <button class="admin-nav-item" onclick="showAdminTab('flashsale');closeMobileAdminSidebar()" data-label="ফ্ল্যাশ সেল"><i class="fas fa-bolt"></i><span class="admin-nav-label">ফ্ল্যাশ সেল</span></button>
       <button class="admin-nav-item" onclick="showAdminTab('bulk');closeMobileAdminSidebar()" data-label="বাল্ক অর্ডার"><i class="fas fa-boxes"></i><span class="admin-nav-label">বাল্ক অর্ডার</span></button>
@@ -8358,10 +8360,10 @@ function showAdminTab(tab,silent=false){
   document.querySelectorAll('.admin-nav-item').forEach(b=>{
     if((b.getAttribute('onclick')||'').includes("'" + tab + "'")) b.classList.add('active');
   });
-  const titles={dashboard:'📊 ড্যাশবোর্ড',products:'📦 পণ্য',orders:'🛒 অর্ডার',customers:'👥 কাস্টমার',staff:'👤 স্টাফ',coupons:'🎫 কুপন',reviews:'⭐ রিভিউ',delivery:'🚚 ডেলিভারি',password:'🔑 পাসওয়ার্ড',customize:'🎨 কাস্টমাইজ',flashsale:'⚡ ফ্ল্যাশ সেল',bulk:'🏢 বাল্ক',newsletter:'📬 নিউজলেটার',loyalty:'🌟 লয়্যালটি',stockalerts:'🔔 স্টক অ্যালার্ট',analytics:'📈 অ্যানালিটিক্স',target:'🎯 লক্ষ্যমাত্রা',backup:'💾 ব্যাকআপ',reports:'📑 রিপোর্ট সেন্টার',giftcards:'🎁 গিফট কার্ড',returns:'↩️ রিটার্ন/রিফান্ড',settings:'⚙️ সেটিংস',messages:'✉️ বার্তাসমূহ',invoicesettings:'🧾 Invoice',expenses:'💰 খরচ',invvalue:'📊 ইনভেন্টরি',notiftemplates:'🔔 টেমপ্লেট',preorders:'📋 প্রি-অর্ডার'};
+  const titles={dashboard:'📊 ড্যাশবোর্ড',products:'📦 পণ্য',orders:'🛒 অর্ডার',customers:'👥 কাস্টমার',staff:'👤 স্টাফ',coupons:'🎫 কুপন',reviews:'⭐ রিভিউ',blog:'📰 ব্লগ ব্যবস্থাপনা',ugc:'📸 গ্রাহক ছবি',delivery:'🚚 ডেলিভারি',password:'🔑 পাসওয়ার্ড',customize:'🎨 কাস্টমাইজ',flashsale:'⚡ ফ্ল্যাশ সেল',bulk:'🏢 বাল্ক',newsletter:'📬 নিউজলেটার',loyalty:'🌟 লয়্যালটি',stockalerts:'🔔 স্টক অ্যালার্ট',analytics:'📈 অ্যানালিটিক্স',target:'🎯 লক্ষ্যমাত্রা',backup:'💾 ব্যাকআপ',reports:'📑 রিপোর্ট সেন্টার',giftcards:'🎁 গিফট কার্ড',returns:'↩️ রিটার্ন/রিফান্ড',settings:'⚙️ সেটিংস',messages:'✉️ বার্তাসমূহ',invoicesettings:'🧾 Invoice',expenses:'💰 খরচ',invvalue:'📊 ইনভেন্টরি',notiftemplates:'🔔 টেমপ্লেট',preorders:'📋 প্রি-অর্ডার'};
   const t=document.getElementById('admin-page-title');
   if(t) t.textContent=titles[tab]||tab;
-  const tabFnMap={dashboard:'renderDashboard',products:'renderAdminProducts',orders:'renderAdminOrders',customers:'renderAdminCustomers',staff:'renderAdminStaff',coupons:'renderAdminCoupons',reviews:'renderAdminReviews',delivery:'renderDeliverySettings',password:'renderPasswordChange',customize:'renderCustomizeSettings',flashsale:'renderAdminFlashSale',bulk:'renderAdminBulkOrders',newsletter:'renderAdminNewsletter',loyalty:'renderAdminLoyalty',stockalerts:'renderAdminStockAlerts',analytics:'renderAdminAnalytics',target:'renderAdminTarget',backup:'renderAdminBackup',reports:'renderAdminReports',giftcards:'renderAdminGiftCards',returns:'renderAdminReturns',settings:'renderAdminSettings',messages:'renderAdminMessages',invoicesettings:'renderAdminInvoiceSettings',expenses:'renderAdminExpenses',invvalue:'renderInventoryValue',notiftemplates:'renderAdminNotifTemplates',preorders:'renderAdminPreOrders',profit:'renderAdminProfit',forecast:'renderAdminForecast',wholesale:'renderAdminWholesale',segments:'renderAdminSegments',seasonal:'renderAdminSeasonal',activitylog:'renderAdminActivityLog',todo:'renderAdminTodo',calendar:'renderAdminCalendar',batches:'renderAdminBatches',tickets:'renderAdminTickets',zones:'renderAdminDeliveryZones',themebuilder:'renderAdminThemeBuilder',oauth:'renderAdminOAuthSettings',paymentsettings:'renderAdminPaymentSettings'};
+  const tabFnMap={dashboard:'renderDashboard',products:'renderAdminProducts',orders:'renderAdminOrders',customers:'renderAdminCustomers',staff:'renderAdminStaff',coupons:'renderAdminCoupons',reviews:'renderAdminReviews',blog:'renderAdminBlog',ugc:'renderAdminUGC',delivery:'renderDeliverySettings',password:'renderPasswordChange',customize:'renderCustomizeSettings',flashsale:'renderAdminFlashSale',bulk:'renderAdminBulkOrders',newsletter:'renderAdminNewsletter',loyalty:'renderAdminLoyalty',stockalerts:'renderAdminStockAlerts',analytics:'renderAdminAnalytics',target:'renderAdminTarget',backup:'renderAdminBackup',reports:'renderAdminReports',giftcards:'renderAdminGiftCards',returns:'renderAdminReturns',settings:'renderAdminSettings',messages:'renderAdminMessages',invoicesettings:'renderAdminInvoiceSettings',expenses:'renderAdminExpenses',invvalue:'renderInventoryValue',notiftemplates:'renderAdminNotifTemplates',preorders:'renderAdminPreOrders',profit:'renderAdminProfit',forecast:'renderAdminForecast',wholesale:'renderAdminWholesale',segments:'renderAdminSegments',seasonal:'renderAdminSeasonal',activitylog:'renderAdminActivityLog',todo:'renderAdminTodo',calendar:'renderAdminCalendar',batches:'renderAdminBatches',tickets:'renderAdminTickets',zones:'renderAdminDeliveryZones',themebuilder:'renderAdminThemeBuilder',oauth:'renderAdminOAuthSettings',paymentsettings:'renderAdminPaymentSettings'};
   const fnName=tabFnMap[tab];
   const adminMain=document.getElementById('admin-main');
   if(fnName&&typeof window[fnName]==='function'){
@@ -11661,19 +11663,91 @@ function filterByTag(tag){
 // ============================================================
 // 13. CUSTOMER PHOTO GALLERY (UGC)
 // ============================================================
-const UGC_PHOTOS=[
-  {emoji:'🥭',name:'রহিম উদ্দিন'},{emoji:'😋',name:'ফারহানা বেগম'},
-  {emoji:'📦',name:'কামাল হোসেন'},{emoji:'🍽️',name:'সুমাইয়া আক্তার'},
-  {emoji:'👨‍👩‍👧‍👦',name:'তানভীর আহমেদ'},{emoji:'🛍️',name:'নাসরিন জাহান'},
+const DEFAULT_UGC_PHOTOS=[
+  {id:1,emoji:'🥭',name:'রহিম উদ্দিন'},{id:2,emoji:'😋',name:'ফারহানা বেগম'},
+  {id:3,emoji:'📦',name:'কামাল হোসেন'},{id:4,emoji:'🍽️',name:'সুমাইয়া আক্তার'},
+  {id:5,emoji:'👨‍👩‍👧‍👦',name:'তানভীর আহমেদ'},{id:6,emoji:'🛍️',name:'নাসরিন জাহান'},
 ];
+function getUGCPhotos(){
+  try{
+    const raw=localStorage.getItem('amb_ugc_photos');
+    if(raw===null) return DEFAULT_UGC_PHOTOS;
+    const parsed=JSON.parse(raw);
+    return Array.isArray(parsed)?parsed:DEFAULT_UGC_PHOTOS;
+  }catch(e){return DEFAULT_UGC_PHOTOS;}
+}
+function saveUGCPhotos(photos){localStorage.setItem('amb_ugc_photos',JSON.stringify(photos));}
 function renderUGCGallery(){
   const grid=document.getElementById('ugc-grid');
   if(!grid) return;
-  grid.innerHTML=UGC_PHOTOS.map(u=>`
-    <div class="ugc-item" onclick="openLightbox('${u.emoji}',true)">
-      <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:linear-gradient(135deg,var(--green-pale),#b7e4c7)">${u.emoji}</div>
+  const photos=getUGCPhotos();
+  grid.innerHTML=photos.map(u=>`
+    <div class="ugc-item" onclick="openLightbox('${u.image?u.image:u.emoji}',${u.image?false:true})">
+      ${u.image?`<img src="${u.image}" style="width:100%;height:100%;object-fit:cover">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:linear-gradient(135deg,var(--green-pale),#b7e4c7)">${u.emoji}</div>`}
       <div class="ugc-item-overlay"><div class="ugc-item-name">${u.name}</div></div>
-    </div>`).join('');
+    </div>`).join('')||'';
+}
+// ── Admin: UGC Gallery Management ──
+function renderAdminUGC(){
+  const photos=getUGCPhotos();
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h3>📸 গ্রাহক ছবি (UGC) <span style="font-size:.72rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${photos.length}টি</span></h3>
+      </div>
+      <div class="admin-form" style="background:var(--bg-raised);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px">
+        <h4 style="margin-bottom:10px;color:var(--green-dark)">➕ নতুন যোগ করুন</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px" class="ugc-form-grid">
+          <div class="form-group"><label>গ্রাহকের নাম *</label><input class="form-control" id="ugc-f-name" placeholder="যেমন: রহিম উদ্দিন"></div>
+          <div class="form-group"><label>ইমোজি (ছবি না দিলে দেখাবে)</label><input class="form-control" id="ugc-f-emoji" value="🥭" maxlength="4"></div>
+          <div class="form-group"><label>ছবি আপলোড (ঐচ্ছিক, বাস্তব ছবির জন্য)</label><input class="form-control" type="file" accept="image/*" id="ugc-f-image-input" onchange="handleUGCImageUpload(this)">
+            <div id="ugc-f-image-preview" style="margin-top:6px"></div>
+          </div>
+        </div>
+        <input type="hidden" id="ugc-f-image" value="">
+        <button class="btn-add" onclick="addUGCPhoto()" style="margin-top:8px"><i class="fas fa-plus"></i> যোগ করুন</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px">
+        ${photos.length?photos.map(u=>`
+          <div style="position:relative;border-radius:10px;overflow:hidden;aspect-ratio:1;background:var(--bg-raised)">
+            ${u.image?`<img src="${u.image}" style="width:100%;height:100%;object-fit:cover">`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:linear-gradient(135deg,var(--green-pale),#b7e4c7)">${u.emoji}</div>`}
+            <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:.68rem;padding:4px 6px;text-align:center">${u.name}</div>
+            <button onclick="deleteUGCPhoto(${u.id})" style="position:absolute;top:4px;right:4px;background:rgba(231,76,60,.9);color:#fff;border:none;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:.7rem"><i class="fas fa-times"></i></button>
+          </div>`).join(''):'<div class="no-data" style="padding:20px;text-align:center;grid-column:1/-1">কোনো ছবি নেই</div>'}
+      </div>
+    </div>`;
+}
+function handleUGCImageUpload(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>1.5*1024*1024){showToast('ইমেজ সাইজ ১.৫MB এর কম হতে হবে','error');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('ugc-f-image').value=e.target.result;
+    document.getElementById('ugc-f-image-preview').innerHTML=`<img src="${e.target.result}" style="width:50px;height:50px;object-fit:cover;border-radius:8px">`;
+  };
+  reader.readAsDataURL(file);
+}
+function addUGCPhoto(){
+  const name=document.getElementById('ugc-f-name').value.trim();
+  const emoji=document.getElementById('ugc-f-emoji').value.trim()||'🥭';
+  const image=document.getElementById('ugc-f-image').value||'';
+  if(!name){showToast('গ্রাহকের নাম দিন','error');return;}
+  const photos=getUGCPhotos();
+  const newId=photos.length?Math.max(...photos.map(p=>p.id))+1:1;
+  photos.unshift({id:newId,name,emoji,image});
+  saveUGCPhotos(photos);
+  showToast('✅ যোগ হয়েছে','success');
+  renderAdminUGC();
+  try{renderUGCGallery();}catch(e){}
+}
+function deleteUGCPhoto(id){
+  showCustomAlert('ছবি মুছুন','এই এন্ট্রিটি গ্যালারি থেকে মুছে ফেলা হবে।','হ্যাঁ, মুছুন','danger',()=>{
+    saveUGCPhotos(getUGCPhotos().filter(p=>p.id!==id));
+    showToast('✅ মুছে ফেলা হয়েছে','success');
+    renderAdminUGC();
+    try{renderUGCGallery();}catch(e){}
+  });
 }
 
 // ============================================================
@@ -14345,7 +14419,7 @@ function verifyTFA(expectedCode){
 // ============================================================
 // BLOG / NEWS SECTION
 // ============================================================
-const BLOG_POSTS=[
+const DEFAULT_BLOG_POSTS=[
   {id:1,cat:'স্বাস্থ্য',title:'আমের অবিশ্বাস্য স্বাস্থ্য উপকারিতা',excerpt:'আম শুধু সুস্বাদু নয়, এটি পুষ্টিগুণে ভরপুর। জানুন আমের আশ্চর্যজনক স্বাস্থ্য সুবিধা...',emoji:'🌿',date:'১৫ জুন ২০২৫',content:`আম (Mangifera indica) শুধু বাংলাদেশের জাতীয় ফল নয়, এটি বিশ্বের অন্যতম পুষ্টিকর ফলও।
 
 **ভিটামিন সি:** একটি মাঝারি আমে দৈনিক ভিটামিন সি চাহিদার ৬৭% পূরণ হয়।
@@ -14378,12 +14452,22 @@ const BLOG_POSTS=[
 
 **কেমিক্যাল মুক্ত আম:** স্বাভাবিকভাবে পাকা আম একটু অসমান রঙের হয়।`},
 ];
+function getBlogPosts(){
+  try{
+    const raw=localStorage.getItem('amb_blog_posts');
+    if(raw===null) return DEFAULT_BLOG_POSTS;
+    const parsed=JSON.parse(raw);
+    return Array.isArray(parsed)?parsed:DEFAULT_BLOG_POSTS;
+  }catch(e){return DEFAULT_BLOG_POSTS;}
+}
+function saveBlogPosts(posts){localStorage.setItem('amb_blog_posts',JSON.stringify(posts));}
 function renderBlogSection(){
   const grid=document.getElementById('blog-grid');
   if(!grid) return;
-  grid.innerHTML=BLOG_POSTS.map(post=>`
+  const posts=getBlogPosts();
+  grid.innerHTML=posts.map(post=>`
     <div class="blog-card aos">
-      <div class="blog-card-img"><div style="font-size:5rem">${post.emoji}</div></div>
+      <div class="blog-card-img">${post.image?`<img src="${post.image}" style="width:100%;height:100%;object-fit:cover">`:`<div style="font-size:5rem">${post.emoji||'🥭'}</div>`}</div>
       <div class="blog-card-body">
         <span class="blog-card-cat">${post.cat}</span>
         <div class="blog-card-title">${post.title}</div>
@@ -14393,14 +14477,14 @@ function renderBlogSection(){
           <button class="blog-read-btn" onclick="openBlogPost(${post.id})">পড়ুন →</button>
         </div>
       </div>
-    </div>`).join('');
+    </div>`).join('')||'<div class="no-data" style="padding:30px;text-align:center;grid-column:1/-1">এখনো কোনো ব্লগ পোস্ট নেই</div>';
 }
 function openBlogPost(id){
-  const post=BLOG_POSTS.find(p=>p.id===id);
+  const post=getBlogPosts().find(p=>p.id===id);
   if(!post) return;
   document.getElementById('blog-modal-title').textContent=post.title;
   document.getElementById('blog-modal-body').innerHTML=`
-    <div style="text-align:center;font-size:5rem;margin-bottom:16px">${post.emoji}</div>
+    ${post.image?`<img src="${post.image}" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px;margin-bottom:16px">`:`<div style="text-align:center;font-size:5rem;margin-bottom:16px">${post.emoji||'🥭'}</div>`}
     <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
       <span class="blog-card-cat">${post.cat}</span>
       <span style="font-size:.78rem;color:var(--text-muted)">📅 ${post.date}</span>
@@ -14410,6 +14494,102 @@ function openBlogPost(id){
       <button class="btn-hero-primary" onclick="scrollToProducts();closeModal('blog-modal')" style="background:var(--green-dark);color:#fff;border:none;padding:12px 24px;border-radius:25px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Hind Siliguri',sans-serif">🥭 তাজা আম অর্ডার করুন</button>
     </div>`;
   openModal('blog-modal');
+}
+// ── Admin: Blog Management ──
+let blogEditId=null;
+function renderAdminBlog(){
+  blogEditId=null;
+  const posts=getBlogPosts();
+  document.getElementById('admin-main').innerHTML=`
+    <div class="admin-section">
+      <div class="admin-section-header">
+        <h3>📰 ব্লগ ব্যবস্থাপনা <span style="font-size:.72rem;background:var(--green-pale);color:var(--green-dark);padding:2px 8px;border-radius:10px;margin-left:6px">${posts.length}টি পোস্ট</span></h3>
+        <button class="btn-add" onclick="showBlogEditForm()"><i class="fas fa-plus"></i> নতুন পোস্ট</button>
+      </div>
+      <div id="blog-edit-form-area"></div>
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead><tr><th>ছবি</th><th>শিরোনাম</th><th>ক্যাটেগরি</th><th>তারিখ</th><th>অ্যাকশন</th></tr></thead>
+          <tbody>${posts.length?posts.map(p=>`<tr>
+            <td>${p.image?`<img src="${p.image}" style="width:44px;height:44px;object-fit:cover;border-radius:8px">`:`<div style="width:44px;height:44px;border-radius:8px;background:var(--green-pale);display:flex;align-items:center;justify-content:center;font-size:1.3rem">${p.emoji||'🥭'}</div>`}</td>
+            <td><strong style="font-size:.85rem">${p.title}</strong><div style="font-size:.7rem;color:var(--text-muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.excerpt}</div></td>
+            <td><span class="blog-card-cat" style="position:static">${p.cat}</span></td>
+            <td style="font-size:.78rem;color:var(--text-muted)">${p.date}</td>
+            <td><div style="display:flex;gap:4px">
+              <button class="btn-edit-sm" onclick="showBlogEditForm(${p.id})"><i class="fas fa-pen"></i></button>
+              <button class="btn-delete-sm" onclick="deleteBlogPost(${p.id})"><i class="fas fa-trash"></i></button>
+            </div></td>
+          </tr>`).join(''):'<tr><td colspan="5" class="no-data">কোনো পোস্ট নেই</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+function showBlogEditForm(id){
+  blogEditId=id||null;
+  const post=id?getBlogPosts().find(p=>p.id===id):null;
+  document.getElementById('blog-edit-form-area').innerHTML=`
+    <div class="admin-form" style="background:var(--bg-raised);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px">
+      <h4 style="margin-bottom:10px;color:var(--green-dark)">${post?'✏️ পোস্ট সম্পাদনা':'➕ নতুন পোস্ট'}</h4>
+      <div class="form-group"><label>শিরোনাম *</label><input class="form-control" id="blog-f-title" value="${post?post.title.replace(/"/g,'&quot;'):''}" placeholder="যেমন: আমের অবিশ্বাস্য স্বাস্থ্য উপকারিতা"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group"><label>ক্যাটেগরি *</label><input class="form-control" id="blog-f-cat" value="${post?post.cat:''}" placeholder="যেমন: স্বাস্থ্য, রেসিপি"></div>
+        <div class="form-group"><label>তারিখ (ঐচ্ছিক)</label><input class="form-control" id="blog-f-date" value="${post?post.date:new Date().toLocaleDateString('bn-BD',{day:'numeric',month:'long',year:'numeric'})}" placeholder="যেমন: ১৫ জুন ২০২৫"></div>
+      </div>
+      <div class="form-group"><label>সংক্ষিপ্ত বিবরণ (Excerpt) *</label><textarea class="form-control" id="blog-f-excerpt" rows="2" placeholder="তালিকায় দেখানো সংক্ষিপ্ত বিবরণ">${post?post.excerpt:''}</textarea></div>
+      <div class="form-group"><label>পূর্ণ লেখা *</label><textarea class="form-control" id="blog-f-content" rows="6" placeholder="বিস্তারিত লেখা লিখুন...">${post?post.content:''}</textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group"><label>ইমোজি (ছবি না দিলে দেখাবে)</label><input class="form-control" id="blog-f-emoji" value="${post?post.emoji||'🥭':'🥭'}" maxlength="4"></div>
+        <div class="form-group"><label>ছবি আপলোড (ঐচ্ছিক)</label><input class="form-control" type="file" accept="image/*" id="blog-f-image-input" onchange="handleBlogImageUpload(this)">
+          <div id="blog-f-image-preview" style="margin-top:6px">${post&&post.image?`<img src="${post.image}" style="width:60px;height:60px;object-fit:cover;border-radius:8px">`:''}</div>
+        </div>
+      </div>
+      <input type="hidden" id="blog-f-image" value="${post&&post.image?post.image:''}">
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn-primary" onclick="saveBlogPost()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+        <button class="btn-secondary-btn" onclick="document.getElementById('blog-edit-form-area').innerHTML=''">বাতিল</button>
+      </div>
+    </div>`;
+}
+function handleBlogImageUpload(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(file.size>1.5*1024*1024){showToast('ইমেজ সাইজ ১.৫MB এর কম হতে হবে','error');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('blog-f-image').value=e.target.result;
+    document.getElementById('blog-f-image-preview').innerHTML=`<img src="${e.target.result}" style="width:60px;height:60px;object-fit:cover;border-radius:8px">`;
+  };
+  reader.readAsDataURL(file);
+}
+function saveBlogPost(){
+  const title=document.getElementById('blog-f-title').value.trim();
+  const cat=document.getElementById('blog-f-cat').value.trim();
+  const excerpt=document.getElementById('blog-f-excerpt').value.trim();
+  const content=document.getElementById('blog-f-content').value.trim();
+  const emoji=document.getElementById('blog-f-emoji').value.trim()||'🥭';
+  const date=document.getElementById('blog-f-date').value.trim();
+  const image=document.getElementById('blog-f-image').value||'';
+  if(!title||!cat||!excerpt||!content){showToast('সব আবশ্যক তথ্য পূরণ করুন','error');return;}
+  const posts=getBlogPosts();
+  if(blogEditId){
+    const p=posts.find(x=>x.id===blogEditId);
+    if(p) Object.assign(p,{title,cat,excerpt,content,emoji,date,image});
+  } else {
+    const newId=posts.length?Math.max(...posts.map(p=>p.id))+1:1;
+    posts.unshift({id:newId,title,cat,excerpt,content,emoji,date,image});
+  }
+  saveBlogPosts(posts);
+  showToast(blogEditId?'✅ পোস্ট আপডেট হয়েছে':'✅ পোস্ট যোগ হয়েছে','success');
+  renderAdminBlog();
+  try{renderBlogSection();}catch(e){}
+}
+function deleteBlogPost(id){
+  showCustomAlert('পোস্ট মুছুন','এই ব্লগ পোস্টটি স্থায়ীভাবে মুছে ফেলা হবে।','হ্যাঁ, মুছুন','danger',()=>{
+    saveBlogPosts(getBlogPosts().filter(p=>p.id!==id));
+    showToast('✅ পোস্ট মুছে ফেলা হয়েছে','success');
+    renderAdminBlog();
+    try{renderBlogSection();}catch(e){}
+  });
 }
 
 // ============================================================
