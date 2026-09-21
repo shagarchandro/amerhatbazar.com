@@ -4610,10 +4610,13 @@ function doRegister(){
     <div class="contact-grid">
       <div class="contact-info">
         <h3>সরাসরি যোগাযোগ</h3>
-        <div class="contact-item"><div class="contact-icon"><i class="fas fa-phone"></i></div><div><strong>ফোন</strong><br><span style="color:var(--text-muted)">+৮৮০ ১৩০৫-১৪৪৩৫৬</span></div></div>
-        <div class="contact-item"><div class="contact-icon"><i class="fas fa-envelope"></i></div><div><strong>ইমেইল</strong><br><span style="color:var(--text-muted)">mbs200361@gmail.com</span></div></div>
-        <div class="contact-item"><div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div><div><strong>ঠিকানা</strong><br><span style="color:var(--text-muted)">সুন্দরগঞ্জ, গাইবান্ধা, রংপুর, ঢাকা, বাংলাদেশ</span></div></div>
-        <div class="contact-item"><div class="contact-icon"><i class="fab fa-whatsapp"></i></div><div><strong>WhatsApp</strong><br><span style="color:var(--text-muted)">+৮৮০ ১৩০৫-১৪৪৩৫৬</span></div></div>
+        <div class="contact-item"><div class="contact-icon"><i class="fas fa-phone"></i></div><div><strong>ফোন</strong><br><a href="tel:+8801305144356" style="color:var(--text-muted);text-decoration:none">+৮৮০ ১৩০৫-১৪৪৩৫৬</a></div></div>
+        <div class="contact-item"><div class="contact-icon"><i class="fas fa-envelope"></i></div><div><strong>ইমেইল</strong><br><a href="mailto:mbs200361@gmail.com" style="color:var(--text-muted);text-decoration:none">mbs200361@gmail.com</a></div></div>
+        <div class="contact-item"><div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div><div><strong>ঠিকানা</strong><br><span style="color:var(--text-muted)">সুন্দরগঞ্জ, গাইবান্ধা, রংপুর, ঢাকা, বাংলাদেশ</span><br><a href="https://www.google.com/maps/search/?api=1&query=Sundarganj+Gaibandha+Rangpur+Bangladesh" target="_blank" style="font-size:.8rem;color:var(--green-mid);font-weight:600;text-decoration:none"><i class="fas fa-location-arrow"></i> গুগল ম্যাপে দেখুন</a></div></div>
+        <div class="contact-item"><div class="contact-icon"><i class="fab fa-whatsapp"></i></div><div><strong>WhatsApp</strong><br><a href="https://wa.me/8801305144356" target="_blank" style="color:var(--text-muted);text-decoration:none">+৮৮০ ১৩০৫-১৪৪৩৫৬</a></div></div>
+        <div id="contact-hours-status" style="margin-top:16px;padding:10px 14px;background:var(--green-pale);border-radius:10px;font-size:.82rem;color:var(--green-dark);display:flex;align-items:center;gap:8px">
+          <span>🕐 শনি–বৃহস্পতি: সকাল ৯টা – রাত ৯টা, শুক্রবার: সকাল ১০টা – সন্ধ্যা ৬টা</span>
+        </div>
       </div>
       <div class="contact-form">
         <h3>📩 বার্তা পাঠান</h3>
@@ -4643,7 +4646,8 @@ function doRegister(){
         </div>
         <div class="form-group">
           <label>বার্তা <span class="req-star">*</span></label>
-          <textarea class="form-control" id="contact-message" rows="5" placeholder="আপনার বার্তা বিস্তারিত লিখুন..." required minlength="5"></textarea>
+          <textarea class="form-control" id="contact-message" rows="5" placeholder="আপনার বার্তা বিস্তারিত লিখুন..." required minlength="5" oninput="document.getElementById('contact-msg-count').textContent=this.value.length+' অক্ষর'"></textarea>
+          <div id="contact-msg-count" style="font-size:.72rem;color:var(--text-muted);text-align:right;margin-top:3px">০ অক্ষর</div>
         </div>
         <button class="btn-submit" id="contact-submit-btn" onclick="submitContactMessage()">
           <i class="fas fa-paper-plane"></i> বার্তা পাঠান
@@ -11145,6 +11149,8 @@ function submitContactMessage(){
   });
   const sel=document.getElementById('contact-subject');
   if(sel) sel.selectedIndex=0;
+  const msgCount=document.getElementById('contact-msg-count');
+  if(msgCount) msgCount.textContent='০ অক্ষর';
 
   showToast('✅ বার্তা সফলভাবে পাঠানো হয়েছে!','success');
 
@@ -17131,21 +17137,29 @@ function previewInvoiceSample(){
 
 
 
+// Sat–Thu 9:00–21:00, Fri 10:00–18:00 (Bangladesh work week)
+function isBusinessOpenNow(){
+  const now=new Date();
+  const day=now.getDay(); // 0=Sun...5=Fri,6=Sat
+  const hour=now.getHours()+now.getMinutes()/60;
+  const isFriday=day===5;
+  return isFriday?(hour>=10&&hour<18):(hour>=9&&hour<21);
+}
 function initFooterExtras(){
   const yearEl=document.getElementById('footer-year');
   if(yearEl) yearEl.textContent=new Date().getFullYear();
-  // Live open/closed badge based on the hours shown just above it:
-  // Sat–Thu 9:00–21:00, Fri 10:00–18:00 (Bangladesh work week)
+  const open=isBusinessOpenNow();
   const statusEl=document.getElementById('footer-open-status');
   if(statusEl){
-    const now=new Date();
-    const day=now.getDay(); // 0=Sun...5=Fri,6=Sat
-    const hour=now.getHours()+now.getMinutes()/60;
-    const isFriday=day===5;
-    const open=isFriday?(hour>=10&&hour<18):(hour>=9&&hour<21);
     statusEl.innerHTML=open
       ?'<span style="color:#6fcf97">🟢 এখন খোলা আছে</span>'
       :'<span style="color:#ff8787">🔴 এখন বন্ধ — কাজের সময়ে যোগাযোগ করুন</span>';
+  }
+  const contactStatusEl=document.getElementById('contact-hours-status');
+  if(contactStatusEl){
+    contactStatusEl.style.background=open?'var(--green-pale)':'#fde8e8';
+    contactStatusEl.style.color=open?'var(--green-dark)':'#c0392b';
+    contactStatusEl.innerHTML=`<span>${open?'🟢 এখন খোলা আছে':'🔴 এখন বন্ধ'} — শনি–বৃহস্পতি: সকাল ৯টা – রাত ৯টা, শুক্রবার: সকাল ১০টা – সন্ধ্যা ৬টা</span>`;
   }
 }
 // INIT all new features
